@@ -244,12 +244,7 @@ namespace SslCertBinding.Net
 
 									Guid appId = outputConfigInfo.ParamDesc.AppId;
 									string storeName = outputConfigInfo.ParamDesc.pSslCertStoreName;
-                                    if (storeName == null)
-                                    {
-                                        // StoreName of null is assumed to be My / Personal
-                                        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
-                                        storeName = "My";
-                                    }
+
 									IPEndPoint ipPort = SockaddrInterop.ReadSockaddrStructure(outputConfigInfo.KeyDesc.pIpPort);
 
 									var resultItem = new CertificateBindingInfo(GetThumbrint(hash), storeName, ipPort, appId);

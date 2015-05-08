@@ -17,8 +17,14 @@ namespace SslCertBinding.Net
 		public CertificateBindingInfo(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId) {
 
 			if (certificateThumbprint == null) throw new ArgumentNullException("certificateThumbprint");
-			if (certificateStoreName == null) throw new ArgumentNullException("certificateStoreName");
 			if (ipPort == null) throw new ArgumentNullException("ipPort");
+
+            if (certificateStoreName == null)
+            {
+                // StoreName of null is assumed to be My / Personal
+                // https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
+                certificateStoreName = "My";
+            }
 
 			Thumbprint = certificateThumbprint;
 			StoreName = certificateStoreName;
