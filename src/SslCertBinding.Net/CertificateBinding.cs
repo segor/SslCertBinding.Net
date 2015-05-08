@@ -63,7 +63,6 @@ namespace SslCertBinding.Net
 
 								byte[] hash = new byte[outputConfigInfo.ParamDesc.SslHashLength];
 								Marshal.Copy(outputConfigInfo.ParamDesc.pSslHash, hash, 0, hash.Length);
-
 								Guid appId = outputConfigInfo.ParamDesc.AppId;
 								string storeName = outputConfigInfo.ParamDesc.pSslCertStoreName;
 
