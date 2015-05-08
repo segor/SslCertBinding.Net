@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SslCertBinding.Net</id>
+    <version>1.0.0-beta1</version>
+    <title>SslCertBinding.Net</title>
+    <authors>Serghei Gorodetki</authors>
+	<owners>segor</owners>
+    <licenseUrl>http://github.com/segor/SslCertBinding.Net/blob/master/LICENSE</licenseUrl>
+    <projectUrl>http://github.com/segor/SslCertBinding.Net</projectUrl>
+	<releaseNotes></releaseNotes>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides a simple API to add, remove or retrieve bindings between a https port and a SSL certificate.</description>
+    <copyright>Copyright 2015 Serghei Gorodetki</copyright>
+    <tags>SSL certificate binding Windows</tags>
+  </metadata>
+</package>
