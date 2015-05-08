@@ -244,6 +244,7 @@ namespace SslCertBinding.Net
 
 									Guid appId = outputConfigInfo.ParamDesc.AppId;
 									string storeName = outputConfigInfo.ParamDesc.pSslCertStoreName;
+
 									IPEndPoint ipPort = SockaddrInterop.ReadSockaddrStructure(outputConfigInfo.KeyDesc.pIpPort);
 
 									var resultItem = new CertificateBindingInfo(GetThumbrint(hash), storeName, ipPort, appId);
