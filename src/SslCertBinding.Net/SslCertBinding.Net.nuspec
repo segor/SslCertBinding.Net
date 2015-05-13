@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SslCertBinding.Net</id>
-    <version>1.0.0-beta1</version>
+    <version>1.0.1-beta2</version>
     <title>SslCertBinding.Net</title>
     <authors>Serghei Gorodetki</authors>
 	<owners>segor</owners>
