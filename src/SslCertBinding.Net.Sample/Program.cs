@@ -14,24 +14,25 @@ namespace SslCertBinding.Net.Sample
 
 			switch (command){
 				case "show":
-					Show(binding);
+					Show(args, binding);
 					break;
-				case "add":
-					Add(args, binding);
+				case "bind":
+					Bind(args, binding);
 					break;
 				case "delete":
 					Delete(args, binding);
 					break;
 				default:
-					Console.WriteLine("Use 'show' command to show all SSL Certificate bindings, 'delete {IP:port}' to remove a binding and 'add {certificateThumbprint} {certificateStoreName} {IP:port} {appId}' to add a binding.");
+					Console.WriteLine("Use \r\n'show [<IP:port>]' command to show all SSL Certificate bindings, \r\n'delete <IP:port>' to remove a binding and \r\n'bind <certificateThumbprint> <certificateStoreName> <IP:port> <appId>' to add or update a binding.");
 					break;
 			}
 		}
 
-		private static void Show(CertificateBinding binding){
-			Console.WriteLine("SSL Certificate bindings:\r\n-------------------------");
+		private static void Show(string[] args, CertificateBinding binding) {
+			Console.WriteLine("SSL Certificate bindings:\r\n-------------------------\r\n");
 			var stores = new Dictionary<string, X509Store>();
-			var certificateBindings = binding.QueryBinding();
+			var ipEndPoint = args.Length > 1 ? ParseIpEndPoint(args[1]) : null;
+			var certificateBindings = binding.Query(ipEndPoint);
 			foreach (var info in certificateBindings){
 				X509Store store;
 				if (!stores.TryGetValue(info.StoreName, out store)){
@@ -41,21 +42,47 @@ namespace SslCertBinding.Net.Sample
 				}
 
 				var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, info.Thumbprint, false)[0];
-				Console.WriteLine("IP:port:\t{2}\r\nThumbprint:\t{0}\r\nSubject:\t{4}\r\nIssuer:\t\t{5}\r\nApplication ID:\t{3}\r\nStore Name:\t{1}\r\n",
-					info.Thumbprint, info.StoreName, info.IpPort, info.AppId, certificate.Subject, certificate.Issuer);
+				string certStr = String.Format(
+@" IP:port        : {2}
+ Thumbprint     : {0}
+ Subject        : {4}
+ Issuer         : {5}
+ Application ID : {3}
+ Store Name     : {1}
+ Verify Client Certificate Revocation                   : {6}
+ Verify Revocation Using Cached Client Certificate Only : {7}
+ Usage Check                 : {8}
+ Revocation Freshness Time   : {9}
+ URL Retrieval Timeout       : {10}
+ Ctl Identifier : {11}
+ Ctl Store Name : {12}
+ DS Mapper Usage             : {13}
+ Negotiate Client Certificate: {14}
+",
+					info.Thumbprint, info.StoreName, info.IpPort, info.AppId, certificate.Subject, certificate.Issuer, 
+					!info.Options.DoNotVerifyCertificateRevocation, info.Options.VerifyRevocationWithCachedCertificateOnly, !info.Options.NoUsageCheck,
+					info.Options.RevocationFreshnessTime + (info.Options.EnableRevocationFreshnessTime ? string.Empty : " (disabled)"),
+					info.Options.RevocationUrlRetrievalTimeout, info.Options.SslCtlIdentifier, info.Options.SslCtlStoreName, 
+					info.Options.UseDsMappers, info.Options.NegotiateCertificate);
+				Console.WriteLine(certStr);
 			}
 		}
 
-		private static void Add(string[] args, CertificateBinding binding){
-			var ipPort = args[3].Split(':');
-			var endPoint = new IPEndPoint(IPAddress.Parse(ipPort[0]), int.Parse(ipPort[1]));
-			binding.Bind(new CertificateBindingInfo(args[1], args[2], endPoint, Guid.Parse(args[4])));
+		private static void Bind(string[] args, CertificateBinding binding){
+			var endPoint = ParseIpEndPoint(args[3]);
+			var updated = binding.Bind(new CertificateBindingInfo(args[1], args[2], endPoint, Guid.Parse(args[4])));
+			Console.WriteLine(updated ? "The binding record has been successfully updated." : "The binding record has been successfully added.");
 		}
 
 		private static void Delete(string[] args, CertificateBinding binding){
-			var ipPort = args[1].Split(':');
-			var endPoint = new IPEndPoint(IPAddress.Parse(ipPort[0]), int.Parse(ipPort[1]));
-			binding.DeleteBinding(endPoint);
+			var endPoint = ParseIpEndPoint(args[1]);
+			binding.Delete(endPoint);
+			Console.WriteLine("The binding record has been successfully removed.");
+		}
+
+		private static IPEndPoint ParseIpEndPoint(string str){
+			var ipPort = str.Split(':');
+			return new IPEndPoint(IPAddress.Parse(ipPort[0]), int.Parse(ipPort[1]));
 		}
 	}
 }

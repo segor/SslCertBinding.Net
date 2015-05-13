@@ -102,14 +102,14 @@ namespace SslCertBinding.Net
 			public Guid AppId;
 			[MarshalAs(UnmanagedType.LPWStr)]
 			public string pSslCertStoreName;
-			public uint DefaultCertCheckMode;
+			public CertCheckModes DefaultCertCheckMode;
 			public int DefaultRevocationFreshnessTime;
 			public int DefaultRevocationUrlRetrievalTimeout;
 			[MarshalAs(UnmanagedType.LPWStr)]
 			public string pDefaultSslCtlIdentifier;
 			[MarshalAs(UnmanagedType.LPWStr)]
 			public string pDefaultSslCtlStoreName;
-			public uint DefaultFlags;
+			public HTTP_SERVICE_CONFIG_SSL_FLAG DefaultFlags;
 		}
 
 		[StructLayout(LayoutKind.Sequential, Pack = 2)]
@@ -139,13 +139,64 @@ namespace SslCertBinding.Net
 			HttpServiceConfigQueryMax
 		}
 
+		/// <summary>
+		/// Determines how client certificates are checked. 
+		/// </summary>
+		[Flags]
+		public enum CertCheckModes : uint
+		{
+			/// <summary>
+			/// Enables the client certificate revocation check.
+			/// </summary>
+			None = 0,
+
+			/// <summary>
+			/// Client certificate is not to be verified for revocation. 
+			/// </summary>
+			DoNotVerifyCertificateRevocation = 1,
+
+			/// <summary>
+			/// Only cached certificate is to be used the revocation check. 
+			/// </summary>
+			VerifyRevocationWithCachedCertificateOnly = 2,
+
+			/// <summary>
+			/// The RevocationFreshnessTime setting is enabled.
+			/// </summary>
+			EnableRevocationFreshnessTime = 4,
+
+			/// <summary>
+			/// No usage check is to be performed.
+			/// </summary>
+			NoUsageCheck = 0x10000
+		}
+
+		[Flags]
+		public enum HTTP_SERVICE_CONFIG_SSL_FLAG : uint
+		{
+			NONE = 0,
+
+			/// <summary>
+			/// Client certificates are mapped where possible to corresponding operating-system user accounts based on the certificate mapping rules stored in Active Directory.
+			/// </summary>
+			USE_DS_MAPPER = 0x00000001,
+
+			/// <summary>
+			/// Enables a client certificate to be cached locally for subsequent use.
+			/// </summary>
+			NEGOTIATE_CLIENT_CERT = 0x00000002,
+
+			/// <summary>
+			/// Prevents SSL requests from being passed to low-level ISAPI filters.
+			/// </summary>
+			NO_RAW_FILTER = 0x00000004,
+		}
+
 		#endregion
 
 		#region Constants
 
 		public const uint HTTP_INITIALIZE_CONFIG = 0x00000002;
-		public const uint HTTP_SERVICE_CONFIG_SSL_FLAG_NEGOTIATE_CLIENT_CERT = 0x00000002;
-		public const uint HTTP_SERVICE_CONFIG_SSL_FLAG_NO_RAW_FILTER = 0x00000004;
 		public const uint NOERROR = 0;
 		public const uint ERROR_INSUFFICIENT_BUFFER = 122;
 		public const uint ERROR_ALREADY_EXISTS = 183;

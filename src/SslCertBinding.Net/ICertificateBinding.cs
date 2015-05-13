@@ -4,10 +4,9 @@ namespace SslCertBinding.Net
 {
 	public interface ICertificateBinding
 	{
-		CertificateBindingInfo QueryBinding(IPEndPoint ipPort);
-		void Bind(CertificateBindingInfo binding);
-		void DeleteBinding(IPEndPoint endPoint);
-		void DeleteBinding(IPEndPoint[] endPoints);
-		CertificateBindingInfo[] QueryBinding();
+		CertificateBindingInfo[] Query(IPEndPoint ipPort = null);
+		bool Bind(CertificateBindingInfo binding);
+		void Delete(IPEndPoint endPoint);
+		void Delete(IPEndPoint[] endPoints);
 	}
 }
