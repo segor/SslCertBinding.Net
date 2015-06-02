@@ -8,19 +8,19 @@ namespace SslCertBinding.Net.Sample
 	class Program
 	{
 		private static void Main(string[] args) {
-			var binding = new CertificateBinding();
+			var configuration = new CertificateBindingConfiguration();
 
 			string command = args.Length > 0 ? args[0].ToLowerInvariant() : string.Empty;
 
 			switch (command){
 				case "show":
-					Show(args, binding);
+					Show(args, configuration);
 					break;
 				case "bind":
-					Bind(args, binding);
+					Bind(args, configuration);
 					break;
 				case "delete":
-					Delete(args, binding);
+					Delete(args, configuration);
 					break;
 				default:
 					Console.WriteLine("Use \r\n'show [<IP:port>]' command to show all SSL Certificate bindings, \r\n'delete <IP:port>' to remove a binding and \r\n'bind <certificateThumbprint> <certificateStoreName> <IP:port> <appId>' to add or update a binding.");
@@ -28,11 +28,11 @@ namespace SslCertBinding.Net.Sample
 			}
 		}
 
-		private static void Show(string[] args, CertificateBinding binding) {
+		private static void Show(string[] args, CertificateBindingConfiguration configuration) {
 			Console.WriteLine("SSL Certificate bindings:\r\n-------------------------\r\n");
 			var stores = new Dictionary<string, X509Store>();
 			var ipEndPoint = args.Length > 1 ? ParseIpEndPoint(args[1]) : null;
-			var certificateBindings = binding.Query(ipEndPoint);
+			var certificateBindings = configuration.Query(ipEndPoint);
 			foreach (var info in certificateBindings){
 				X509Store store;
 				if (!stores.TryGetValue(info.StoreName, out store)){
@@ -68,15 +68,15 @@ namespace SslCertBinding.Net.Sample
 			}
 		}
 
-		private static void Bind(string[] args, CertificateBinding binding){
+		private static void Bind(string[] args, CertificateBindingConfiguration configuration){
 			var endPoint = ParseIpEndPoint(args[3]);
-			var updated = binding.Bind(new CertificateBindingInfo(args[1], args[2], endPoint, Guid.Parse(args[4])));
+			var updated = configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
 			Console.WriteLine(updated ? "The binding record has been successfully updated." : "The binding record has been successfully added.");
 		}
 
-		private static void Delete(string[] args, CertificateBinding binding){
+		private static void Delete(string[] args, CertificateBindingConfiguration configuration){
 			var endPoint = ParseIpEndPoint(args[1]);
-			binding.Delete(endPoint);
+			configuration.Delete(endPoint);
 			Console.WriteLine("The binding record has been successfully removed.");
 		}
 

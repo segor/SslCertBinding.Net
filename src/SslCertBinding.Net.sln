@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslCertBinding.Net", "SslCe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslCertBinding.Net.Sample", "SslCertBinding.Net.Sample\SslCertBinding.Net.Sample.csproj", "{5CA507D0-B18C-4758-BD53-6EDE46ABB509}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslCertBinding.Net.Sample.Tests", "SslCertBinding.Net.Sample.Tests\SslCertBinding.Net.Sample.Tests.csproj", "{270E074A-25C9-446E-B273-A91B054E8286}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{5CA507D0-B18C-4758-BD53-6EDE46ABB509}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5CA507D0-B18C-4758-BD53-6EDE46ABB509}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5CA507D0-B18C-4758-BD53-6EDE46ABB509}.Release|Any CPU.Build.0 = Release|Any CPU
+		{270E074A-25C9-446E-B273-A91B054E8286}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{270E074A-25C9-446E-B273-A91B054E8286}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{270E074A-25C9-446E-B273-A91B054E8286}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{270E074A-25C9-446E-B273-A91B054E8286}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

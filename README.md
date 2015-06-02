@@ -11,22 +11,22 @@ Install-Package SslCertBinding.Net -Pre
 
 ##Usage
 ```c#
-ICertificateBinding binding = new CertificateBinding();
+ICertificateBindingConfiguration config = new CertificateBindingConfiguration();
 var ipPort = new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443); 
 var certificateThumbprint = "372680E4AEC4A57CAE698307347C65D3CE38AF60";
 var appId = Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a");
 
 // add a new binding record
-binding.Bind( new CertificateBindingInfo(
+config.Bind( new CertificateBindingInfo(
 	certificateThumbprint, StoreName.My, ipPort, appId)); //returns false
 
 // get a binding record
-var certificateBinding = binding.Query(ipPort)[0];
+var certificateBinding = config.Query(ipPort)[0];
 
 // set an option and update the binding record
 certificateBinding.Options.DoNotVerifyCertificateRevocation = true;
-binding.Bind(certificateBinding); //returns true
+config.Bind(certificateBinding); //returns true
 
 // remove the binding record
-binding.Delete(ipPort);
+config.Delete(ipPort);
 ```

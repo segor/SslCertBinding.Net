@@ -1,319 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Net;
-using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SslCertBinding.Net
 {
-	public class CertificateBinding : ICertificateBinding
+	/// <summary>
+	/// Defines a record in the SSL configuration store
+	/// </summary>
+	public class CertificateBinding
 	{
-		public CertificateBindingInfo[] Query(IPEndPoint ipPort = null) {
-			if (ipPort == null) 
-				return QueryInternal();
+		/// <summary>
+		/// A string representation the SSL certificate hash. 
+		/// </summary>
+		public string Thumbprint { get; private set; }
 
-			var info = QueryExact(ipPort);
-			return info == null ? new CertificateBindingInfo[0] : new[] { info };
-		}
+		/// <summary>
+		/// The name of the store from which the server certificate is to be read. If set to NULL, "MY" is assumed as the default name. 
+		/// The specified certificate store name must be present in the Local Machine store location.
+		/// </summary>
+		public string StoreName { get; private set; }
 
-		public bool Bind(CertificateBindingInfo binding) {
-			bool bindingUpdated = false;
-			HttpApi.CallHttpApi(
-				delegate {
+		/// <summary>
+		/// An IP address and port with which this SSL certificate is associated. 
+		/// If the <see cref="IPEndPoint.Address"/> property is set to 0.0.0.0, the certificate is applicable to all IPv4 and IPv6 addresses. If the <see cref="IPEndPoint.Address"/> property is set to [::], the certificate is applicable to all IPv6 addresses.
+		/// </summary>
+		public IPEndPoint IpPort { get; private set; }
 
-					GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(binding.IpPort);
-					IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-					var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
+		/// <summary>
+		/// A unique identifier of the application setting this record.
+		/// </summary>
+		public Guid AppId { get; private set; }
 
-					byte[] hash = GetHash(binding.Thumbprint);
-					GCHandle handleHash = GCHandle.Alloc(hash, GCHandleType.Pinned);
-					var options = binding.Options;
-					var configSslParam = new HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM {
-						AppId = binding.AppId,
-						DefaultCertCheckMode = (options.DoNotVerifyCertificateRevocation ? HttpApi.CertCheckModes.DoNotVerifyCertificateRevocation : 0)
-							| (options.VerifyRevocationWithCachedCertificateOnly ? HttpApi.CertCheckModes.VerifyRevocationWithCachedCertificateOnly : 0)
-							| (options.DoNotVerifyCertificateRevocation ? HttpApi.CertCheckModes.EnableRevocationFreshnessTime : 0)
-							| (options.NoUsageCheck ? HttpApi.CertCheckModes.NoUsageCheck : 0),
-						DefaultFlags = (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
-							| (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)
-							| (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0),
-						DefaultRevocationFreshnessTime = (int)options.RevocationFreshnessTime.TotalSeconds,
-						DefaultRevocationUrlRetrievalTimeout = (int)options.RevocationUrlRetrievalTimeout.TotalMilliseconds,
-						pSslCertStoreName = binding.StoreName,
-						pSslHash = handleHash.AddrOfPinnedObject(),
-						SslHashLength = hash.Length,
-						pDefaultSslCtlIdentifier = options.SslCtlIdentifier,
-						pDefaultSslCtlStoreName = options.SslCtlStoreName
-					};
+		/// <summary>
+		/// Additional options.
+		/// </summary>
+		public BindingOptions Options { get; private set; }
 
-					var configSslSet = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET {
-						ParamDesc = configSslParam,
-						KeyDesc = httpServiceConfigSslKey
-					};
+		public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = null)
+			: this(certificateThumbprint, certificateStoreName.ToString(), ipPort, appId, options) { }
 
-					IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-						Marshal.SizeOf(typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)));
-					Marshal.StructureToPtr(configSslSet, pInputConfigInfo, false);
+		public CertificateBinding(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = null) {
 
-					try {
-						uint retVal = HttpApi.HttpSetServiceConfiguration(IntPtr.Zero,
-							HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-							pInputConfigInfo,
-							Marshal.SizeOf(configSslSet),
-							IntPtr.Zero);
+			if (certificateThumbprint == null) throw new ArgumentNullException("certificateThumbprint");
+			if (ipPort == null) throw new ArgumentNullException("ipPort");
 
-						if (HttpApi.ERROR_ALREADY_EXISTS != retVal) {
-							HttpApi.ThrowWin32ExceptionIfError(retVal);
-						} else {
-							retVal = HttpApi.HttpDeleteServiceConfiguration(IntPtr.Zero,
-								HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-								pInputConfigInfo,
-								Marshal.SizeOf(configSslSet),
-								IntPtr.Zero);
-							HttpApi.ThrowWin32ExceptionIfError(retVal);
+			if (certificateStoreName == null) {
+				// StoreName of null is assumed to be My / Personal
+				// https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
+				certificateStoreName = "MY";
+			}
 
-							retVal = HttpApi.HttpSetServiceConfiguration(IntPtr.Zero,
-								HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-								pInputConfigInfo,
-								Marshal.SizeOf(configSslSet),
-								IntPtr.Zero);
-							HttpApi.ThrowWin32ExceptionIfError(retVal);
-							bindingUpdated = true;
-						}
-					} finally {
-						Marshal.FreeCoTaskMem(pInputConfigInfo);
-						if (handleHash.IsAllocated)
-							handleHash.Free();
-						if (sockAddrHandle.IsAllocated)
-							sockAddrHandle.Free();
-					}
-				});
-			return bindingUpdated;
-		}
-
-		public void Delete(IPEndPoint endPoint) {
-			Delete(new[] { endPoint });
-		}
-
-		public void Delete(IPEndPoint[] endPoints) {
-			if (endPoints == null)
-				throw new ArgumentNullException("endPoints");
-			if (endPoints.Length == 0)
-				return;
-
-			HttpApi.CallHttpApi(
-			delegate {
-				foreach (var ipPort in endPoints) {
-					GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
-					IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-					HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
-
-					var configSslSet = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET {
-						KeyDesc = httpServiceConfigSslKey
-					};
-
-					IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-							Marshal.SizeOf(typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)));
-					Marshal.StructureToPtr(configSslSet, pInputConfigInfo, false);
-
-					try {
-						uint retVal = HttpApi.HttpDeleteServiceConfiguration(IntPtr.Zero,
-							HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-							pInputConfigInfo,
-							Marshal.SizeOf(configSslSet),
-							IntPtr.Zero);
-						HttpApi.ThrowWin32ExceptionIfError(retVal);
-					} finally {
-						Marshal.FreeCoTaskMem(pInputConfigInfo);
-						if (sockAddrHandle.IsAllocated)
-							sockAddrHandle.Free();
-					}
-				}
-			});
-		}
-
-		private static CertificateBindingInfo QueryExact(IPEndPoint ipPort) {
-			CertificateBindingInfo result = null;
-
-			uint retVal;
-			HttpApi.CallHttpApi(
-				delegate {
-					GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
-					IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-					var sslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
-
-					var inputConfigInfoQuery = new HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY {
-						QueryDesc = HttpApi.HTTP_SERVICE_CONFIG_QUERY_TYPE.HttpServiceConfigQueryExact,
-						KeyDesc = sslKey
-					};
-
-					IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-						Marshal.SizeOf(typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY)));
-					Marshal.StructureToPtr(inputConfigInfoQuery, pInputConfigInfo, false);
-
-					IntPtr pOutputConfigInfo = IntPtr.Zero;
-					int returnLength = 0;
-
-					try {
-						int inputConfigInfoSize = Marshal.SizeOf(inputConfigInfoQuery);
-						retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
-							HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-							pInputConfigInfo,
-							inputConfigInfoSize,
-							pOutputConfigInfo,
-							returnLength,
-							out returnLength,
-							IntPtr.Zero);
-						if (retVal == HttpApi.ERROR_FILE_NOT_FOUND)
-							return;
-
-						if (HttpApi.ERROR_INSUFFICIENT_BUFFER == retVal) {
-							pOutputConfigInfo = Marshal.AllocCoTaskMem(returnLength);
-							try {
-								retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
-									HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-									pInputConfigInfo,
-									inputConfigInfoSize,
-									pOutputConfigInfo,
-									returnLength,
-									out returnLength,
-									IntPtr.Zero);
-								HttpApi.ThrowWin32ExceptionIfError(retVal);
-
-								var outputConfigInfo =
-									(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)
-									Marshal.PtrToStructure(pOutputConfigInfo, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET));
-								result = CreateCertificateBindingInfo(outputConfigInfo);
-							} finally {
-								Marshal.FreeCoTaskMem(pOutputConfigInfo);
-							}
-						} else {
-							HttpApi.ThrowWin32ExceptionIfError(retVal);
-						}
-
-					} finally {
-						Marshal.FreeCoTaskMem(pInputConfigInfo);
-						if (sockAddrHandle.IsAllocated)
-							sockAddrHandle.Free();
-					}
-				});
-
-			return result;
-		}
-
-		private static CertificateBindingInfo[] QueryInternal() {
-			var result = new List<CertificateBindingInfo>();
-
-			HttpApi.CallHttpApi(
-				delegate {
-					uint token = 0;
-
-					uint retVal;
-					do {
-						var inputConfigInfoQuery = new HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY {
-								QueryDesc = HttpApi.HTTP_SERVICE_CONFIG_QUERY_TYPE.HttpServiceConfigQueryNext,
-								dwToken = token,
-							};
-
-						IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-							Marshal.SizeOf(typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY)));
-						Marshal.StructureToPtr(inputConfigInfoQuery, pInputConfigInfo, false);
-
-						IntPtr pOutputConfigInfo = IntPtr.Zero;
-						int returnLength = 0;
-
-						try {
-							int inputConfigInfoSize = Marshal.SizeOf(inputConfigInfoQuery);
-							retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
-								HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-								pInputConfigInfo,
-								inputConfigInfoSize,
-								pOutputConfigInfo,
-								returnLength,
-								out returnLength,
-								IntPtr.Zero);
-							if (HttpApi.ERROR_NO_MORE_ITEMS == retVal)
-								break;
-							if (HttpApi.ERROR_INSUFFICIENT_BUFFER == retVal) {
-								pOutputConfigInfo = Marshal.AllocCoTaskMem(returnLength);
-
-								try {
-									retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
-										HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-										pInputConfigInfo,
-										inputConfigInfoSize,
-										pOutputConfigInfo,
-										returnLength,
-										out returnLength,
-										IntPtr.Zero);
-									HttpApi.ThrowWin32ExceptionIfError(retVal);
-
-									var outputConfigInfo = (HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)Marshal.PtrToStructure(
-										pOutputConfigInfo, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET));
-									var resultItem = CreateCertificateBindingInfo(outputConfigInfo);
-									result.Add(resultItem);
-									token++;
-								} finally {
-									Marshal.FreeCoTaskMem(pOutputConfigInfo);
-								}
-							} else {
-								HttpApi.ThrowWin32ExceptionIfError(retVal);
-							}
-						} finally {
-							Marshal.FreeCoTaskMem(pInputConfigInfo);
-						}
-
-					} while (HttpApi.NOERROR == retVal);
-
-				});
-
-			return result.ToArray();
-		}
-
-		private static CertificateBindingInfo CreateCertificateBindingInfo(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET configInfo) {
-			byte[] hash = new byte[configInfo.ParamDesc.SslHashLength];
-			Marshal.Copy(configInfo.ParamDesc.pSslHash, hash, 0, hash.Length);
-			Guid appId = configInfo.ParamDesc.AppId;
-			string storeName = configInfo.ParamDesc.pSslCertStoreName;
-			IPEndPoint ipPort = SockaddrInterop.ReadSockaddrStructure(configInfo.KeyDesc.pIpPort);
-			var checkModes = configInfo.ParamDesc.DefaultCertCheckMode;
-			var options = new BindingOptions {
-				DoNotVerifyCertificateRevocation = HasFlag(checkModes, HttpApi.CertCheckModes.DoNotVerifyCertificateRevocation),
-				VerifyRevocationWithCachedCertificateOnly = HasFlag(checkModes, HttpApi.CertCheckModes.VerifyRevocationWithCachedCertificateOnly),
-				EnableRevocationFreshnessTime = HasFlag(checkModes, HttpApi.CertCheckModes.EnableRevocationFreshnessTime),
-				NoUsageCheck = HasFlag(checkModes, HttpApi.CertCheckModes.NoUsageCheck),
-				RevocationFreshnessTime = TimeSpan.FromSeconds(configInfo.ParamDesc.DefaultRevocationFreshnessTime),
-				RevocationUrlRetrievalTimeout = TimeSpan.FromMilliseconds(configInfo.ParamDesc.DefaultRevocationUrlRetrievalTimeout),
-				SslCtlIdentifier = configInfo.ParamDesc.pDefaultSslCtlIdentifier,
-				SslCtlStoreName = configInfo.ParamDesc.pDefaultSslCtlStoreName,
-				NegotiateCertificate = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT),
-				UseDsMappers = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER),
-				DoNotPassRequestsToRawFilters = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER),
-			};
-			var result = new CertificateBindingInfo(GetThumbrint(hash), storeName, ipPort, appId, options);
-			return result;
-		}
-
-		private static string GetThumbrint(byte[] hash) {
-			string thumbrint = BitConverter.ToString(hash).Replace("-", "");
-			return thumbrint;
-		}
-
-		private static byte[] GetHash(string thumbprint) {
-			int length = thumbprint.Length;
-			byte[] bytes = new byte[length / 2];
-			for (int i = 0; i < length; i += 2)
-				bytes[i / 2] = Convert.ToByte(thumbprint.Substring(i, 2), 16);
-			return bytes;
-		}
-
-		private static bool HasFlag(uint value, uint flag) {
-			return (value & flag) == flag;
-		}
-
-		private static bool HasFlag<T>(T value, T flag) where T : IConvertible {
-			var uintValue = Convert.ToUInt32(value);
-			var uintFlag = Convert.ToUInt32(flag);
-			return HasFlag(uintValue, uintFlag);
+			Thumbprint = certificateThumbprint;
+			StoreName = certificateStoreName;
+			IpPort = ipPort;
+			AppId = appId;
+			Options = options ?? new BindingOptions();
 		}
 	}
 }

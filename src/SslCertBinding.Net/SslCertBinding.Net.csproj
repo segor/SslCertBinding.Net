@@ -46,10 +46,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BindingOptions.cs" />
-    <Compile Include="CertificateBindingInfo.cs" />
     <Compile Include="CertificateBinding.cs" />
+    <Compile Include="CertificateBindingConfiguration.cs" />
     <Compile Include="HttpApi.cs" />
-    <Compile Include="ICertificateBinding.cs" />
+    <Compile Include="ICertificateBindingConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SockaddrInterop.cs" />
   </ItemGroup>
