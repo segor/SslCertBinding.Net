@@ -69,9 +69,21 @@ namespace SslCertBinding.Net.Sample.Tests
 		}
 
 		public static void RemoveIpEndPoints(string thumbprint) {
-			foreach (var ipEndPoint in ExecGetIpEndPoints(thumbprint)) {
+			foreach (var ipEndPoint in GetIpEndPoints(thumbprint)) {
 				ExecDelete(ipEndPoint);
 			}
+		}
+
+		public static IPEndPoint[] GetIpEndPoints(string thumbprint = null) {
+			var result = Show(throwExcepton: true);
+			var pattern = string.Format(@"\s+IP:port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+",
+				string.IsNullOrEmpty(thumbprint) ? @"\S+" : thumbprint);
+			var matches = Regex.Matches(result.Output, pattern,
+				RegexOptions.IgnoreCase | RegexOptions.CultureInvariant |
+				RegexOptions.Singleline);
+
+			var endPoints = matches.Cast<Match>().Select(match => IpEndpointTools.ParseIpEndPoint(match.Groups[1].Value)).ToArray();
+			return endPoints;
 		}
 
 		private static CommandResult ExecCommand(string arguments, bool throwExcepton) {
@@ -88,14 +100,12 @@ namespace SslCertBinding.Net.Sample.Tests
 				var outputBuilder = new StringBuilder();
 				process.OutputDataReceived += (sender, e) => { outputBuilder.AppendLine(e.Data); };
 				process.ErrorDataReceived += (sender, e) => { outputBuilder.AppendLine(e.Data); };
-				// run the process
+				
 				process.Start();
-
-				// start reading output to events
+				
 				process.BeginOutputReadLine();
 				process.BeginErrorReadLine();
 
-				// wait for process to exit
 				process.WaitForExit();
 
 				commandResult = new CommandResult { ExitCode = process.ExitCode, Output = outputBuilder.ToString() };
@@ -104,16 +114,6 @@ namespace SslCertBinding.Net.Sample.Tests
 			if (throwExcepton && !commandResult.IsSuccessfull)
 				throw new InvalidOperationException(string.Format("{0}: {1}", commandResult.ExitCode, commandResult.Output));
 			return commandResult;
-		}
-
-		private static IPEndPoint[] ExecGetIpEndPoints(string thumbprint) {
-			var result = Show(throwExcepton: true);
-			var matches = Regex.Matches(result.Output, string.Format(@"\s+IP:port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+", thumbprint),
-				RegexOptions.IgnoreCase | RegexOptions.CultureInvariant |
-				RegexOptions.Singleline);
-
-			var endPoints = matches.Cast<Match>().Select(match => IpEndpointTools.ParseIpEndPoint(match.Groups[1].Value)).ToArray();
-			return endPoints;
 		}
 
 		private static void ExecDelete(IPEndPoint ipPort) {
