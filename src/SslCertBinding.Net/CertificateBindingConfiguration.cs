@@ -31,7 +31,7 @@ namespace SslCertBinding.Net
 						AppId = binding.AppId,
 						DefaultCertCheckMode = (options.DoNotVerifyCertificateRevocation ? HttpApi.CertCheckModes.DoNotVerifyCertificateRevocation : 0)
 							| (options.VerifyRevocationWithCachedCertificateOnly ? HttpApi.CertCheckModes.VerifyRevocationWithCachedCertificateOnly : 0)
-							| (options.DoNotVerifyCertificateRevocation ? HttpApi.CertCheckModes.EnableRevocationFreshnessTime : 0)
+							| (options.EnableRevocationFreshnessTime ? HttpApi.CertCheckModes.EnableRevocationFreshnessTime : 0)
 							| (options.NoUsageCheck ? HttpApi.CertCheckModes.NoUsageCheck : 0),
 						DefaultFlags = (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
 							| (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)

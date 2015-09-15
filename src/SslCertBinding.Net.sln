@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslCertBinding.Net", "SslCe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslCertBinding.Net.Sample", "SslCertBinding.Net.Sample\SslCertBinding.Net.Sample.csproj", "{5CA507D0-B18C-4758-BD53-6EDE46ABB509}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslCertBinding.Net.Sample.Tests", "SslCertBinding.Net.Sample.Tests\SslCertBinding.Net.Sample.Tests.csproj", "{270E074A-25C9-446E-B273-A91B054E8286}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SslCertBinding.Net.Tests", "SslCertBinding.Net.Tests\SslCertBinding.Net.Tests.csproj", "{270E074A-25C9-446E-B273-A91B054E8286}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
