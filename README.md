@@ -6,7 +6,7 @@ This library can be considered as a programmatic alternative to Windows command 
 ##Installation
 SslCertBinding.Net is available as a [NuGet package](http://www.nuget.org/packages/SslCertBinding.Net/).
 ```powershell
-Install-Package SslCertBinding.Net -Pre
+Install-Package SslCertBinding.Net
 ```
 
 ##Usage
