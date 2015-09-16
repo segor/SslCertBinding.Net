@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SslCertBinding.Net</id>
-    <version>1.0.1-beta2</version>
+    <version>1.0.2-beta</version>
     <title>SslCertBinding.Net</title>
     <authors>Serghei Gorodetki</authors>
 	<owners>segor</owners>
@@ -12,6 +12,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Provides a simple API to add, remove or retrieve bindings between a https port and a SSL certificate.</description>
     <copyright>Copyright 2015 Serghei Gorodetki</copyright>
-    <tags>SSL certificate binding Windows</tags>
+    <tags>SSL certificate binding Windows HTTPS</tags>
   </metadata>
 </package>
