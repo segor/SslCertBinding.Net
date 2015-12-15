@@ -63,6 +63,7 @@ namespace SslCertBinding.Net
 
 						if (HttpApi.ERROR_ALREADY_EXISTS != retVal) {
 							HttpApi.ThrowWin32ExceptionIfError(retVal);
+                            bindingUpdated = true;
 						} else {
 							retVal = HttpApi.HttpDeleteServiceConfiguration(IntPtr.Zero,
 								HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
