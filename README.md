@@ -17,7 +17,7 @@ var certificateThumbprint = "372680E4AEC4A57CAE698307347C65D3CE38AF60";
 var appId = Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a");
 
 // add a new binding record
-config.Bind( new CertificateBindingInfo(
+config.Bind( new CertificateBinding(
 	certificateThumbprint, StoreName.My, ipPort, appId)); //returns false
 
 // get a binding record
