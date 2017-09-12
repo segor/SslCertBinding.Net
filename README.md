@@ -1,15 +1,15 @@
-#SslCertBinding.Net
+# SslCertBinding.Net
 SslCertBinding.Net is a library for .NET and Windows and provides a simple API to add, remove or retrieve bindings between a https port and a SSL certificate.
 
 This library can be considered as a programmatic alternative to Windows command line tools `netsh http show|add|delete sslcert` or `httpcfg query|set|delete ssl`. 
 
-##Installation
+## Installation
 SslCertBinding.Net is available as a [NuGet package](http://www.nuget.org/packages/SslCertBinding.Net/).
 ```powershell
 Install-Package SslCertBinding.Net
 ```
 
-##Usage
+## Usage
 ```c#
 ICertificateBindingConfiguration config = new CertificateBindingConfiguration();
 var ipPort = new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443); 
