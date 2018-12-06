@@ -36,4 +36,4 @@ config.Delete(ipPort);
 Cerificates configuration needs elevated permissions. Run Visual Studio as an Administrator before running unit tests.
 
 ### I am getting the error "A specified logon session does not exist. It may have already been terminated". How to fix it?
-Make sure that you have installed your certificate properly, certificate has a privaite key, your privaite key store is not broken, etc. Try binding your certificate with `netsh` CLI tool. If you get the same error it should not be a bug in `SslCertBinding.Net`. 
+Make sure that you have installed your certificate properly, certificate has a private key, your privaite key store is not broken, etc. Try binding your certificate with `netsh` CLI tool. If you get the same error it should not be a bug in `SslCertBinding.Net`. 
