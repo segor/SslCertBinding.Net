@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <ProjectGuid>{E1F46D9B-5B83-460A-A7B1-488CDCDB6633}</ProjectGuid>
-    <TargetFramework>net20</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyTitle>SslCertBinding.Net</AssemblyTitle>
     <Company>Serghei Gorodetki</Company>
     <Product>SslCertBinding.Net</Product>
@@ -17,8 +17,6 @@
     <PackageLicenseUrl>http://raw.githubusercontent.com/segor/SslCertBinding.Net/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>http://github.com/segor/SslCertBinding.Net</PackageProjectUrl>
     <PackageTags>SSL certificate binding Windows netsh</PackageTags>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup>
