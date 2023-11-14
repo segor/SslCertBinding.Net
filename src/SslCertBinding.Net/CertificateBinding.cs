@@ -40,19 +40,15 @@ namespace SslCertBinding.Net
 			: this(certificateThumbprint, certificateStoreName.ToString(), ipPort, appId, options) { }
 
 		public CertificateBinding(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = null) {
-
-			if (certificateThumbprint == null) throw new ArgumentNullException("certificateThumbprint");
-			if (ipPort == null) throw new ArgumentNullException("ipPort");
-
-			if (certificateStoreName == null) {
+            if (certificateStoreName == null) {
 				// StoreName of null is assumed to be My / Personal
 				// https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
 				certificateStoreName = "MY";
 			}
 
-			Thumbprint = certificateThumbprint;
+			Thumbprint = certificateThumbprint ?? throw new ArgumentNullException(nameof(certificateThumbprint));
 			StoreName = certificateStoreName;
-			IpPort = ipPort;
+			IpPort = ipPort ?? throw new ArgumentNullException(nameof(ipPort));
 			AppId = appId;
 			Options = options ?? new BindingOptions();
 		}

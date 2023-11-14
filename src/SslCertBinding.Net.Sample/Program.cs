@@ -34,14 +34,14 @@ namespace SslCertBinding.Net.Sample
 			var ipEndPoint = args.Length > 1 ? ParseIpEndPoint(args[1]) : null;
 			var certificateBindings = configuration.Query(ipEndPoint);
 			foreach (var info in certificateBindings){
-				X509Store store;
-				if (!stores.TryGetValue(info.StoreName, out store)){
-					store = new X509Store(info.StoreName, StoreLocation.LocalMachine);
-					store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
-					stores.Add(info.StoreName, store);
-				}
+                if (!stores.TryGetValue(info.StoreName, out X509Store store))
+                {
+                    store = new X509Store(info.StoreName, StoreLocation.LocalMachine);
+                    store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+                    stores.Add(info.StoreName, store);
+                }
 
-				var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, info.Thumbprint, false)[0];
+                var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, info.Thumbprint, false)[0];
 				string certStr = String.Format(
 @" IP:port        : {2}
  Thumbprint     : {0}
