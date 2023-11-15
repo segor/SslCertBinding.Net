@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SslCertBinding.Net.Sample": {
+      "commandName": "Project",
+      "commandLineArgs": "show"
+    }
+  }
+}

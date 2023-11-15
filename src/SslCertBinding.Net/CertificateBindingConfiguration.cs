@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
 
@@ -12,7 +13,7 @@ namespace SslCertBinding.Net
 				return QueryInternal();
 
 			var info = QueryExact(ipPort);
-			return info == null ? new CertificateBinding[0] : new[] { info };
+			return info == null ? Array.Empty<CertificateBinding>() : new[] { info };
 		}
 
 		public void Bind(CertificateBinding binding) {			
@@ -102,7 +103,7 @@ namespace SslCertBinding.Net
 				foreach (var ipPort in endPoints) {
 					GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
 					IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-					HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
+					var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
 
 					var configSslSet = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET {
 						KeyDesc = httpServiceConfigSslKey
@@ -308,8 +309,8 @@ namespace SslCertBinding.Net
 		}
 
 		private static bool HasFlag<T>(T value, T flag) where T : IConvertible {
-			var uintValue = Convert.ToUInt32(value);
-			var uintFlag = Convert.ToUInt32(flag);
+			var uintValue = Convert.ToUInt32(value, CultureInfo.InvariantCulture);
+			var uintFlag = Convert.ToUInt32(flag, CultureInfo.InvariantCulture);
 			return HasFlag(uintValue, uintFlag);
 		}
 	}
