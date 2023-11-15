@@ -96,7 +96,7 @@ namespace SslCertBinding.Net
 
 		public void Delete(IPEndPoint[] endPoints) {
 			if (endPoints == null)
-				throw new ArgumentNullException("endPoints");
+				throw new ArgumentNullException(nameof(endPoints));
 			if (endPoints.Length == 0)
 				return;
 
