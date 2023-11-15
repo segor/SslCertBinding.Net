@@ -7,7 +7,7 @@ namespace SslCertBinding.Net
 {
 	public class CertificateBindingConfiguration : ICertificateBindingConfiguration
 	{
-		public CertificateBinding[] Query(IPEndPoint ipPort = null) {
+		public IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null) {
 			if (ipPort == null) 
 				return QueryInternal();
 
@@ -15,8 +15,7 @@ namespace SslCertBinding.Net
 			return info == null ? new CertificateBinding[0] : new[] { info };
 		}
 
-		public bool Bind(CertificateBinding binding) {
-			bool bindingUpdated = false;
+		public void Bind(CertificateBinding binding) {			
 			HttpApi.CallHttpApi(
 				delegate {
 
@@ -77,7 +76,6 @@ namespace SslCertBinding.Net
 								Marshal.SizeOf(configSslSet),
 								IntPtr.Zero);
 							HttpApi.ThrowWin32ExceptionIfError(retVal);
-							bindingUpdated = true;
 						}
 					} finally {
 						Marshal.FreeCoTaskMem(pInputConfigInfo);
@@ -87,17 +85,16 @@ namespace SslCertBinding.Net
 							sockAddrHandle.Free();
 					}
 				});
-			return bindingUpdated;
 		}
 
 		public void Delete(IPEndPoint endPoint) {
 			Delete(new[] { endPoint });
 		}
 
-		public void Delete(IPEndPoint[] endPoints) {
+		public void Delete(IReadOnlyCollection<IPEndPoint> endPoints) {
 			if (endPoints == null)
 				throw new ArgumentNullException(nameof(endPoints));
-			if (endPoints.Length == 0)
+			if (endPoints.Count == 0)
 				return;
 
 			HttpApi.CallHttpApi(
@@ -200,7 +197,7 @@ namespace SslCertBinding.Net
 			return result;
 		}
 
-		private static CertificateBinding[] QueryInternal() {
+		private static List<CertificateBinding> QueryInternal() {
 			var result = new List<CertificateBinding>();
 
 			HttpApi.CallHttpApi(
@@ -266,7 +263,7 @@ namespace SslCertBinding.Net
 
 				});
 
-			return result.ToArray();
+			return result;
 		}
 
 		private static CertificateBinding CreateCertificateBindingInfo(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET configInfo) {

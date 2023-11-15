@@ -18,14 +18,14 @@ var appId = Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a");
 
 // add a new binding record
 config.Bind( new CertificateBinding(
-	certificateThumbprint, StoreName.My, ipPort, appId)); //returns false
+	certificateThumbprint, StoreName.My, ipPort, appId));
 
-// get a binding record
+// get the binding record
 var certificateBinding = config.Query(ipPort)[0];
 
 // set an option and update the binding record
 certificateBinding.Options.DoNotVerifyCertificateRevocation = true;
-config.Bind(certificateBinding); //returns true
+config.Bind(certificateBinding);
 
 // remove the binding record
 config.Delete(ipPort);

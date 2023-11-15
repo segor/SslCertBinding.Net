@@ -70,8 +70,8 @@ namespace SslCertBinding.Net.Sample
 
 		private static void Bind(string[] args, CertificateBindingConfiguration configuration){
 			var endPoint = ParseIpEndPoint(args[3]);
-			var updated = configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
-			Console.WriteLine(updated ? "The binding record has been successfully updated." : "The binding record has been successfully added.");
+			configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
+			Console.WriteLine("The binding record has been successfully applied.");
 		}
 
 		private static void Delete(string[] args, CertificateBindingConfiguration configuration){

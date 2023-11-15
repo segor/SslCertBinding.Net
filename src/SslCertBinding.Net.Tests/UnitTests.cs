@@ -27,7 +27,7 @@ namespace SslCertBinding.Net.Sample.Tests
 
             var config = new CertificateBindingConfiguration();
             var bindingsByIpPort = config.Query(ipPort);
-            Assert.AreEqual(1, bindingsByIpPort.Length);
+            Assert.AreEqual(1, bindingsByIpPort.Count);
             var binding = bindingsByIpPort[0];
             Assert.AreEqual(appId, binding.AppId);
             Assert.AreEqual(ipPort, binding.IpPort);
@@ -120,9 +120,8 @@ namespace SslCertBinding.Net.Sample.Tests
             var appId = Guid.NewGuid();
 
             var configuration = new CertificateBindingConfiguration();
-            var updated = configuration.Bind(new CertificateBinding(_testingCertThumbprint, StoreName.My, ipPort, appId));
+            configuration.Bind(new CertificateBinding(_testingCertThumbprint, StoreName.My, ipPort, appId));
 
-            Assert.IsFalse(updated);
             var result = CertConfigCmd.Show(ipPort);
             Assert.IsTrue(result.IsSuccessfull);
             var expectedOutput = string.Format(
@@ -165,9 +164,8 @@ namespace SslCertBinding.Net.Sample.Tests
                 VerifyRevocationWithCachedCertificateOnly = true,
             });
 
-            var updated = configuration.Bind(binding);
+            configuration.Bind(binding);
 
-            Assert.IsFalse(updated);
             var result = CertConfigCmd.Show(ipPort);
             Assert.IsTrue(result.IsSuccessfull);
             var expectedOutput = string.Format(
@@ -266,9 +264,8 @@ namespace SslCertBinding.Net.Sample.Tests
                 VerifyRevocationWithCachedCertificateOnly = true,
             });
 
-            var updated = configuration.Bind(binding);
+            configuration.Bind(binding);
 
-            Assert.IsTrue(updated);
             var result = CertConfigCmd.Show(ipPort);
             Assert.IsTrue(result.IsSuccessfull);
             var expectedOutput = string.Format(
