@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace SslCertBinding.Net.Sample.Tests
 {
@@ -36,19 +37,19 @@ namespace SslCertBinding.Net.Sample.Tests
 			// ReSharper restore InconsistentNaming
 		}
 
-		public static CommandResult Show(IPEndPoint ipPort = null, bool throwExcepton = false) {
+		public static Task<CommandResult> Show(IPEndPoint ipPort = null, bool throwExcepton = false) {
 			return ExecCommand(string.Format("http show sslcert {0}", ipPort), throwExcepton);
 		}
 
-		public static bool IpPortIsPresentInConfig(IPEndPoint ipPort) {
-			var result = Show(ipPort);
+		public static async Task<bool> IpPortIsPresentInConfig(IPEndPoint ipPort) {
+			var result = await Show(ipPort);
 			return result.IsSuccessfull;
 		}
 
-		public static void Add(Options options) {
+		public static Task<CommandResult> Add(Options options) {
 			if (options == null)
-				throw new ArgumentNullException("options");
-			StringBuilder sb = new StringBuilder();
+				throw new ArgumentNullException(nameof(options));
+			var sb = new StringBuilder();
 
 			foreach (var optionField in options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public)) {
 				object valObj = optionField.GetValue(options);
@@ -65,17 +66,17 @@ namespace SslCertBinding.Net.Sample.Tests
 				}
 			}
 
-			ExecCommand(string.Format("http add sslcert {0}", sb), true);
+			return ExecCommand(string.Format("http add sslcert {0}", sb), true);
 		}
 
-		public static void RemoveIpEndPoints(string thumbprint) {
-			foreach (var ipEndPoint in GetIpEndPoints(thumbprint)) {
-				ExecDelete(ipEndPoint);
+		public static async Task RemoveIpEndPoints(string thumbprint) {
+			foreach (var ipEndPoint in await GetIpEndPoints(thumbprint)) {
+				await ExecDelete(ipEndPoint);
 			}
 		}
 
-		public static IPEndPoint[] GetIpEndPoints(string thumbprint = null) {
-			var result = Show(throwExcepton: true);
+		public static async Task<IPEndPoint[]> GetIpEndPoints(string thumbprint = null) {
+			var result = await Show(throwExcepton: true);
 			var pattern = string.Format(@"\s+IP:port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+",
 				string.IsNullOrEmpty(thumbprint) ? @"\S+" : thumbprint);
 			var matches = Regex.Matches(result.Output, pattern,
@@ -86,7 +87,7 @@ namespace SslCertBinding.Net.Sample.Tests
 			return endPoints;
 		}
 
-		private static CommandResult ExecCommand(string arguments, bool throwExcepton) {
+		private static async Task<CommandResult> ExecCommand(string arguments, bool throwExcepton) {
 			var psi = new ProcessStartInfo("netsh") {
 				Arguments = arguments,
 				CreateNoWindow = true,
@@ -106,7 +107,7 @@ namespace SslCertBinding.Net.Sample.Tests
 				process.BeginOutputReadLine();
 				process.BeginErrorReadLine();
 
-				process.WaitForExit();
+				await process.WaitForExitAsync();
 
 				commandResult = new CommandResult { ExitCode = process.ExitCode, Output = outputBuilder.ToString() };
 			}
@@ -116,8 +117,8 @@ namespace SslCertBinding.Net.Sample.Tests
 			return commandResult;
 		}
 
-		private static void ExecDelete(IPEndPoint ipPort) {
-			ExecCommand(string.Format("http delete sslcert {0}", ipPort), true);
+		private static Task<CommandResult> ExecDelete(IPEndPoint ipPort) {
+			return ExecCommand(string.Format("http delete sslcert {0}", ipPort), true);
 		}
 	}
 }
