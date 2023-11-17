@@ -4,12 +4,16 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <NeutralLanguage>en</NeutralLanguage>
+    <Deterministic>true</Deterministic>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>KeyFile.snk</AssemblyOriginatorKeyFile>  
   </PropertyGroup>
   <PropertyGroup>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageId>$(AssemblyName)</PackageId>
     <Title>$(AssemblyName)</Title>
-    <Version>2.0.0-beta</Version>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
     <Authors>Serghei Gorodetki</Authors>
     <Company />
     <Description>Provides a simple API to add, remove or retrieve bindings between a https port and a SSL certificate. This library can be considered as a programmatic alternative to Windows command line tools 'netsh http show|add|delete sslcert' or 'httpcfg query|set|delete ssl'. Note, the library works on the Windows platform only.</Description>
@@ -17,17 +21,18 @@
     <PackageProjectUrl>http://github.com/segor/SslCertBinding.Net</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>KeyFile.snk</AssemblyOriginatorKeyFile>
     <PackageTags>SSL;certificate;binding;Windows;netsh;httpapi</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
+  <PropertyGroup>    
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-    <AnalysisLevel>6.0-recommended</AnalysisLevel>    
+    <AnalysisLevel>6.0-recommended</AnalysisLevel>
+    <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <RunCodeAnalysis>false</RunCodeAnalysis>
@@ -45,8 +50,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <PackageReference Include="MinVer" Version="4.3.0">
       <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 </Project>
