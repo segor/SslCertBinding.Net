@@ -6,6 +6,9 @@ using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net
 {
+#if NET5_0_OR_GREATER
+	[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
 	public class CertificateBindingConfiguration : ICertificateBindingConfiguration
 	{
 		public IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null) {
