@@ -5,7 +5,10 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace SslCertBinding.Net.Sample
 {
-	class Program
+#if NET5_0_OR_GREATER
+	[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
+    class Program
 	{
 		private static void Main(string[] args) {
 #if NET5_0_OR_GREATER

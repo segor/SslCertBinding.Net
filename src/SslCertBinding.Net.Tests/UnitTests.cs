@@ -10,7 +10,10 @@ using SslCertBinding.Net.Sample.Tests.Properties;
 namespace SslCertBinding.Net.Sample.Tests
 {
     [TestClass]
-    [DoNotParallelize()]    
+    [DoNotParallelize()]
+#if NET5_0_OR_GREATER
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
     public class UnitTests
     {
         [TestMethod]
