@@ -3,29 +3,29 @@ SslCertBinding.Net is a library for .NET and Windows and provides a simple API t
 
 This library can be considered as a programmatic alternative to Windows command line tools `netsh http show|add|delete sslcert` or `httpcfg query|set|delete ssl`. 
 
-**Important: The library uses Win32 API and works on the Windows platform only.**
+**Important: The library uses the Win32 API and works on the Windows platform only.**
 
 | **main** | **dev** |
 |:--|:--|
 | [![Build status - master](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Amaster+event%3Apush) [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=fase)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") | [![Build status - dev](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=dev&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Adev+event%3Apush) [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=true)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") |
 
 ## Installation
-SslCertBinding.Net is available as a [NuGet package](http://www.nuget.org/packages/SslCertBinding.Net/).
+To get started, add the [SslCertBinding.Net](https://www.nuget.org/packages/SslCertBinding.Net/) NuGet package to your project by running the following command:
 
-```powershell
-Install-Package SslCertBinding.Net
+```sh
+dotnet add package SslCertBinding.Net
 ```
 
 ## Usage
+You can add, update or delete a SSL certificate binding by using the `CertificateBindingConfiguration` class as shown below:
 ```c#
-ICertificateBindingConfiguration config = new CertificateBindingConfiguration();
+var config = new CertificateBindingConfiguration();
 var ipPort = new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443); 
 var certificateThumbprint = "372680E4AEC4A57CAE698307347C65D3CE38AF60";
 var appId = Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a");
 
 // add a new binding record
-config.Bind( new CertificateBinding(
-	certificateThumbprint, StoreName.My, ipPort, appId));
+config.Bind( new CertificateBinding(certificateThumbprint, StoreName.My, ipPort, appId) );
 
 // get the binding record
 var certificateBinding = config.Query(ipPort)[0];
@@ -37,6 +37,7 @@ config.Bind(certificateBinding);
 // remove the binding record
 config.Delete(ipPort);
 ```
+
 ## FAQ
 
 ### Why unit tests are failing on my PC?
