@@ -42,4 +42,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Nuget Package
-        path: src\SslCertBinding.Net\bin\Release\*.?nupkg
+        path: src\SslCertBinding.Net\bin\Release\*nupkg
