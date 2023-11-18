@@ -17,6 +17,7 @@ jobs:
       NUGET_XMLDOC_MODE: skip
 
       Solution_Path: src\SslCertBinding.Net.sln
+      Nuget_Output_Path: src\SslCertBinding.Net\bin\Release\*nupkg
 
     steps:
     - name: Checkout
@@ -42,4 +43,4 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: Nuget Package
-        path: src\SslCertBinding.Net\bin\Release\*nupkg
+        path: $env:Nuget_Output_Path

@@ -3,10 +3,17 @@ SslCertBinding.Net is a library for .NET and Windows and provides a simple API t
 
 This library can be considered as a programmatic alternative to Windows command line tools `netsh http show|add|delete sslcert` or `httpcfg query|set|delete ssl`. 
 
+**Important: The library uses Win32 API and works on the Windows platform only.**
+
+| **main** | **dev** |
+|:--|:--|
+| [![Build status - master](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Amaster+event%3Apush) [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=fase)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") | [![Build status - dev](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=dev&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Adev+event%3Apush) [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=true)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") |
+
 ## Installation
 SslCertBinding.Net is available as a [NuGet package](http://www.nuget.org/packages/SslCertBinding.Net/).
+
 ```powershell
-Install-Package SslCertBinding.Net -Pre
+Install-Package SslCertBinding.Net
 ```
 
 ## Usage
