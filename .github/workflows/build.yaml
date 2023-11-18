@@ -1,0 +1,45 @@
+name: build
+
+on: [push, workflow_dispatch]
+
+jobs:
+
+  build-and-test:
+    name: Build and test   
+
+    runs-on: windows-latest
+    env:      
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+      DOTNET_NOLOGO: true
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+      NUGET_XMLDOC_MODE: skip
+
+      Solution_Path: src\SslCertBinding.Net.sln
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore NuGet packages
+      run: dotnet restore "$env:Solution_Path"
+
+    - name: Build all targets
+      run: dotnet build "$env:Solution_Path" -c Release --no-restore
+   
+    - name: Execute unit tests
+      run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore -l "console;verbosity=detailed" 
+   
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: Nuget Package
+        path: src\SslCertBinding.Net\bin\Release\*.?nupkg
