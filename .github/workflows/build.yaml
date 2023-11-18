@@ -17,7 +17,7 @@ jobs:
       NUGET_XMLDOC_MODE: skip
 
       Solution_Path: src\SslCertBinding.Net.sln
-      Nuget_Output_Path: src\SslCertBinding.Net\bin\Release\*nupkg
+      Nuget_Artefact_Path: src\SslCertBinding.Net\bin\Release\*nupkg
 
     steps:
     - name: Checkout
@@ -42,5 +42,6 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: Nuget Package
-        path: $env:Nuget_Output_Path
+        name: Nuget Packages
+        path: ${{ env.Nuget_Artefact_Path }}
+        if-no-files-found: error
