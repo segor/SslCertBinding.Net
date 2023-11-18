@@ -19,13 +19,17 @@
     <Description>Provides a simple API to add, remove or retrieve bindings between a https port and a SSL certificate. This library can be considered as a programmatic alternative to Windows command line tools 'netsh http show|add|delete sslcert' or 'httpcfg query|set|delete ssl'. Note, the library works on the Windows platform only.</Description>
     <Copyright>$(Authors)</Copyright>
     <PackageProjectUrl>http://github.com/segor/SslCertBinding.Net</PackageProjectUrl>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>SSL;certificate;binding;Windows;netsh;httpapi</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <PropertyGroup>    
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
