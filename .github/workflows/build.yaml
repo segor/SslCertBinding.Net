@@ -37,11 +37,26 @@ jobs:
       run: dotnet build "$env:Solution_Path" -c Release --no-restore
    
     - name: Execute unit tests
-      run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore -l "console;verbosity=detailed" 
+      run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+    - name: Code Coverage Report
+      uses: irongut/CodeCoverageSummary@v1.3.0
+      with:
+        filename: coverage/**/coverage.cobertura.xml
+        badge: true
+        fail_below_min: true
+        format: markdown
+        hide_branch_rate: false
+        hide_complexity: false
+        indicators: true
+        output: both
+        thresholds: '60 80'
    
     - name: Upload build artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: Nuget Packages
-        path: ${{ env.Nuget_Artefact_Path }}
+        name: Build artifacts
+        path: |
+            ${{ env.Nuget_Artefact_Path }}
+            coverage/**/coverage.cobertura.xml
         if-no-files-found: error
