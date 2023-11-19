@@ -8,7 +8,7 @@ namespace SslCertBinding.Net.Sample
 #if NET5_0_OR_GREATER
 	[System.Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif
-    class Program
+    static class Program
 	{
 		private static void Main(string[] args) {
 #if NET5_0_OR_GREATER

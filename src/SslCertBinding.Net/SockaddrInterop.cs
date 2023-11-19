@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net
 {
-	internal class SockaddrInterop
+	internal static class SockaddrInterop
 	{
 		/// <summary>
 		/// Creates an unmanaged sockaddr structure to pass to a WinAPI function.
