@@ -2,8 +2,6 @@
   <PropertyGroup>
     <TargetFrameworks>net462;net6.0-windows;net6.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <RootNamespace>SslCertBinding.Net.Sample.Tests</RootNamespace>
-    <AssemblyName>SslCertBinding.Net.Sample.Tests</AssemblyName>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
     <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>

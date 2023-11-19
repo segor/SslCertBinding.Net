@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace SslCertBinding.Net.Sample.Tests
+namespace SslCertBinding.Net.Tests
 {
 	public class CertConfigCmd
 	{

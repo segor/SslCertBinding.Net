@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace SslCertBinding.Net.Sample.Tests
+namespace SslCertBinding.Net.Tests
 {
     internal static class ProcessExtensions
     {

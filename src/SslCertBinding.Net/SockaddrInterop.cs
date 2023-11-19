@@ -49,7 +49,7 @@ namespace SslCertBinding.Net
 					ipEndPointAny = new IPEndPoint(IPAddress.IPv6Any, 0);
 					break;
 				default:
-					throw new ArgumentOutOfRangeException(nameof(pSockaddrStructure), "Unknown address family");
+					throw new ArgumentOutOfRangeException(nameof(pSockaddrStructure), $"Unsupported address family: {addressFamily}");
 			}
 
 

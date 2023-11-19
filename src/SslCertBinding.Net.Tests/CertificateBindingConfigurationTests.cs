@@ -1,25 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SslCertBinding.Net.Sample.Tests.Properties;
+using SslCertBinding.Net.Tests.Properties;
 
-namespace SslCertBinding.Net.Sample.Tests
+namespace SslCertBinding.Net.Tests
 {
     [TestClass]
     [DoNotParallelize()]
 #if NET5_0_OR_GREATER
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif
-    public class UnitTests
+    public class CertificateBindingConfigurationTests
     {
         [TestMethod]
-        public async Task QueryOne()
+        [DataRow("0.0.0.0")]
+        [DataRow("::")]
+        public async Task QueryOne(string ip)
         {
-            var ipPort = await GetEndpointWithFreeRandomPort();
+            var ipPort = await GetEndpointWithFreeRandomPort(ip);
             var appId = Guid.NewGuid();
 
             await CertConfigCmd.Add(new CertConfigCmd.Options
@@ -49,6 +52,15 @@ namespace SslCertBinding.Net.Sample.Tests
             Assert.AreEqual(null, binding.Options.SslCtlStoreName);
             Assert.AreEqual(false, binding.Options.UseDsMappers);
             Assert.AreEqual(false, binding.Options.VerifyRevocationWithCachedCertificateOnly);
+        }
+
+        [TestMethod]
+        public void QueryNone()
+        {
+            var notFoundIpPort = new IPEndPoint(0, IPEndPoint.MaxPort);
+            var config = new CertificateBindingConfiguration();
+            var bindingsByIpPort = config.Query(notFoundIpPort);
+            Assert.AreEqual(0, bindingsByIpPort.Count);
         }
 
         [TestMethod]
@@ -190,6 +202,24 @@ namespace SslCertBinding.Net.Sample.Tests
                 ipPort, _testingCertThumbprint, appId.ToString("B"));
 
             AssertOutput(result.Output, expectedOutput);
+        }
+
+        [TestMethod]
+        public void DeleteNullCollectionArgument()
+        {
+            void delete()
+            {
+                var config = new CertificateBindingConfiguration();
+                config.Delete((IReadOnlyCollection<IPEndPoint>)null);
+            }
+            Assert.ThrowsException<ArgumentNullException>(delete, "'ipPort' cannot be null.", "ipPort");            
+        }
+
+        [TestMethod]
+        public void DeleteEmptyCollectionArgument()
+        {
+            var config = new CertificateBindingConfiguration();
+            config.Delete(Array.Empty<IPEndPoint>());
         }
 
         [TestMethod]
@@ -343,7 +373,8 @@ namespace SslCertBinding.Net.Sample.Tests
                 {
                     if (!(await CertConfigCmd.IpPortIsPresentInConfig(ipPort)))
                         return ipPort;
-                }            }
+                }            
+            }
 
             return null;
         }
