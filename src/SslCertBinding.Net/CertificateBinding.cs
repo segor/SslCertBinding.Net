@@ -36,23 +36,17 @@ namespace SslCertBinding.Net
 		/// </summary>
 		public BindingOptions Options { get; private set; }
 
-		public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = null)
+		public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = default)
 			: this(certificateThumbprint, certificateStoreName.ToString(), ipPort, appId, options) { }
 
-		public CertificateBinding(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = null) {
-
-			if (certificateThumbprint == null) throw new ArgumentNullException("certificateThumbprint");
-			if (ipPort == null) throw new ArgumentNullException("ipPort");
-
-			if (certificateStoreName == null) {
-				// StoreName of null is assumed to be My / Personal
-				// https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
-				certificateStoreName = "MY";
+		public CertificateBinding(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = default) {
+            if (string.IsNullOrEmpty(certificateThumbprint)) {
+				throw new ArgumentException($"'{nameof(certificateThumbprint)}' cannot be null or empty.", nameof(certificateThumbprint));
 			}
 
 			Thumbprint = certificateThumbprint;
-			StoreName = certificateStoreName;
-			IpPort = ipPort;
+			StoreName = certificateStoreName ?? "MY"; // StoreName of null is assumed to be My / Personal. See https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
+			IpPort = ipPort ?? throw new ArgumentNullException(nameof(ipPort));
 			AppId = appId;
 			Options = options ?? new BindingOptions();
 		}

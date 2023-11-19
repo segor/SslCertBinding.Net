@@ -5,9 +5,19 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace SslCertBinding.Net.Sample
 {
-	class Program
+#if NET5_0_OR_GREATER
+	[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
+    static class Program
 	{
 		private static void Main(string[] args) {
+#if NET5_0_OR_GREATER
+			if (!OperatingSystem.IsWindows()){
+				Console.WriteLine("The current OS is not supported!");
+				return;
+			}
+#endif
+
 			var configuration = new CertificateBindingConfiguration();
 
 			string command = args.Length > 0 ? args[0].ToLowerInvariant() : string.Empty;
@@ -34,14 +44,14 @@ namespace SslCertBinding.Net.Sample
 			var ipEndPoint = args.Length > 1 ? ParseIpEndPoint(args[1]) : null;
 			var certificateBindings = configuration.Query(ipEndPoint);
 			foreach (var info in certificateBindings){
-				X509Store store;
-				if (!stores.TryGetValue(info.StoreName, out store)){
-					store = new X509Store(info.StoreName, StoreLocation.LocalMachine);
-					store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
-					stores.Add(info.StoreName, store);
-				}
+                if (!stores.TryGetValue(info.StoreName, out X509Store store))
+                {
+                    store = new X509Store(info.StoreName, StoreLocation.LocalMachine);
+                    store.Open(OpenFlags.ReadOnly | OpenFlags.OpenExistingOnly);
+                    stores.Add(info.StoreName, store);
+                }
 
-				var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, info.Thumbprint, false)[0];
+                var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, info.Thumbprint, false)[0];
 				string certStr = String.Format(
 @" IP:port        : {2}
  Thumbprint     : {0}
@@ -70,8 +80,8 @@ namespace SslCertBinding.Net.Sample
 
 		private static void Bind(string[] args, CertificateBindingConfiguration configuration){
 			var endPoint = ParseIpEndPoint(args[3]);
-			var updated = configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
-			Console.WriteLine(updated ? "The binding record has been successfully updated." : "The binding record has been successfully added.");
+			configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
+			Console.WriteLine("The binding record has been successfully applied.");
 		}
 
 		private static void Delete(string[] args, CertificateBindingConfiguration configuration){

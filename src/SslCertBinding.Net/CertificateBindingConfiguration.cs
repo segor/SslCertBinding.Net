@@ -1,22 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net
 {
+#if NET5_0_OR_GREATER
+	[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+#endif
 	public class CertificateBindingConfiguration : ICertificateBindingConfiguration
 	{
-		public CertificateBinding[] Query(IPEndPoint ipPort = null) {
+		public IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null) {
 			if (ipPort == null) 
 				return QueryInternal();
 
 			var info = QueryExact(ipPort);
-			return info == null ? new CertificateBinding[0] : new[] { info };
+			return info == null ? Array.Empty<CertificateBinding>() : new[] { info };
 		}
 
-		public bool Bind(CertificateBinding binding) {
-			bool bindingUpdated = false;
+		public void Bind(CertificateBinding binding) {			
 			HttpApi.CallHttpApi(
 				delegate {
 
@@ -77,7 +80,6 @@ namespace SslCertBinding.Net
 								Marshal.SizeOf(configSslSet),
 								IntPtr.Zero);
 							HttpApi.ThrowWin32ExceptionIfError(retVal);
-							bindingUpdated = true;
 						}
 					} finally {
 						Marshal.FreeCoTaskMem(pInputConfigInfo);
@@ -87,17 +89,16 @@ namespace SslCertBinding.Net
 							sockAddrHandle.Free();
 					}
 				});
-			return bindingUpdated;
 		}
 
 		public void Delete(IPEndPoint endPoint) {
 			Delete(new[] { endPoint });
 		}
 
-		public void Delete(IPEndPoint[] endPoints) {
+		public void Delete(IReadOnlyCollection<IPEndPoint> endPoints) {
 			if (endPoints == null)
-				throw new ArgumentNullException("endPoints");
-			if (endPoints.Length == 0)
+				throw new ArgumentNullException(nameof(endPoints));
+			if (endPoints.Count == 0)
 				return;
 
 			HttpApi.CallHttpApi(
@@ -105,7 +106,7 @@ namespace SslCertBinding.Net
 				foreach (var ipPort in endPoints) {
 					GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
 					IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-					HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
+					var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
 
 					var configSslSet = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET {
 						KeyDesc = httpServiceConfigSslKey
@@ -200,7 +201,7 @@ namespace SslCertBinding.Net
 			return result;
 		}
 
-		private static CertificateBinding[] QueryInternal() {
+		private static List<CertificateBinding> QueryInternal() {
 			var result = new List<CertificateBinding>();
 
 			HttpApi.CallHttpApi(
@@ -266,7 +267,7 @@ namespace SslCertBinding.Net
 
 				});
 
-			return result.ToArray();
+			return result;
 		}
 
 		private static CertificateBinding CreateCertificateBindingInfo(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET configInfo) {
@@ -311,8 +312,8 @@ namespace SslCertBinding.Net
 		}
 
 		private static bool HasFlag<T>(T value, T flag) where T : IConvertible {
-			var uintValue = Convert.ToUInt32(value);
-			var uintFlag = Convert.ToUInt32(flag);
+			var uintValue = Convert.ToUInt32(value, CultureInfo.InvariantCulture);
+			var uintFlag = Convert.ToUInt32(flag, CultureInfo.InvariantCulture);
 			return HasFlag(uintValue, uintFlag);
 		}
 	}

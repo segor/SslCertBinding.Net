@@ -21,7 +21,9 @@ namespace SslCertBinding.Net
 			try {
 				body();
 			} finally {
+#pragma warning disable CA1806
 				HttpTerminate(HTTP_INITIALIZE_CONFIG, IntPtr.Zero);
+#pragma warning restore CA1806
 			}
 		}
 

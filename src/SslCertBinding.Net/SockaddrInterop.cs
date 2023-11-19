@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net
 {
-	internal class SockaddrInterop
+	internal static class SockaddrInterop
 	{
 		/// <summary>
 		/// Creates an unmanaged sockaddr structure to pass to a WinAPI function.
@@ -49,7 +49,7 @@ namespace SslCertBinding.Net
 					ipEndPointAny = new IPEndPoint(IPAddress.IPv6Any, 0);
 					break;
 				default:
-					throw new ArgumentOutOfRangeException("pSockaddrStructure", "Unknown address family");
+					throw new ArgumentOutOfRangeException(nameof(pSockaddrStructure), $"Unsupported address family: {addressFamily}");
 			}
 
 

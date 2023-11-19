@@ -2,7 +2,7 @@ using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 
-namespace SslCertBinding.Net.Sample.Tests
+namespace SslCertBinding.Net.Tests
 {
 	public static class IpEndpointTools
 	{
@@ -13,8 +13,10 @@ namespace SslCertBinding.Net.Sample.Tests
 		}
 
 		public static IPEndPoint ParseIpEndPoint(string str) {
-			var ipPort = str.Split(':');
-			return new IPEndPoint(IPAddress.Parse(ipPort[0]), int.Parse(ipPort[1]));
+			var portSeparatorIndex = str.LastIndexOf(':');
+			var ip = str.Substring(0, portSeparatorIndex);
+			var port = str.Substring(portSeparatorIndex + 1);
+			return new IPEndPoint(IPAddress.Parse(ip), int.Parse(port));
 		}
 	}
 }
