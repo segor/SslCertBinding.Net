@@ -5,9 +5,10 @@ This library can be considered as a programmatic alternative to Windows command 
 
 **Important: The library uses the Win32 API and works on the Windows platform only.**
 
-| **main** | **dev** |
-|:--|:--|
-| [![Build status - master](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Amaster+event%3Apush) [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=fase)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") | [![Build status - dev](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=dev&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Adev+event%3Apush) [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=true)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") |
+| Branch | Package | Status|
+|:--|:--|:--|
+| main | [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=fase)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") | [![Build status - master](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Amaster+event%3Apush) [![CodeQL](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml) |
+| dev  | [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=true)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") | [![Build status - dev](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=dev&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Adev+event%3Apush) [![CodeQL](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml/badge.svg?branch=dev&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml) [![codecov](https://codecov.io/gh/segor/SslCertBinding.Net/graph/badge.svg?token=034FB4PVRL)](https://codecov.io/gh/segor/SslCertBinding.Net) |
 
 ## Installation
 To get started, add the [SslCertBinding.Net](https://www.nuget.org/packages/SslCertBinding.Net/) NuGet package to your project by running the following command:
