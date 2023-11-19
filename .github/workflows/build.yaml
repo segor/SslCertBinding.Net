@@ -1,25 +1,35 @@
 name: Build and Test
 
-on: [push, workflow_dispatch]
+on: 
+  push:
+    branches: [ master, dev ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+  NUGET_XMLDOC_MODE: skip
+
+  Dotnet_Sdk_Version: 8.0.x
 
 jobs:
 
   build-and-test:
-    name: Build and test   
+    name: Build and test
 
     runs-on: windows-latest
-    env:      
-      DOTNET_CLI_TELEMETRY_OPTOUT: true
-      DOTNET_GENERATE_ASPNET_CERTIFICATE: false
-      DOTNET_NOLOGO: true
-      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-      DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
-      NUGET_XMLDOC_MODE: skip
-
+    env:
       Solution_Path: src\SslCertBinding.Net.sln
       Nuget_Artefact_Path: src\SslCertBinding.Net\bin\Release\*nupkg
 
     steps:
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -28,7 +38,7 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: ${{ env.Dotnet_Sdk_Version }}
 
     - name: Restore NuGet packages
       run: dotnet restore "$env:Solution_Path"
@@ -39,16 +49,44 @@ jobs:
     - name: Execute unit tests
       run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
+    - name: Upload NuGet artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: NuGet-packages
+        path: ${{ env.Nuget_Artefact_Path }}
+        if-no-files-found: error
+
+    - name: Upload code coverage artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: Coverage-results
+        path: coverage/**/coverage.cobertura.xml
+        if-no-files-found: error
+
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v3
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-   
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+
+  publish-nuget:
+    name: Publish NuGet packages to NuGet.org
+    needs: [ build-and-test]
+    runs-on: ubuntu-latest
+    if: |
+      github.event.repository.fork == false &&
+      startsWith(github.ref, 'refs/tags/')
+
+    steps:
+
+    - name: Download Nuget packages
+      uses: actions/download-artifact@v3
       with:
-        name: Build artifacts
-        path: |
-            ${{ env.Nuget_Artefact_Path }}
-            coverage/**/coverage.cobertura.xml
-        if-no-files-found: error
+        name: NuGet-packages
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version:  ${{ env.Dotnet_Sdk_Version }}
+
+    - name: Push NuGet packages to NuGet.org
+      run: dotnet nuget push "*.nupkg" --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate --source https://api.nuget.org/v3/index.json
