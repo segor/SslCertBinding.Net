@@ -13,7 +13,7 @@ namespace SslCertBinding.Net.Tests
             void constructor() => _ = new CertificateBinding(String.Empty, "MY", new IPEndPoint(0, 0), Guid.Empty);
 
             var ex = Assert.Throws<ArgumentException>(constructor);
-            Assert.That(ex.Message, Does.StartWith("'certificateThumbprint' cannot be null or empty."));
+            Assert.That(ex.Message, Does.StartWith("Value cannot be null or empty."));
             Assert.That(ex.ParamName, Is.EqualTo("certificateThumbprint"));
         }
 
