@@ -1,30 +1,30 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using NUnit.Framework;
 using System;
 using System.Net;
 
 namespace SslCertBinding.Net.Tests
 {
-    [TestClass()]
+    [TestFixture]
     public class CertificateBindingTests
     {
-        [TestMethod()]
+        [Test]
         public void ConstructorWithEmptyCertificateThumbprintShouldFailTest()
         {
-            void constructor()
-            {
-                new CertificateBinding(String.Empty, "MY", new IPEndPoint(0, 0), Guid.Empty);
-            }
-            Assert.ThrowsException<ArgumentException>(constructor, "'certificateThumbprint' cannot be null or empty.", "certificateThumbprint" );
+            void constructor() => _ = new CertificateBinding(String.Empty, "MY", new IPEndPoint(0, 0), Guid.Empty);
+
+            var ex = Assert.Throws<ArgumentException>(constructor);
+            Assert.That(ex.Message, Does.StartWith("'certificateThumbprint' cannot be null or empty."));
+            Assert.That(ex.ParamName, Is.EqualTo("certificateThumbprint"));
         }
 
-        [TestMethod()]
+        [Test]
         public void ConstructorWithNullIpportShouldFailTest()
         {
-            void constructor()
-            {
-                new CertificateBinding("certificateThumbprint", "MY", null, Guid.Empty);
-            }
-            Assert.ThrowsException<ArgumentNullException>(constructor, "'ipPort' cannot be null.", "ipPort");
+            void constructor() => _ = new CertificateBinding("certificateThumbprint", "MY", null, Guid.Empty);
+
+            var ex = Assert.Throws<ArgumentNullException>(constructor);
+            Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
+            Assert.That(ex.ParamName, Is.EqualTo("ipPort"));
         }
     }
 }
