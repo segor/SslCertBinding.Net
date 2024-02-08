@@ -36,7 +36,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.Dotnet_Sdk_Version }}
 
@@ -50,21 +50,21 @@ jobs:
       run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
 
     - name: Upload NuGet artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: NuGet-packages
         path: ${{ env.Nuget_Artefact_Path }}
         if-no-files-found: error
 
     - name: Upload code coverage artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Coverage-results
         path: coverage/**/coverage.cobertura.xml
         if-no-files-found: error
 
     - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
@@ -84,7 +84,7 @@ jobs:
         name: NuGet-packages
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v3
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version:  ${{ env.Dotnet_Sdk_Version }}
 
