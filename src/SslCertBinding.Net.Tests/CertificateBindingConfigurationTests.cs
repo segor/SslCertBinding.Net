@@ -1,25 +1,25 @@
-﻿using System;
+﻿using NUnit.Framework;
+using SslCertBinding.Net.Tests.Properties;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SslCertBinding.Net.Tests.Properties;
 
 namespace SslCertBinding.Net.Tests
 {
-    [TestClass]
-    [DoNotParallelize()]
+    [TestFixture]
+    [NonParallelizable]
 #if NET5_0_OR_GREATER
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif
     public class CertificateBindingConfigurationTests
-    {
-        [TestMethod]
-        [DataRow("0.0.0.0")]
-        [DataRow("::")]
+    {        
+        [TestCase("0.0.0.0")]
+        [TestCase("::")]
         public async Task QueryOne(string ip)
         {
             var ipPort = await GetEndpointWithFreeRandomPort(ip);
@@ -35,35 +35,35 @@ namespace SslCertBinding.Net.Tests
 
             var config = new CertificateBindingConfiguration();
             var bindingsByIpPort = config.Query(ipPort);
-            Assert.AreEqual(1, bindingsByIpPort.Count);
+            Assert.That(bindingsByIpPort.Count, Is.EqualTo(1));
             var binding = bindingsByIpPort[0];
-            Assert.AreEqual(appId, binding.AppId);
-            Assert.AreEqual(ipPort, binding.IpPort);
-            Assert.AreEqual("MY", binding.StoreName);
-            Assert.AreEqual(_testingCertThumbprint, binding.Thumbprint);
-            Assert.AreEqual(false, binding.Options.DoNotPassRequestsToRawFilters);
-            Assert.AreEqual(false, binding.Options.DoNotVerifyCertificateRevocation);
-            Assert.AreEqual(false, binding.Options.EnableRevocationFreshnessTime);
-            Assert.AreEqual(false, binding.Options.NegotiateCertificate);
-            Assert.AreEqual(false, binding.Options.NoUsageCheck);
-            Assert.AreEqual(TimeSpan.Zero, binding.Options.RevocationFreshnessTime);
-            Assert.AreEqual(TimeSpan.Zero, binding.Options.RevocationUrlRetrievalTimeout);
-            Assert.AreEqual(null, binding.Options.SslCtlIdentifier);
-            Assert.AreEqual(null, binding.Options.SslCtlStoreName);
-            Assert.AreEqual(false, binding.Options.UseDsMappers);
-            Assert.AreEqual(false, binding.Options.VerifyRevocationWithCachedCertificateOnly);
+            Assert.That(binding.AppId, Is.EqualTo(appId));
+            Assert.That(binding.IpPort, Is.EqualTo(ipPort));
+            Assert.That(binding.StoreName, Is.EqualTo("MY"));
+            Assert.That(binding.Thumbprint, Is.EqualTo(_testingCertThumbprint));
+            Assert.That(binding.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
+            Assert.That(binding.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
+            Assert.That(binding.Options.EnableRevocationFreshnessTime, Is.EqualTo(false));
+            Assert.That(binding.Options.NegotiateCertificate, Is.EqualTo(false));
+            Assert.That(binding.Options.NoUsageCheck, Is.EqualTo(false));
+            Assert.That(binding.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(binding.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(binding.Options.SslCtlIdentifier, Is.EqualTo(null));
+            Assert.That(binding.Options.SslCtlStoreName, Is.EqualTo(null));
+            Assert.That(binding.Options.UseDsMappers, Is.EqualTo(false));
+            Assert.That(binding.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
         }
 
-        [TestMethod]
+        [Test]
         public void QueryNone()
         {
             var notFoundIpPort = new IPEndPoint(0, IPEndPoint.MaxPort);
             var config = new CertificateBindingConfiguration();
             var bindingsByIpPort = config.Query(notFoundIpPort);
-            Assert.AreEqual(0, bindingsByIpPort.Count);
+            Assert.That(bindingsByIpPort.Count, Is.EqualTo(0));
         }
 
-        [TestMethod]
+        [Test]
         public async Task QueryAll()
         {
             var ipPort1 = await GetEndpointWithFreeRandomPort();
@@ -94,43 +94,43 @@ namespace SslCertBinding.Net.Tests
             var config = new CertificateBindingConfiguration();
             var allBindings = config.Query();
             var addedBindings = allBindings.Where(b => b.IpPort.Equals(ipPort1) || b.IpPort.Equals(ipPort2)).ToArray();
-            Assert.AreEqual(2, addedBindings.Length);
+            Assert.That(addedBindings.Length, Is.EqualTo(2));
             var binding1 = addedBindings[0];
-            Assert.AreEqual(appId1, binding1.AppId);
-            Assert.AreEqual(ipPort1, binding1.IpPort);
-            Assert.AreEqual(StoreName.My.ToString(), binding1.StoreName);
-            Assert.AreEqual(_testingCertThumbprint, binding1.Thumbprint);
-            Assert.AreEqual(false, binding1.Options.DoNotPassRequestsToRawFilters);
-            Assert.AreEqual(false, binding1.Options.DoNotVerifyCertificateRevocation);
-            Assert.AreEqual(false, binding1.Options.EnableRevocationFreshnessTime);
-            Assert.AreEqual(false, binding1.Options.NegotiateCertificate);
-            Assert.AreEqual(false, binding1.Options.NoUsageCheck);
-            Assert.AreEqual(TimeSpan.Zero, binding1.Options.RevocationFreshnessTime);
-            Assert.AreEqual(TimeSpan.Zero, binding1.Options.RevocationUrlRetrievalTimeout);
-            Assert.AreEqual(null, binding1.Options.SslCtlIdentifier);
-            Assert.AreEqual(null, binding1.Options.SslCtlStoreName);
-            Assert.AreEqual(false, binding1.Options.UseDsMappers);
-            Assert.AreEqual(false, binding1.Options.VerifyRevocationWithCachedCertificateOnly);
+            Assert.That(binding1.AppId, Is.EqualTo(appId1));
+            Assert.That(binding1.IpPort, Is.EqualTo(ipPort1));
+            Assert.That(binding1.StoreName, Is.EqualTo(StoreName.My.ToString()));
+            Assert.That(binding1.Thumbprint, Is.EqualTo(_testingCertThumbprint));
+            Assert.That(binding1.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
+            Assert.That(binding1.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
+            Assert.That(binding1.Options.EnableRevocationFreshnessTime, Is.EqualTo(false));
+            Assert.That(binding1.Options.NegotiateCertificate, Is.EqualTo(false));
+            Assert.That(binding1.Options.NoUsageCheck, Is.EqualTo(false));
+            Assert.That(binding1.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(binding1.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(binding1.Options.SslCtlIdentifier, Is.EqualTo(null));
+            Assert.That(binding1.Options.SslCtlStoreName, Is.EqualTo(null));
+            Assert.That(binding1.Options.UseDsMappers, Is.EqualTo(false));
+            Assert.That(binding1.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
 
             var binding2 = addedBindings[1];
-            Assert.AreEqual(appId2, binding2.AppId);
-            Assert.AreEqual(ipPort2, binding2.IpPort);
-            Assert.AreEqual(StoreName.AuthRoot.ToString(), binding2.StoreName);
-            Assert.AreEqual(_testingCertThumbprint, binding2.Thumbprint);
-            Assert.AreEqual(false, binding2.Options.DoNotPassRequestsToRawFilters);
-            Assert.AreEqual(false, binding2.Options.DoNotVerifyCertificateRevocation);
-            Assert.AreEqual(true, binding2.Options.EnableRevocationFreshnessTime);
-            Assert.AreEqual(true, binding2.Options.NegotiateCertificate);
-            Assert.AreEqual(true, binding2.Options.NoUsageCheck);
-            Assert.AreEqual(TimeSpan.FromSeconds(100), binding2.Options.RevocationFreshnessTime);
-            Assert.AreEqual(TimeSpan.Zero, binding2.Options.RevocationUrlRetrievalTimeout);
-            Assert.AreEqual(null, binding2.Options.SslCtlIdentifier);
-            Assert.AreEqual(null, binding2.Options.SslCtlStoreName);
-            Assert.AreEqual(false, binding2.Options.UseDsMappers);
-            Assert.AreEqual(true, binding2.Options.VerifyRevocationWithCachedCertificateOnly);
+            Assert.That(binding2.AppId, Is.EqualTo(appId2));
+            Assert.That(binding2.IpPort, Is.EqualTo(ipPort2));
+            Assert.That(binding2.StoreName, Is.EqualTo(StoreName.AuthRoot.ToString()));
+            Assert.That(binding2.Thumbprint, Is.EqualTo(_testingCertThumbprint));
+            Assert.That(binding2.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
+            Assert.That(binding2.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
+            Assert.That(binding2.Options.EnableRevocationFreshnessTime, Is.EqualTo(true));
+            Assert.That(binding2.Options.NegotiateCertificate, Is.EqualTo(true));
+            Assert.That(binding2.Options.NoUsageCheck, Is.EqualTo(true));
+            Assert.That(binding2.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.FromSeconds(100)));
+            Assert.That(binding2.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
+            Assert.That(binding2.Options.SslCtlIdentifier, Is.EqualTo(null));
+            Assert.That(binding2.Options.SslCtlStoreName, Is.EqualTo(null));
+            Assert.That(binding2.Options.UseDsMappers, Is.EqualTo(false));
+            Assert.That(binding2.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(true));
         }
 
-        [TestMethod]
+        [Test]
         public async Task AddWithDefaultOptions()
         {
             var ipPort = await GetEndpointWithFreeRandomPort();
@@ -140,7 +140,7 @@ namespace SslCertBinding.Net.Tests
             configuration.Bind(new CertificateBinding(_testingCertThumbprint, StoreName.My, ipPort, appId));
 
             var result = await CertConfigCmd.Show(ipPort);
-            Assert.IsTrue(result.IsSuccessfull);
+            Assert.That(result.IsSuccessfull, Is.True);
             var expectedOutput = string.Format(
                 @"  IP:port                 : {0} 
     Certificate Hash        : {1}
@@ -160,7 +160,7 @@ namespace SslCertBinding.Net.Tests
             AssertOutput(result.Output, expectedOutput);
         }
 
-        [TestMethod]
+        [Test]
         public async Task AddWithNonDefaultOptions()
         {
             var ipPort = await GetEndpointWithFreeRandomPort();
@@ -184,7 +184,7 @@ namespace SslCertBinding.Net.Tests
             configuration.Bind(binding);
 
             var result = await CertConfigCmd.Show(ipPort);
-            Assert.IsTrue(result.IsSuccessfull);
+            Assert.That(result.IsSuccessfull, Is.True);
             var expectedOutput = string.Format(
                 @"  IP:port                 : {0} 
     Certificate Hash        : {1}
@@ -204,7 +204,7 @@ namespace SslCertBinding.Net.Tests
             AssertOutput(result.Output, expectedOutput);
         }
 
-        [TestMethod]
+        [Test]
         public void DeleteNullCollectionArgument()
         {
             void delete()
@@ -212,17 +212,20 @@ namespace SslCertBinding.Net.Tests
                 var config = new CertificateBindingConfiguration();
                 config.Delete((IReadOnlyCollection<IPEndPoint>)null);
             }
-            Assert.ThrowsException<ArgumentNullException>(delete, "'ipPort' cannot be null.", "ipPort");            
+
+            var ex = Assert.Throws<ArgumentNullException>(delete);
+            Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
+            Assert.That(ex.ParamName, Is.EqualTo("endPoints"));
         }
 
-        [TestMethod]
+        [Test]
         public void DeleteEmptyCollectionArgument()
         {
             var config = new CertificateBindingConfiguration();
             config.Delete(Array.Empty<IPEndPoint>());
         }
 
-        [TestMethod]
+        [Test]
         public async Task DeleteOne()
         {
             var ipPort = await GetEndpointWithFreeRandomPort();
@@ -238,10 +241,10 @@ namespace SslCertBinding.Net.Tests
 
             var config = new CertificateBindingConfiguration();
             config.Delete(ipPort);
-            Assert.IsFalse(await CertConfigCmd.IpPortIsPresentInConfig(ipPort));
+            Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort), Is.False);
         }
 
-        [TestMethod]
+        [Test]
         public async Task DeleteMany()
         {
             var ipPort1 = await GetEndpointWithFreeRandomPort();            
@@ -266,11 +269,11 @@ namespace SslCertBinding.Net.Tests
 
             var config = new CertificateBindingConfiguration();
             config.Delete(new[] { ipPort1, ipPort2 });
-            Assert.IsFalse(await CertConfigCmd.IpPortIsPresentInConfig(ipPort1));
-            Assert.IsFalse(await CertConfigCmd.IpPortIsPresentInConfig(ipPort2));
+            Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort1), Is.False);
+            Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort2), Is.False);
         }
 
-        [TestMethod]
+        [Test]
         public async Task UpdateAsync()
         {
             var ipPort = await GetEndpointWithFreeRandomPort();
@@ -302,7 +305,7 @@ namespace SslCertBinding.Net.Tests
             configuration.Bind(binding);
 
             var result = await CertConfigCmd.Show(ipPort);
-            Assert.IsTrue(result.IsSuccessfull);
+            Assert.That(result.IsSuccessfull, Is.True);
             var expectedOutput = string.Format(
                 @"  IP:port                 : {0} 
     Certificate Hash        : {1}
@@ -325,10 +328,10 @@ namespace SslCertBinding.Net.Tests
 
         private static string _testingCertThumbprint = string.Empty;
 
-        [TestInitialize]
+        [SetUp]
         public void TestInitialize()
         {
-            Assert.IsTrue(WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid), "These unit-tests shoud run with Adminstrator permissions.");
+            Assert.That(WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid), Is.True, "These unit-tests shoud run with Adminstrator permissions.");
 
             DoInLocalMachineCertStores(certStore => {
                 var cert = new X509Certificate2(Resources.certCA, string.Empty, X509KeyStorageFlags.MachineKeySet);
@@ -337,7 +340,7 @@ namespace SslCertBinding.Net.Tests
             });
         }
 
-        [TestCleanup]
+        [TearDown]
         public async Task TestCleanup()
         {
             await CertConfigCmd.RemoveIpEndPoints(_testingCertThumbprint);
@@ -381,8 +384,10 @@ namespace SslCertBinding.Net.Tests
 
         private static void AssertOutput(string actualOutput, string expectedOutput)
         {
-            Assert.IsTrue(actualOutput.ToLowerInvariant().Replace(" ", "")
-                .Contains(expectedOutput.ToLowerInvariant().Replace(" ", "")));
+            var regEx = new Regex(@"\s+");
+            string actualAdjOutput = regEx.Replace(actualOutput, " ").Trim();
+            string expectedAdjOutput = regEx.Replace(expectedOutput, " ").Trim();
+            Assert.That(actualAdjOutput, Does.Contain(expectedAdjOutput).IgnoreCase);
         }
     }
 }
