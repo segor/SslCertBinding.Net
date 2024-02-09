@@ -3,13 +3,15 @@ name: "CodeQL"
 on:
   push:
     branches: [ "dev", "master" ]
+    paths:
+      - 'src/**'
   pull_request:
-    branches: [main]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.txt'
+    branches: [main]    
+    paths:
+      - 'src/**'
   schedule:
     - cron: '22 1 * * 1'
+  workflow_dispatch:
 
 jobs:
   analyze:
