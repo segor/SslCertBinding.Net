@@ -4,8 +4,12 @@ on:
   push:
     branches: [ master, dev ]
     tags: [ 'v*' ]
+    paths:
+      - 'src/**'
   pull_request:
     branches: [ master ]
+    paths:
+      - 'src/**'
   workflow_dispatch:
 
 env:
