@@ -11,13 +11,6 @@ namespace SslCertBinding.Net.Sample
     static class Program
 	{
 		private static void Main(string[] args) {
-#if NET5_0_OR_GREATER
-			if (!OperatingSystem.IsWindows()){
-				Console.WriteLine("The current OS is not supported!");
-				return;
-			}
-#endif
-
 			var configuration = new CertificateBindingConfiguration();
 
 			string command = args.Length > 0 ? args[0].ToLowerInvariant() : string.Empty;

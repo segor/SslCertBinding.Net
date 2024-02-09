@@ -15,8 +15,12 @@ namespace SslCertBinding.Net
 		}
 
 		public static void CallHttpApi(Action body) {
-			uint retVal = HttpInitialize(HttpApiVersion, HTTP_INITIALIZE_CONFIG, IntPtr.Zero);
-			ThrowWin32ExceptionIfError(retVal);
+			try{
+				uint retVal = HttpInitialize(HttpApiVersion, HTTP_INITIALIZE_CONFIG, IntPtr.Zero);
+				ThrowWin32ExceptionIfError(retVal);
+			} catch (DllNotFoundException ex) {
+				throw new PlatformNotSupportedException("Windows HTTP Server API is not supported on this platform.", ex);			
+            }
 
 			try {
 				body();
@@ -27,12 +31,10 @@ namespace SslCertBinding.Net
 			}
 		}
 
-		public delegate void Action();
-
 		#region DllImport
 
 		[DllImport("httpapi.dll", SetLastError = true)]
-		public static extern uint HttpInitialize(
+		private static extern uint HttpInitialize(
 			HTTPAPI_VERSION version,
 			uint flags,
 			IntPtr pReserved);
