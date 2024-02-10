@@ -20,7 +20,7 @@ namespace SslCertBinding.Net
 				ThrowWin32ExceptionIfError(retVal);
 			} catch (DllNotFoundException ex) {
 				throw new PlatformNotSupportedException("Windows HTTP Server API is not supported on this platform.", ex);			
-            }
+			}
 
 			try {
 				body();
