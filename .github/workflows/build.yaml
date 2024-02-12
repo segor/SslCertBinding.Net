@@ -99,10 +99,14 @@ jobs:
 
     - name: Execute unit tests
       run: dotnet test "${{ env.Artifact_Dir }}bin/SslCertBinding.Net.Tests/release_net6.0/SslCertBinding.Net.Tests.dll" --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
-    
+ 
+    - name: Workaround for codecov/feedback#263
+      run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
       with:
+        env_vars: OS
         flags: unittests
         token: ${{ secrets.CODECOV_TOKEN }}
 
