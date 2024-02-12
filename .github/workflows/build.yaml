@@ -55,9 +55,6 @@ jobs:
     - name: Execute unit tests
       run: dotnet test "${{ env.Solution_Path }}" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
 
-    - name: Dry run of pushing NuGet packages
-      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --skip-duplicate --source "${{ env.NugetPackage_Dir }}"
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -103,6 +100,9 @@ jobs:
             !${{ env.Artifact_Dir }}obj/
         if-no-files-found: error
         overwrite: true
+
+    - name: Dry run of pushing NuGet packages
+      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --skip-duplicate --source "${{ env.GITHUB_WORKSPACE }}/${{ env.NugetPackage_Dir }}"
 
   publish-codecov:
     name: Publish coverage reports to Codecov
