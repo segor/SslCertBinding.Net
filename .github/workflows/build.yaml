@@ -47,13 +47,13 @@ jobs:
         dotnet-version: ${{ env.Dotnet_Sdk_Version }}
 
     - name: Restore NuGet packages
-      run: dotnet restore "${{ env:Solution_Path }}"
+      run: dotnet restore "${{ env.Solution_Path }}"
 
     - name: Build all targets
-      run: dotnet build "${{ env:Solution_Path }}" -c Release --no-restore
+      run: dotnet build "${{ env.Solution_Path }}" -c Release --no-restore
    
     - name: Execute unit tests
-      run: dotnet test "${{ env:Solution_Path }}" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
+      run: dotnet test "${{ env.Solution_Path }}" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
 
     - name: Dry run of pushing NuGet packages
       run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --skip-duplicate --source "${{ env.NugetPackage_Dir }}"
@@ -92,7 +92,7 @@ jobs:
         path: ${{ env.Artifact_Dir }}
 
     - name: Execute unit tests
-      run: dotnet test "${{ env:Solution_Path }}" -c Release --framework "${{ env:DotNetFrameworkToTestOnLinux }}" --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
+      run: dotnet test "${{ env.Solution_Path }}" -c Release --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
