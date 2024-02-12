@@ -24,6 +24,7 @@ env:
   Solution_Path: src/SslCertBinding.Net.sln
   Artifact_Dir: src/artifacts/
   Coverage_Dir: src/artifacts/coverage/
+  NugetPackage_Dir: src/artifacts/package/
   DotNetFrameworkToTestOnLinux: net6.0
 
 jobs:
@@ -46,13 +47,16 @@ jobs:
         dotnet-version: ${{ env.Dotnet_Sdk_Version }}
 
     - name: Restore NuGet packages
-      run: dotnet restore "$env:Solution_Path"
+      run: dotnet restore "${{ env:Solution_Path }}"
 
     - name: Build all targets
-      run: dotnet build "$env:Solution_Path" -c Release --no-restore
+      run: dotnet build "${{ env:Solution_Path }}" -c Release --no-restore
    
     - name: Execute unit tests
-      run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
+      run: dotnet test "${{ env:Solution_Path }}" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
+
+    - name: Dry run of pushing NuGet packages
+      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --skip-duplicate --source "${{ env.NugetPackage_Dir }}"
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -81,13 +85,14 @@ jobs:
       with:
         dotnet-version: ${{ env.Dotnet_Sdk_Version }}
 
-    - uses: actions/download-artifact@v4
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
       with:
         name: Output artifacts
         path: ${{ env.Artifact_Dir }}
 
     - name: Execute unit tests
-      run: dotnet test "$env:Solution_Path" -c Release --framework "$env:DotNetFrameworkToTestOnLinux" --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
+      run: dotnet test "${{ env:Solution_Path }}" -c Release --framework "${{ env:DotNetFrameworkToTestOnLinux }}" --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -107,7 +112,8 @@ jobs:
 
     steps:
 
-    - uses: actions/download-artifact@v4
+    - name: Download artifacts
+      uses: actions/download-artifact@v4
       with:
         name: Output artifacts
         path: ${{ env.Artifact_Dir }}
@@ -127,10 +133,11 @@ jobs:
 
     steps:
 
-    - name: Download Nuget packages
+    - name: Download artifacts
       uses: actions/download-artifact@v4
       with:
-        name: NuGet-packages
+        name: Output artifacts
+        path: ${{ env.Artifact_Dir }}
 
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
@@ -138,4 +145,4 @@ jobs:
         dotnet-version:  ${{ env.Dotnet_Sdk_Version }}
 
     - name: Push NuGet packages to NuGet.org
-      run: dotnet nuget push "*.nupkg" --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate --source https://api.nuget.org/v3/index.json
