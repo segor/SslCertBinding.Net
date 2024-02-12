@@ -21,16 +21,17 @@ env:
   NUGET_XMLDOC_MODE: skip
 
   Dotnet_Sdk_Version: 8.0.x
+  Solution_Path: src/SslCertBinding.Net.sln
+  Artifact_Dir: src/artifacts/
+  Coverage_Dir: ${{ env.Artifact_Dir }}coverage/
+  Bin_Dir: ${{ env.Artifact_Dir }}bin/
 
 jobs:
 
-  build-and-test:
-    name: Build and test
+  build:
+    name: Build and test on Windows
 
     runs-on: windows-latest
-    env:
-      Solution_Path: src\SslCertBinding.Net.sln
-      Nuget_Artefact_Path: src\SslCertBinding.Net\bin\Release\*nupkg
 
     steps:
 
@@ -51,21 +52,60 @@ jobs:
       run: dotnet build "$env:Solution_Path" -c Release --no-restore
    
     - name: Execute unit tests
-      run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+      run: dotnet test "$env:Solution_Path" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
 
-    - name: Upload NuGet artifacts
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: NuGet-packages
-        path: ${{ env.Nuget_Artefact_Path }}
+        name: Output artifacts
+        path: |
+            ${{ env.Artifact_Dir }}
+            !${{ env.Artifact_Dir }}/obj/
         if-no-files-found: error
 
-    - name: Upload code coverage artifacts
+  test-on-linux:
+    name: Test on Linux
+    needs: [ build ]
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.Dotnet_Sdk_Version }}
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: Output artifacts
+        path: ${{ env.Artifact_Dir }}
+
+    - name: Execute unit tests
+      run: dotnet test "$env:Bin_Dir" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
+    
+    - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Coverage-results
-        path: coverage/**/coverage.cobertura.xml
+        name: Output artifacts
+        path: |
+            ${{ env.Artifact_Dir }}
+            !${{ env.Artifact_Dir }}obj/
         if-no-files-found: error
+        overwrite: true
+
+  publish-codecov:
+    name: Publish coverage reports to Codecov
+    needs: [ build, test-on-linux]
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - uses: actions/download-artifact@v4
+      with:
+        name: Output artifacts
+        path: ${{ env.Artifact_Dir }}
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
@@ -74,7 +114,7 @@ jobs:
 
   publish-nuget:
     name: Publish NuGet packages to NuGet.org
-    needs: [ build-and-test]
+    needs: [ build, test-on-linux]
     runs-on: ubuntu-latest
     if: |
       github.event.repository.fork == false &&
