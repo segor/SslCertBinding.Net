@@ -23,8 +23,8 @@ env:
   Dotnet_Sdk_Version: 8.0.x
   Solution_Path: src/SslCertBinding.Net.sln
   Artifact_Dir: src/artifacts/
-  Coverage_Dir: ${{ env.Artifact_Dir }}coverage/
-  Bin_Dir: ${{ env.Artifact_Dir }}bin/
+  Coverage_Dir: src/artifacts/coverage/
+  Bin_Dir: src/artifacts/bin/
 
 jobs:
 
