@@ -23,6 +23,7 @@ env:
   Dotnet_Sdk_Version: 8.0.x
   Solution_Path: src/SslCertBinding.Net.sln
   Artifact_Dir: src/artifacts/
+  Obj_Dir: src/artifacts/obj/
   Coverage_Dir: src/artifacts/coverage/
   NugetPackage_Dir: src/artifacts/package/
   DotNetFrameworkToTestOnLinux: net6.0
@@ -55,13 +56,21 @@ jobs:
     - name: Execute unit tests
       run: dotnet test "${{ env.Solution_Path }}" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
 
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        env_vars: OS
+        flags: unittests
+        token: ${{ secrets.CODECOV_TOKEN }}
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: Output artifacts
         path: |
             ${{ env.Artifact_Dir }}
-            !${{ env.Artifact_Dir }}/obj/
+            !${{ env.Obj_Dir }}
+            !${{ env.Coverage_Dir }}
         if-no-files-found: error
 
   test-on-linux:
@@ -91,37 +100,14 @@ jobs:
     - name: Execute unit tests
       run: dotnet test "${{ env.Artifact_Dir }}bin/SslCertBinding.Net.Tests/release_net6.0/SslCertBinding.Net.Tests.dll" --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
     
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: Output artifacts
-        path: |
-            ${{ env.Artifact_Dir }}
-            !${{ env.Artifact_Dir }}obj/
-        if-no-files-found: error
-        overwrite: true
-
-    - name: Dry run of pushing NuGet packages
-      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --skip-duplicate --source "${{ github.workspace }}/${{ env.NugetPackage_Dir }}"
-
-  publish-codecov:
-    name: Publish coverage reports to Codecov
-    needs: [ build, test-on-linux]
-
-    runs-on: ubuntu-latest
-
-    steps:
-
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: Output artifacts
-        path: ${{ env.Artifact_Dir }}
-
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      with:
+        flags: unittests
+        token: ${{ secrets.CODECOV_TOKEN }}
+
+    - name: Dry run of pushing NuGet packages
+      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --source "${{ github.workspace }}/${{ env.NugetPackage_Dir }}"
 
   publish-nuget:
     name: Publish NuGet packages to NuGet.org
