@@ -72,10 +72,10 @@ jobs:
 
     steps:
 
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+    # - name: Checkout
+    #   uses: actions/checkout@v4
+    #   with:
+    #     fetch-depth: 0
 
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
@@ -89,7 +89,7 @@ jobs:
         path: ${{ env.Artifact_Dir }}
 
     - name: Execute unit tests
-      run: dotnet test "${{ env.Solution_Path }}" -c Release --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
+      run: dotnet test "${{ env.Artifact_Dir }}bin/SslCertBinding.Net.Tests/release_net6.0/SslCertBinding.Net.Tests.dll" --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
@@ -102,7 +102,7 @@ jobs:
         overwrite: true
 
     - name: Dry run of pushing NuGet packages
-      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --skip-duplicate --source "${{ env.GITHUB_WORKSPACE }}/${{ env.NugetPackage_Dir }}"
+      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --skip-duplicate --source "${{ github.workspace }}/${{ env.NugetPackage_Dir }}"
 
   publish-codecov:
     name: Publish coverage reports to Codecov
