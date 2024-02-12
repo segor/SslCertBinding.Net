@@ -24,7 +24,7 @@ env:
   Solution_Path: src/SslCertBinding.Net.sln
   Artifact_Dir: src/artifacts/
   Coverage_Dir: src/artifacts/coverage/
-  Bin_Dir: src/artifacts/bin/
+  DotNetFrameworkToTestOnLinux: net6.0
 
 jobs:
 
@@ -71,6 +71,11 @@ jobs:
 
     steps:
 
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
@@ -82,7 +87,7 @@ jobs:
         path: ${{ env.Artifact_Dir }}
 
     - name: Execute unit tests
-      run: dotnet test "$env:Bin_Dir" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
+      run: dotnet test "$env:Solution_Path" -c Release --framework "$env:DotNetFrameworkToTestOnLinux" --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
