@@ -81,24 +81,24 @@ jobs:
 
     steps:
 
-    # - name: Checkout
-    #   uses: actions/checkout@v4
-    #   with:
-    #     fetch-depth: 0
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: ${{ env.Dotnet_Sdk_Version }}
 
-    - name: Download artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: Output artifacts
-        path: ${{ env.Artifact_Dir }}
+    # - name: Download artifacts
+    #   uses: actions/download-artifact@v4
+    #   with:
+    #     name: Output artifacts
+    #     path: ${{ env.Artifact_Dir }}
 
     - name: Execute unit tests
-      run: dotnet test "${{ env.Artifact_Dir }}bin/SslCertBinding.Net.Tests/release_net6.0/SslCertBinding.Net.Tests.dll" --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --verbosity normal --collect:"XPlat Code Coverage" --results-directory ${{ env.Coverage_Dir }}
+      run: dotnet test "${{ env.Solution_Path }}" -c Release --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
  
     - name: Workaround for codecov/feedback#263
       run: git config --global --add safe.directory "${{ github.workspace }}"
