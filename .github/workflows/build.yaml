@@ -59,7 +59,7 @@ jobs:
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
       with:
-        env_vars: OS
+        env_vars: ${{ runner.os }}
         flags: unittests
         token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -91,27 +91,15 @@ jobs:
       with:
         dotnet-version: ${{ env.Dotnet_Sdk_Version }}
 
-    # - name: Download artifacts
-    #   uses: actions/download-artifact@v4
-    #   with:
-    #     name: Output artifacts
-    #     path: ${{ env.Artifact_Dir }}
-
     - name: Execute unit tests
       run: dotnet test "${{ env.Solution_Path }}" -c Release --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
  
-    - name: Workaround for codecov/feedback#263
-      run: git config --global --add safe.directory "${{ github.workspace }}"
-
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v4
       with:
-        env_vars: OS
+        env_vars: ${{ runner.os }}
         flags: unittests
         token: ${{ secrets.CODECOV_TOKEN }}
-
-    - name: Dry run of pushing NuGet packages
-      run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --source "${{ github.workspace }}/${{ env.NugetPackage_Dir }}"
 
   publish-nuget:
     name: Publish NuGet packages to NuGet.org
