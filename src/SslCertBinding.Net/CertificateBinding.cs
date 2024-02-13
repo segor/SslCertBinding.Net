@@ -40,7 +40,7 @@ namespace SslCertBinding.Net
 			: this(certificateThumbprint, certificateStoreName.ToString(), ipPort, appId, options) { }
 
 		public CertificateBinding(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = default) {
-            if (string.IsNullOrEmpty(certificateThumbprint)) {
+			if (string.IsNullOrEmpty(certificateThumbprint)) {
 				throw new ArgumentException($"Value cannot be null or empty.", nameof(certificateThumbprint));
 			}
 
