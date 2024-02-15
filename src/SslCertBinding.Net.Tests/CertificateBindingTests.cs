@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
-using System;
+﻿using System;
 using System.Net;
+using NUnit.Framework;
 
 namespace SslCertBinding.Net.Tests
 {
@@ -10,7 +10,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ConstructorWithEmptyCertificateThumbprintShouldFailTest()
         {
-            void constructor() => _ = new CertificateBinding(String.Empty, "MY", new IPEndPoint(0, 0), Guid.Empty);
+            void constructor() => _ = new CertificateBinding(string.Empty, "MY", new IPEndPoint(0, 0), Guid.Empty);
 
             var ex = Assert.Throws<ArgumentException>(constructor);
             Assert.That(ex.Message, Does.StartWith("Value cannot be null or empty."));

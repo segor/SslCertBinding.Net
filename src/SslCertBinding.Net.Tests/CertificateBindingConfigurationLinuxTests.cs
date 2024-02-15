@@ -1,6 +1,6 @@
-﻿using NUnit.Framework;
-using System;
+﻿using System;
 using System.Net;
+using NUnit.Framework;
 
 namespace SslCertBinding.Net.Tests
 {
