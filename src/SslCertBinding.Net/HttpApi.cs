@@ -6,8 +6,6 @@ namespace SslCertBinding.Net
 {
     internal class HttpApi
     {
-        // ReSharper disable InconsistentNaming
-
         public static void ThrowWin32ExceptionIfError(uint retVal)
         {
             if (NOERROR != retVal)
@@ -18,9 +16,10 @@ namespace SslCertBinding.Net
 
         public static void CallHttpApi(Action body)
         {
+            const uint flags = HTTP_INITIALIZE_CONFIG;
             try
             {
-                uint retVal = HttpInitialize(HttpApiVersion, HTTP_INITIALIZE_CONFIG, IntPtr.Zero);
+                uint retVal = HttpInitialize(HttpApiVersion, flags, IntPtr.Zero);
                 ThrowWin32ExceptionIfError(retVal);
             }
             catch (DllNotFoundException ex)
@@ -34,9 +33,9 @@ namespace SslCertBinding.Net
             }
             finally
             {
-#pragma warning disable CA1806
-                HttpTerminate(HTTP_INITIALIZE_CONFIG, IntPtr.Zero);
-#pragma warning restore CA1806
+
+                uint retVal = HttpTerminate(flags, IntPtr.Zero);
+                ThrowWin32ExceptionIfError(retVal);
             }
         }
 
@@ -220,6 +219,8 @@ namespace SslCertBinding.Net
 
         #endregion
 
+#pragma warning disable IDE1006 // Naming Styles
         private static readonly HTTPAPI_VERSION HttpApiVersion = new HTTPAPI_VERSION(1, 0);
+#pragma warning restore IDE1006 // Naming Styles
     }
 }

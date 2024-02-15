@@ -1,11 +1,11 @@
-﻿using System;
+﻿#if NET5_0_OR_GREATER
+#pragma warning disable CA1416 // Validate platform compatibility
+using System;
 using System.Net;
 using NUnit.Framework;
 
 namespace SslCertBinding.Net.Tests
 {
-#if NET5_0_OR_GREATER
-#pragma warning disable CA1416 // Validate platform compatibility
     [TestFixture]
     [System.Runtime.Versioning.SupportedOSPlatform("linux")]
     public class CertificateBindingConfigurationLinuxTests
@@ -36,6 +36,6 @@ namespace SslCertBinding.Net.Tests
             Assert.That(ex, Has.InnerException.TypeOf<DllNotFoundException>());
         }
     }
+}
 #pragma warning restore CA1416 // Validate platform compatibility
 #endif
-}

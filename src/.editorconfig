@@ -179,7 +179,7 @@ csharp_space_between_parentheses = false
 csharp_space_between_square_brackets = false
 
 # Namespace preference
-csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_namespace_declarations = block_scoped:warning
 
 # Types: use keywords instead of BCL types, and permit var only when the type is clear
 csharp_style_var_for_built_in_types = false:suggestion
@@ -206,6 +206,7 @@ csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimenta
 csharp_style_prefer_pattern_matching = true:silent
 csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_prefer_extended_property_pattern = true:suggestion
+dotnet_diagnostic.IDE0090.severity = none
 
 # Visual Basic files
 [*.vb]
