@@ -36,23 +36,26 @@ namespace SslCertBinding.Net.Tests
 
             var config = new CertificateBindingConfiguration();
             IReadOnlyList<CertificateBinding> bindingsByIpPort = config.Query(ipPort);
-            Assert.That(bindingsByIpPort.Count, Is.EqualTo(1));
+            Assert.That(bindingsByIpPort, Has.Count.EqualTo(1));
             CertificateBinding binding = bindingsByIpPort[0];
-            Assert.That(binding.AppId, Is.EqualTo(appId));
-            Assert.That(binding.IpPort, Is.EqualTo(ipPort));
-            Assert.That(binding.StoreName, Is.EqualTo("MY"));
-            Assert.That(binding.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
-            Assert.That(binding.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
-            Assert.That(binding.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
-            Assert.That(binding.Options.EnableRevocationFreshnessTime, Is.EqualTo(false));
-            Assert.That(binding.Options.NegotiateCertificate, Is.EqualTo(false));
-            Assert.That(binding.Options.NoUsageCheck, Is.EqualTo(false));
-            Assert.That(binding.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.Zero));
-            Assert.That(binding.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
-            Assert.That(binding.Options.SslCtlIdentifier, Is.EqualTo(null));
-            Assert.That(binding.Options.SslCtlStoreName, Is.EqualTo(null));
-            Assert.That(binding.Options.UseDsMappers, Is.EqualTo(false));
-            Assert.That(binding.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
+            Assert.Multiple(() =>
+            {
+                Assert.That(binding.AppId, Is.EqualTo(appId));
+                Assert.That(binding.IpPort, Is.EqualTo(ipPort));
+                Assert.That(binding.StoreName, Is.EqualTo("MY"));
+                Assert.That(binding.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
+                Assert.That(binding.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
+                Assert.That(binding.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
+                Assert.That(binding.Options.EnableRevocationFreshnessTime, Is.EqualTo(false));
+                Assert.That(binding.Options.NegotiateCertificate, Is.EqualTo(false));
+                Assert.That(binding.Options.NoUsageCheck, Is.EqualTo(false));
+                Assert.That(binding.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.Zero));
+                Assert.That(binding.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
+                Assert.That(binding.Options.SslCtlIdentifier, Is.EqualTo(null));
+                Assert.That(binding.Options.SslCtlStoreName, Is.EqualTo(null));
+                Assert.That(binding.Options.UseDsMappers, Is.EqualTo(false));
+                Assert.That(binding.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
+            });
         }
 
         [Test]
@@ -61,7 +64,7 @@ namespace SslCertBinding.Net.Tests
             var notFoundIpPort = new IPEndPoint(0, IPEndPoint.MaxPort);
             var config = new CertificateBindingConfiguration();
             IReadOnlyList<CertificateBinding> bindingsByIpPort = config.Query(notFoundIpPort);
-            Assert.That(bindingsByIpPort.Count, Is.EqualTo(0));
+            Assert.That(bindingsByIpPort, Is.Empty);
         }
 
         [Test]
@@ -94,41 +97,47 @@ namespace SslCertBinding.Net.Tests
 
             var config = new CertificateBindingConfiguration();
             IReadOnlyList<CertificateBinding> allBindings = config.Query();
-            CertificateBinding[] addedBindings = allBindings.Where(b => b.IpPort.Equals(ipPort1) || b.IpPort.Equals(ipPort2)).ToArray();
-            Assert.That(addedBindings.Length, Is.EqualTo(2));
+            List<CertificateBinding> addedBindings = allBindings.Where(b => b.IpPort.Equals(ipPort1) || b.IpPort.Equals(ipPort2)).ToList();
+            Assert.That(addedBindings, Has.Count.EqualTo(2));
             CertificateBinding binding1 = addedBindings[0];
-            Assert.That(binding1.AppId, Is.EqualTo(appId1));
-            Assert.That(binding1.IpPort, Is.EqualTo(ipPort1));
-            Assert.That(binding1.StoreName, Is.EqualTo(StoreName.My.ToString()));
-            Assert.That(binding1.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
-            Assert.That(binding1.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
-            Assert.That(binding1.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
-            Assert.That(binding1.Options.EnableRevocationFreshnessTime, Is.EqualTo(false));
-            Assert.That(binding1.Options.NegotiateCertificate, Is.EqualTo(false));
-            Assert.That(binding1.Options.NoUsageCheck, Is.EqualTo(false));
-            Assert.That(binding1.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.Zero));
-            Assert.That(binding1.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
-            Assert.That(binding1.Options.SslCtlIdentifier, Is.EqualTo(null));
-            Assert.That(binding1.Options.SslCtlStoreName, Is.EqualTo(null));
-            Assert.That(binding1.Options.UseDsMappers, Is.EqualTo(false));
-            Assert.That(binding1.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
+            Assert.Multiple(() =>
+            {
+                Assert.That(binding1.AppId, Is.EqualTo(appId1));
+                Assert.That(binding1.IpPort, Is.EqualTo(ipPort1));
+                Assert.That(binding1.StoreName, Is.EqualTo(StoreName.My.ToString()));
+                Assert.That(binding1.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
+                Assert.That(binding1.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
+                Assert.That(binding1.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
+                Assert.That(binding1.Options.EnableRevocationFreshnessTime, Is.EqualTo(false));
+                Assert.That(binding1.Options.NegotiateCertificate, Is.EqualTo(false));
+                Assert.That(binding1.Options.NoUsageCheck, Is.EqualTo(false));
+                Assert.That(binding1.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.Zero));
+                Assert.That(binding1.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
+                Assert.That(binding1.Options.SslCtlIdentifier, Is.EqualTo(null));
+                Assert.That(binding1.Options.SslCtlStoreName, Is.EqualTo(null));
+                Assert.That(binding1.Options.UseDsMappers, Is.EqualTo(false));
+                Assert.That(binding1.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
+            });
 
             CertificateBinding binding2 = addedBindings[1];
-            Assert.That(binding2.AppId, Is.EqualTo(appId2));
-            Assert.That(binding2.IpPort, Is.EqualTo(ipPort2));
-            Assert.That(binding2.StoreName, Is.EqualTo(StoreName.AuthRoot.ToString()));
-            Assert.That(binding2.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
-            Assert.That(binding2.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
-            Assert.That(binding2.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
-            Assert.That(binding2.Options.EnableRevocationFreshnessTime, Is.EqualTo(true));
-            Assert.That(binding2.Options.NegotiateCertificate, Is.EqualTo(true));
-            Assert.That(binding2.Options.NoUsageCheck, Is.EqualTo(true));
-            Assert.That(binding2.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.FromSeconds(100)));
-            Assert.That(binding2.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
-            Assert.That(binding2.Options.SslCtlIdentifier, Is.EqualTo(null));
-            Assert.That(binding2.Options.SslCtlStoreName, Is.EqualTo(null));
-            Assert.That(binding2.Options.UseDsMappers, Is.EqualTo(false));
-            Assert.That(binding2.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(true));
+            Assert.Multiple(() =>
+            {
+                Assert.That(binding2.AppId, Is.EqualTo(appId2));
+                Assert.That(binding2.IpPort, Is.EqualTo(ipPort2));
+                Assert.That(binding2.StoreName, Is.EqualTo(StoreName.AuthRoot.ToString()));
+                Assert.That(binding2.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
+                Assert.That(binding2.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
+                Assert.That(binding2.Options.DoNotVerifyCertificateRevocation, Is.EqualTo(false));
+                Assert.That(binding2.Options.EnableRevocationFreshnessTime, Is.EqualTo(true));
+                Assert.That(binding2.Options.NegotiateCertificate, Is.EqualTo(true));
+                Assert.That(binding2.Options.NoUsageCheck, Is.EqualTo(true));
+                Assert.That(binding2.Options.RevocationFreshnessTime, Is.EqualTo(TimeSpan.FromSeconds(100)));
+                Assert.That(binding2.Options.RevocationUrlRetrievalTimeout, Is.EqualTo(TimeSpan.Zero));
+                Assert.That(binding2.Options.SslCtlIdentifier, Is.EqualTo(null));
+                Assert.That(binding2.Options.SslCtlStoreName, Is.EqualTo(null));
+                Assert.That(binding2.Options.UseDsMappers, Is.EqualTo(false));
+                Assert.That(binding2.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(true));
+            });
         }
 
         [Test]
@@ -215,8 +224,11 @@ namespace SslCertBinding.Net.Tests
             }
 
             ArgumentNullException ex = Assert.Throws<ArgumentNullException>(delete);
-            Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
-            Assert.That(ex.ParamName, Is.EqualTo("endPoints"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
+                Assert.That(ex.ParamName, Is.EqualTo("endPoints"));
+            });
         }
 
         [Test]
@@ -270,8 +282,11 @@ namespace SslCertBinding.Net.Tests
 
             var config = new CertificateBindingConfiguration();
             config.Delete(new[] { ipPort1, ipPort2 });
-            Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort1), Is.False);
-            Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort2), Is.False);
+            Assert.Multiple(async () =>
+            {
+                Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort1), Is.False);
+                Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort2), Is.False);
+            });
         }
 
         [Test]
