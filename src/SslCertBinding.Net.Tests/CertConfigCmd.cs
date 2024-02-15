@@ -51,10 +51,9 @@ namespace SslCertBinding.Net.Tests
 
         public static Task<CommandResult> Add(Options options)
         {
-            if (options == null)
-                throw new ArgumentNullException(nameof(options));
-            var sb = new StringBuilder();
+            _ = options ?? throw new ArgumentNullException(nameof(options));
 
+            var sb = new StringBuilder();
             foreach (FieldInfo optionField in options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
                 object valObj = optionField.GetValue(options);

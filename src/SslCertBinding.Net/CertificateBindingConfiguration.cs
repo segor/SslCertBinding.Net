@@ -25,7 +25,6 @@ namespace SslCertBinding.Net
             HttpApi.CallHttpApi(
                 delegate
                 {
-
                     GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(binding.IpPort);
                     IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
                     var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
@@ -109,8 +108,7 @@ namespace SslCertBinding.Net
 
         public void Delete(IReadOnlyCollection<IPEndPoint> endPoints)
         {
-            if (endPoints == null)
-                throw new ArgumentNullException(nameof(endPoints));
+            _ = endPoints ?? throw new ArgumentNullException(nameof(endPoints));
             if (endPoints.Count == 0)
                 return;
 
