@@ -38,9 +38,9 @@ namespace SslCertBinding.Net.Sample
         {
             Console.WriteLine("SSL Certificate bindings:\r\n-------------------------\r\n");
             var stores = new Dictionary<string, X509Store>();
-            var ipEndPoint = args.Length > 1 ? ParseIpEndPoint(args[1]) : null;
-            var certificateBindings = configuration.Query(ipEndPoint);
-            foreach (var info in certificateBindings)
+            IPEndPoint ipEndPoint = args.Length > 1 ? ParseIpEndPoint(args[1]) : null;
+            IReadOnlyList<CertificateBinding> certificateBindings = configuration.Query(ipEndPoint);
+            foreach (CertificateBinding info in certificateBindings)
             {
                 if (!stores.TryGetValue(info.StoreName, out X509Store store))
                 {
@@ -49,7 +49,7 @@ namespace SslCertBinding.Net.Sample
                     stores.Add(info.StoreName, store);
                 }
 
-                var certificate = store.Certificates.Find(X509FindType.FindByThumbprint, info.Thumbprint, false)[0];
+                X509Certificate2 certificate = store.Certificates.Find(X509FindType.FindByThumbprint, info.Thumbprint, false)[0];
                 string certStr = string.Format(CultureInfo.InvariantCulture,
 @" IP:port        : {2}
  Thumbprint     : {0}
@@ -78,21 +78,21 @@ namespace SslCertBinding.Net.Sample
 
         private static void Bind(string[] args, CertificateBindingConfiguration configuration)
         {
-            var endPoint = ParseIpEndPoint(args[3]);
+            IPEndPoint endPoint = ParseIpEndPoint(args[3]);
             configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
             Console.WriteLine("The binding record has been successfully applied.");
         }
 
         private static void Delete(string[] args, CertificateBindingConfiguration configuration)
         {
-            var endPoint = ParseIpEndPoint(args[1]);
+            IPEndPoint endPoint = ParseIpEndPoint(args[1]);
             configuration.Delete(endPoint);
             Console.WriteLine("The binding record has been successfully removed.");
         }
 
         private static IPEndPoint ParseIpEndPoint(string str)
         {
-            var ipPort = str.Split(':');
+            string[] ipPort = str.Split(':');
             return new IPEndPoint(IPAddress.Parse(ipPort[0]), int.Parse(ipPort[1], CultureInfo.InvariantCulture));
         }
     }

@@ -14,7 +14,7 @@ namespace SslCertBinding.Net.Tests
         public void QueryOnLinuxIsNotSupported()
         {
             var config = new CertificateBindingConfiguration();
-            var ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Query());
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Query());
             Assert.That(ex, Has.InnerException.TypeOf<DllNotFoundException>());
         }
 
@@ -23,7 +23,7 @@ namespace SslCertBinding.Net.Tests
         {
             var config = new CertificateBindingConfiguration();
             var endPoint = new IPEndPoint(1, 1);
-            var ex = Assert.Throws<PlatformNotSupportedException>(() => config.Delete(endPoint));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => config.Delete(endPoint));
             Assert.That(ex, Has.InnerException.TypeOf<DllNotFoundException>());
         }
 
@@ -32,7 +32,7 @@ namespace SslCertBinding.Net.Tests
         {
             var config = new CertificateBindingConfiguration();
             var binding = new CertificateBinding("98BC1AACBC38F564B95E1499FA2BA0FC30899A3E", "MY", new IPEndPoint(1, 1), Guid.Empty);
-            var ex = Assert.Throws<PlatformNotSupportedException>(() => config.Bind(binding));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => config.Bind(binding));
             Assert.That(ex, Has.InnerException.TypeOf<DllNotFoundException>());
         }
     }
