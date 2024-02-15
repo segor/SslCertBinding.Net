@@ -16,7 +16,7 @@ namespace SslCertBinding.Net
             if (ipPort == null)
                 return QueryInternal();
 
-            var info = QueryExact(ipPort);
+            CertificateBinding info = QueryExact(ipPort);
             return info == null ? Array.Empty<CertificateBinding>() : new[] { info };
         }
 
@@ -32,7 +32,7 @@ namespace SslCertBinding.Net
 
                     byte[] hash = GetHash(binding.Thumbprint);
                     GCHandle handleHash = GCHandle.Alloc(hash, GCHandleType.Pinned);
-                    var options = binding.Options;
+                    BindingOptions options = binding.Options;
                     var configSslParam = new HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM
                     {
                         AppId = binding.AppId,
@@ -117,7 +117,7 @@ namespace SslCertBinding.Net
             HttpApi.CallHttpApi(
             delegate
             {
-                foreach (var ipPort in endPoints)
+                foreach (IPEndPoint ipPort in endPoints)
                 {
                     GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
                     IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
@@ -288,7 +288,7 @@ namespace SslCertBinding.Net
 
                                     var outputConfigInfo = (HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)Marshal.PtrToStructure(
                                         pOutputConfigInfo, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET));
-                                    var resultItem = CreateCertificateBindingInfo(outputConfigInfo);
+                                    CertificateBinding resultItem = CreateCertificateBindingInfo(outputConfigInfo);
                                     result.Add(resultItem);
                                     token++;
                                 }
@@ -321,7 +321,7 @@ namespace SslCertBinding.Net
             Guid appId = configInfo.ParamDesc.AppId;
             string storeName = configInfo.ParamDesc.pSslCertStoreName;
             IPEndPoint ipPort = SockaddrInterop.ReadSockaddrStructure(configInfo.KeyDesc.pIpPort);
-            var checkModes = configInfo.ParamDesc.DefaultCertCheckMode;
+            HttpApi.CertCheckModes checkModes = configInfo.ParamDesc.DefaultCertCheckMode;
             var options = new BindingOptions
             {
                 DoNotVerifyCertificateRevocation = HasFlag(checkModes, HttpApi.CertCheckModes.DoNotVerifyCertificateRevocation),
@@ -362,8 +362,8 @@ namespace SslCertBinding.Net
 
         private static bool HasFlag<T>(T value, T flag) where T : IConvertible
         {
-            var uintValue = Convert.ToUInt32(value, CultureInfo.InvariantCulture);
-            var uintFlag = Convert.ToUInt32(flag, CultureInfo.InvariantCulture);
+            uint uintValue = Convert.ToUInt32(value, CultureInfo.InvariantCulture);
+            uint uintFlag = Convert.ToUInt32(flag, CultureInfo.InvariantCulture);
             return HasFlag(uintValue, uintFlag);
         }
     }

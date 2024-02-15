@@ -16,9 +16,9 @@ namespace SslCertBinding.Net.Tests
 
         public static IPEndPoint ParseIpEndPoint(string str)
         {
-            var portSeparatorIndex = str.LastIndexOf(':');
-            var ip = str.Substring(0, portSeparatorIndex);
-            var port = str.Substring(portSeparatorIndex + 1);
+            int portSeparatorIndex = str.LastIndexOf(':');
+            string ip = str.Substring(0, portSeparatorIndex);
+            string port = str.Substring(portSeparatorIndex + 1);
             return new IPEndPoint(IPAddress.Parse(ip), int.Parse(port, CultureInfo.InvariantCulture));
         }
     }

@@ -45,7 +45,7 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task<bool> IpPortIsPresentInConfig(IPEndPoint ipPort)
         {
-            var result = await Show(ipPort);
+            CommandResult result = await Show(ipPort);
             return result.IsSuccessfull;
         }
 
@@ -55,7 +55,7 @@ namespace SslCertBinding.Net.Tests
                 throw new ArgumentNullException(nameof(options));
             var sb = new StringBuilder();
 
-            foreach (var optionField in options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
+            foreach (FieldInfo optionField in options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
                 object valObj = optionField.GetValue(options);
                 if (valObj != null)
@@ -77,7 +77,7 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task RemoveIpEndPoints(string thumbprint)
         {
-            foreach (var ipEndPoint in await GetIpEndPoints(thumbprint))
+            foreach (IPEndPoint ipEndPoint in await GetIpEndPoints(thumbprint))
             {
                 await ExecDelete(ipEndPoint);
             }
@@ -85,14 +85,14 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task<IPEndPoint[]> GetIpEndPoints(string thumbprint = null)
         {
-            var result = await Show(throwExcepton: true);
-            var pattern = string.Format(CultureInfo.InvariantCulture, @"\s+IP:port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+",
+            CommandResult result = await Show(throwExcepton: true);
+            string pattern = string.Format(CultureInfo.InvariantCulture, @"\s+IP:port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+",
                 string.IsNullOrEmpty(thumbprint) ? @"\S+" : thumbprint);
-            var matches = Regex.Matches(result.Output, pattern,
+            MatchCollection matches = Regex.Matches(result.Output, pattern,
                 RegexOptions.IgnoreCase | RegexOptions.CultureInvariant |
                 RegexOptions.Singleline);
 
-            var endPoints = matches.Cast<Match>().Select(match => IpEndpointTools.ParseIpEndPoint(match.Groups[1].Value)).ToArray();
+            IPEndPoint[] endPoints = matches.Cast<Match>().Select(match => IpEndpointTools.ParseIpEndPoint(match.Groups[1].Value)).ToArray();
             return endPoints;
         }
 
