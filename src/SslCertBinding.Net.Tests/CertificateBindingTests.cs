@@ -26,8 +26,11 @@ namespace SslCertBinding.Net.Tests
             void constructor() => _ = new CertificateBinding("certificateThumbprint", "MY", null, Guid.Empty);
 
             ArgumentNullException ex = Assert.Throws<ArgumentNullException>(constructor);
-            Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
-            Assert.That(ex.ParamName, Is.EqualTo("ipPort"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
+                Assert.That(ex.ParamName, Is.EqualTo("ipPort"));
+            });
         }
     }
 }
