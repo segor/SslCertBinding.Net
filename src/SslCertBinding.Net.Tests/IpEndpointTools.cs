@@ -2,10 +2,11 @@
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 
 namespace SslCertBinding.Net.Tests
 {
-    public static class IpEndpointTools
+    internal static class IpEndpointTools
     {
         public static bool IpEndpointIsAvailableForListening(IPEndPoint ipPort)
         {
@@ -22,4 +23,6 @@ namespace SslCertBinding.Net.Tests
             return new IPEndPoint(IPAddress.Parse(ip), int.Parse(port, CultureInfo.InvariantCulture));
         }
     }
+
+    
 }

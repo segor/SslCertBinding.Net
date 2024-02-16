@@ -10,7 +10,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ConstructorWithEmptyCertificateThumbprintShouldFailTest()
         {
-            void constructor() => _ = new CertificateBinding(string.Empty, "MY", new IPEndPoint(0, 0), Guid.Empty);
+            void constructor() => _ = new CertificateBinding(string.Empty, "MY", new IPEndPoint(0, 0).ToBindingEndPoint(), Guid.Empty);
 
             ArgumentException ex = Assert.Throws<ArgumentException>(constructor);
             Assert.Multiple(() =>
