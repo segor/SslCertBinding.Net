@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace SslCertBinding.Net.Tests
 {
-    public class CertConfigCmd
+    internal class CertConfigCmd
     {
         public class CommandResult
         {
@@ -22,7 +22,8 @@ namespace SslCertBinding.Net.Tests
         public class Options
         {
 #pragma warning disable CA1051 // Do not declare visible instance fields
-            public IPEndPoint ipport;
+#pragma warning disable CS0649 // Field 'CertConfigCmd.Options.verifyclientcertrevocation' is never assigned to, and will always have its default value
+            public DnsEndPoint ipport;
             public string certhash;
             public Guid appid;
             public string certstorename;
@@ -35,15 +36,16 @@ namespace SslCertBinding.Net.Tests
             public string sslctlstorename;
             public bool? dsmapperusage;
             public bool? clientcertnegotiation;
+#pragma warning restore CS0649 // Field 'CertConfigCmd.Options.verifyclientcertrevocation' is never assigned to, and will always have its default value
 #pragma warning restore CA1051 // Do not declare visible instance fields
         }
 
-        public static Task<CommandResult> Show(IPEndPoint ipPort = null, bool throwExcepton = false)
+        public static Task<CommandResult> Show(BindingEndPoint ipPort = null, bool throwExcepton = false)
         {
             return ExecCommand(string.Format(CultureInfo.InvariantCulture, "http show sslcert {0}", ipPort), throwExcepton);
         }
 
-        public static async Task<bool> IpPortIsPresentInConfig(IPEndPoint ipPort)
+        public static async Task<bool> IpPortIsPresentInConfig(BindingEndPoint ipPort)
         {
             CommandResult result = await Show(ipPort);
             return result.IsSuccessfull;
@@ -51,7 +53,7 @@ namespace SslCertBinding.Net.Tests
 
         public static Task<CommandResult> Add(Options options)
         {
-            _ = options ?? throw new ArgumentNullException(nameof(options));
+            options = options ?? throw new ArgumentNullException(nameof(options));
 
             var sb = new StringBuilder();
             foreach (FieldInfo optionField in options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))

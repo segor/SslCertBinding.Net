@@ -17,21 +17,21 @@ namespace SslCertBinding.Net
     public class CertificateBindingConfiguration : ICertificateBindingConfiguration
     {
         /// <summary>
-        /// Queries the SSL certificate bindings for the specified IP endpoint.
+        /// Queries the SSL certificate bindings for the specified endpoint.
         /// </summary>
-        /// <param name="ipPort">The IP endpoint to query. If <c>null</c>, all bindings are returned.</param>
+        /// <param name="endPoint">The endpoint to query. If <c>null</c>, all bindings are returned.</param>
         /// <returns>A list of <see cref="CertificateBinding"/> objects.</returns>
-        public IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null)
+        public IReadOnlyList<CertificateBinding> Query(DnsEndPoint endPoint = null)
         {
-            if (ipPort == null)
+            if (endPoint == null)
                 return QueryInternal();
 
-            CertificateBinding info = QueryExact(ipPort);
+            CertificateBinding info = QueryExact(endPoint.ToIPEndPoint());
             return info == null ? Array.Empty<CertificateBinding>() : new[] { info };
         }
 
         /// <summary>
-        /// Binds an SSL certificate to an IP endpoint.
+        /// Binds an SSL certificate to an endpoint.
         /// </summary>
         /// <param name="binding">The <see cref="CertificateBinding"/> object containing the binding information.</param> 
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="binding"/> is null.</exception>
@@ -46,7 +46,7 @@ namespace SslCertBinding.Net
             HttpApi.CallHttpApi(
                 delegate
                 {
-                    GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(binding.IpPort);
+                    GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(((BindingEndPoint)binding.EndPoint).ToIPEndPoint());
                     IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
                     var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
 
@@ -123,12 +123,12 @@ namespace SslCertBinding.Net
         }
 
         /// <summary>
-        /// Deletes an SSL certificate binding for the specified IP endpoint.
+        /// Deletes an SSL certificate binding for the specified endpoint.
         /// </summary>
-        /// <param name="endPoint">The IP endpoint to delete the binding for.</param>
+        /// <param name="endPoint">The endpoint to delete the binding for.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="endPoint"/> is null.</exception>
         /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
-        public void Delete(IPEndPoint endPoint)
+        public void Delete(DnsEndPoint endPoint)
         {
             if (endPoint is null)
             {
@@ -139,22 +139,23 @@ namespace SslCertBinding.Net
         }
 
         /// <summary>
-        /// Deletes SSL certificate bindings for the specified IP endpoints.
+        /// Deletes SSL certificate bindings for the specified endpoints.
         /// </summary>
         /// <param name="endPoints">The collection of IP endpoints to delete the bindings for.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="endPoints"/> is null.</exception>
         /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
-        public void Delete(IReadOnlyCollection<IPEndPoint> endPoints)
+        public void Delete(IReadOnlyCollection<DnsEndPoint> endPoints)
         {
-            _ = endPoints ?? throw new ArgumentNullException(nameof(endPoints));
+            endPoints = endPoints ?? throw new ArgumentNullException(nameof(endPoints));
             if (endPoints.Count == 0)
                 return;
 
             HttpApi.CallHttpApi(
             delegate
             {
-                foreach (IPEndPoint ipPort in endPoints)
+                foreach (DnsEndPoint endPoint in endPoints)
                 {
+                    IPEndPoint ipPort = endPoint.ToIPEndPoint();
                     GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
                     IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
                     var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
@@ -372,7 +373,7 @@ namespace SslCertBinding.Net
                 UseDsMappers = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER),
                 DoNotPassRequestsToRawFilters = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER),
             };
-            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort, appId, options);
+            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort.ToDnsEndPoint(), appId, options);
             return result;
         }
 
