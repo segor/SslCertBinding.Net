@@ -22,7 +22,7 @@ namespace SslCertBinding.Net.Tests
         public void DeleteOnLinuxIsNotSupported()
         {
             var config = new CertificateBindingConfiguration();
-            var endPoint = new IPEndPoint(1, 1).ToDnsEndPoint();
+            var endPoint = new IPEndPoint(1, 1).ToBindingEndPoint();
             PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => config.Delete(endPoint));
             Assert.That(ex, Has.InnerException.TypeOf<DllNotFoundException>());
         }

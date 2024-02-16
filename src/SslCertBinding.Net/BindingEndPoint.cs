@@ -12,22 +12,21 @@ namespace SslCertBinding.Net
         public bool IsIpEndpoint => _ipEndPoint != null;
         public IPAddress IPAddress => _ipEndPoint?.Address;
 
-        public BindingEndPoint(string host, int port)
-            : this(host, port, TryGetIPAddressFromHostArgument(host))
+        public BindingEndPoint(string host, int port) : this(
+            host, port,
+            TryGetIPAddressFromHost(host.ThrowIfNull(nameof(host))))
         {
         }
 
-        public BindingEndPoint(IPAddress ipAddress, int port)
-            : this(ipAddress.ToString(), port, ipAddress)
+        public BindingEndPoint(IPAddress ipAddress, int port): this(
+            ipAddress.ThrowIfNull(nameof(ipAddress)).ToString(),
+            port, ipAddress)
         {
-            if (ipAddress is null)
-            {
-                throw new ArgumentNullException(nameof(ipAddress));
-            }
         }
 
-        public BindingEndPoint(IPEndPoint ipEndPoint)
-            : this(ipEndPoint.Address, ipEndPoint.Port)
+        public BindingEndPoint(IPEndPoint ipEndPoint) : this(
+            ipEndPoint.ThrowIfNull(nameof(ipEndPoint)).Address,
+            ipEndPoint.Port)
         {
             if (ipEndPoint is null)
             {
@@ -35,13 +34,10 @@ namespace SslCertBinding.Net
             }
         }
 
-        public BindingEndPoint(DnsEndPoint dnsEndPoint)
-            : this(dnsEndPoint.Host, dnsEndPoint.Port)
+        public BindingEndPoint(DnsEndPoint dnsEndPoint) : this(
+            dnsEndPoint.ThrowIfNull(nameof(dnsEndPoint)).Host,
+            dnsEndPoint.Port)
         {
-            if (dnsEndPoint is null)
-            {
-                throw new ArgumentNullException(nameof(dnsEndPoint));
-            }
         }
 
         private BindingEndPoint(string host, int port, IPAddress ipAddress)
@@ -92,13 +88,8 @@ namespace SslCertBinding.Net
             return true;
         }
 
-        private static IPAddress TryGetIPAddressFromHostArgument(string host)
+        private static IPAddress TryGetIPAddressFromHost(string host)
         {
-            if (host is null)
-            {
-                throw new ArgumentNullException(nameof(host));
-            }
-
             return IPAddress.TryParse(host, out IPAddress ip)
                 ? ip
                 : null;

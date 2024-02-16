@@ -10,7 +10,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ConstructorWithEmptyCertificateThumbprintShouldFailTest()
         {
-            void constructor() => _ = new CertificateBinding(string.Empty, "MY", new IPEndPoint(0, 0).ToBindingEndPoint(), Guid.Empty);
+            void constructor() => _ = new CertificateBinding(string.Empty, "MY", new IPEndPoint(0, 0).ToDnsEndPoint(), Guid.Empty);
 
             ArgumentException ex = Assert.Throws<ArgumentException>(constructor);
             Assert.Multiple(() =>
@@ -29,7 +29,7 @@ namespace SslCertBinding.Net.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
-                Assert.That(ex.ParamName, Is.EqualTo("ipPort"));
+                Assert.That(ex.ParamName, Is.EqualTo("endPoint"));
             });
         }
     }
