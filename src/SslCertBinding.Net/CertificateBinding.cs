@@ -67,6 +67,10 @@ namespace SslCertBinding.Net
             {
                 throw new ArgumentException($"Value cannot be null or empty.", nameof(certificateThumbprint));
             }
+            if (endPoint is null)
+            {
+                throw new ArgumentNullException(nameof(endPoint));
+            }
 
             Thumbprint = certificateThumbprint;
             StoreName = certificateStoreName ?? "MY"; // StoreName of null is assumed to be My / Personal. See https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx

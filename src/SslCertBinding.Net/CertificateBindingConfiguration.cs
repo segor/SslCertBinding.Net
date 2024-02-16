@@ -46,7 +46,7 @@ namespace SslCertBinding.Net
             HttpApi.CallHttpApi(
                 delegate
                 {
-                    GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(((BindingEndPoint)binding.EndPoint).ToIPEndPoint());
+                    GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(binding.EndPoint.ToIPEndPoint());
                     IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
                     var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
 
@@ -373,7 +373,7 @@ namespace SslCertBinding.Net
                 UseDsMappers = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER),
                 DoNotPassRequestsToRawFilters = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER),
             };
-            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort.ToDnsEndPoint(), appId, options);
+            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort.ToBindingEndPoint(), appId, options);
             return result;
         }
 
