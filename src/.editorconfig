@@ -123,7 +123,7 @@ csharp_using_directive_placement = outside_namespace:suggestion
 csharp_prefer_braces = true:silent
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false:none
-csharp_prefer_static_local_function = true:suggestion
+csharp_prefer_static_local_function = false:suggestion
 csharp_prefer_simple_using_statement = false:none
 csharp_style_prefer_switch_expression = true:suggestion
 
