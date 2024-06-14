@@ -1,5 +1,6 @@
-using System;
+﻿using System;
 using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 
 namespace SslCertBinding.Net
@@ -24,7 +25,7 @@ namespace SslCertBinding.Net
         /// An IP address and port with which this SSL certificate is associated. 
         /// If the <see cref="IPEndPoint.Address"/> property is set to 0.0.0.0, the certificate is applicable to all IPv4 and IPv6 addresses. If the <see cref="IPEndPoint.Address"/> property is set to [::], the certificate is applicable to all IPv6 addresses.
         /// </summary>
-        public IPEndPoint IpPort { get; private set; }
+        public BindingEndPoint EndPoint { get; private set; }
 
         /// <summary>
         /// A unique identifier of the application setting this record.
@@ -36,19 +37,23 @@ namespace SslCertBinding.Net
         /// </summary>
         public BindingOptions Options { get; private set; }
 
-        public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = default)
-            : this(certificateThumbprint, certificateStoreName.ToString(), ipPort, appId, options) { }
+        public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, DnsEndPoint endPoint, Guid appId, BindingOptions options = default)
+            : this(certificateThumbprint, certificateStoreName.ToString(), endPoint, appId, options) { }
 
-        public CertificateBinding(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = default)
+        public CertificateBinding(string certificateThumbprint, string certificateStoreName, DnsEndPoint endPoint, Guid appId, BindingOptions options = default)
         {
             if (string.IsNullOrEmpty(certificateThumbprint))
             {
                 throw new ArgumentException($"Value cannot be null or empty.", nameof(certificateThumbprint));
             }
+            if (endPoint is null)
+            {
+                throw new ArgumentNullException(nameof(endPoint));
+            }
 
             Thumbprint = certificateThumbprint;
             StoreName = certificateStoreName ?? "MY"; // StoreName of null is assumed to be My / Personal. See https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
-            IpPort = ipPort ?? throw new ArgumentNullException(nameof(ipPort));
+            EndPoint = endPoint.ToBindingEndPoint();
             AppId = appId;
             Options = options ?? new BindingOptions();
         }
