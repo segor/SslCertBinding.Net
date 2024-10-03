@@ -1,14 +1,11 @@
 # SslCertBinding.Net
+ [![](https://img.shields.io/nuget/v/SslCertBinding.Net)](https://www.nuget.org/packages/SslCertBinding.Net) [![](https://img.shields.io/nuget/dt/SslCertBinding.Net)](https://www.nuget.org/stats/packages/SslCertBinding.Net?groupby=Version) [![](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Amaster+event%3Apush) [![](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml) [![](https://codecov.io/gh/segor/SslCertBinding.Net/master/graph/badge.svg?token=034FB4PVRL)](https://app.codecov.io/gh/segor/SslCertBinding.Net/tree/master)
+
 SslCertBinding.Net is a library for .NET and Windows and provides a simple API to add, remove or retrieve bindings between a https port and a SSL certificate.
 
 This library can be considered as a programmatic alternative to Windows command line tools `netsh http show|add|delete sslcert` or `httpcfg query|set|delete ssl`. 
 
 **Important: The library uses the Win32 API and works on the Windows platform only.**
-
-| Branch | Package | Status|
-|:--|:--|:--|
-| main | [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=fase)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") | [![Build status - master](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Amaster+event%3Apush) [![CodeQL](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml/badge.svg?branch=master&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml) [![codecov](https://codecov.io/gh/segor/SslCertBinding.Net/master/graph/badge.svg?token=034FB4PVRL)](https://app.codecov.io/gh/segor/SslCertBinding.Net/tree/master) |
-| dev  | [![NuGet](https://buildstats.info/nuget/SslCertBinding.Net?includePreReleases=true)](https://www.nuget.org/packages/SslCertBinding.Net/ "Download from NuGet.org") | [![Build status - dev](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml/badge.svg?branch=dev&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/build.yaml?query=branch%3Adev+event%3Apush) [![CodeQL](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml/badge.svg?branch=dev&event=push)](https://github.com/segor/SslCertBinding.Net/actions/workflows/codeql.yml) [![codecov](https://codecov.io/gh/segor/SslCertBinding.Net/dev/graph/badge.svg?token=034FB4PVRL)](https://app.codecov.io/gh/segor/SslCertBinding.Net/tree/dev) |
 
 ## Installation
 To get started, add the [SslCertBinding.Net](https://www.nuget.org/packages/SslCertBinding.Net/) NuGet package to your project by running the following command:
