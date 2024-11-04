@@ -5,9 +5,9 @@ namespace SslCertBinding.Net
 {
     public interface ICertificateBindingConfiguration
     {
-        IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null);
+        IReadOnlyList<CertificateBinding> Query(DnsEndPoint endPoint = null);
         void Bind(CertificateBinding binding);
-        void Delete(IPEndPoint endPoint);
-        void Delete(IReadOnlyCollection<IPEndPoint> endPoints);
+        void Delete(DnsEndPoint endPoint);
+        void Delete(IReadOnlyCollection<DnsEndPoint> endPoints);
     }
 }
