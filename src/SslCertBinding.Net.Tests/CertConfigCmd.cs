@@ -80,6 +80,14 @@ namespace SslCertBinding.Net.Tests
             {
                 await ExecDelete(ipEndPoint);
             }
+
+            CommandResult result = await Show(throwExcepton: true);
+#pragma warning disable CA2249
+            if (result.Output.IndexOf(thumbprint, StringComparison.InvariantCultureIgnoreCase) >= 0)
+#pragma warning restore CA2249
+            {
+                throw new InvalidOperationException();
+            }
         }
 
         public static async Task<IPEndPoint[]> GetIpEndPoints(string thumbprint = null)

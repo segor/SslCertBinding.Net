@@ -345,10 +345,11 @@ namespace SslCertBinding.Net.Tests
         private static string s_testingCertThumbprint = string.Empty;
 
         [SetUp]
-        public void TestInitialize()
+        public async Task TestInitialize()
         {
             Assert.That(WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid), Is.True, "These unit-tests shoud run with Adminstrator permissions.");
 
+            await CertConfigCmd.RemoveIpEndPoints(s_testingCertThumbprint);
             DoInLocalMachineCertStores(certStore =>
             {
                 var cert = new X509Certificate2(Resources.certCA, string.Empty, X509KeyStorageFlags.MachineKeySet);
