@@ -349,13 +349,14 @@ namespace SslCertBinding.Net.Tests
         {
             Assert.That(WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid), Is.True, "These unit-tests shoud run with Adminstrator permissions.");
 
-            await CertConfigCmd.RemoveIpEndPoints(s_testingCertThumbprint);
+            var cert = new X509Certificate2(Resources.certCA, string.Empty, X509KeyStorageFlags.MachineKeySet);
+            s_testingCertThumbprint = cert.Thumbprint;            
             DoInLocalMachineCertStores(certStore =>
-            {
-                var cert = new X509Certificate2(Resources.certCA, string.Empty, X509KeyStorageFlags.MachineKeySet);
-                s_testingCertThumbprint = cert.Thumbprint;
+            {                
                 certStore.Add(cert);
             });
+
+            await CertConfigCmd.RemoveIpEndPoints(cert.Thumbprint);
         }
 
         [TearDown]
