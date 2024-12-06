@@ -405,7 +405,8 @@ namespace SslCertBinding.Net.Tests
         private static void AssertOutput(string actualOutput, string expectedOutput)
         {
             var regEx = new Regex(@"\s+");
-            string actualAdjOutput = regEx.Replace(actualOutput, " ").Trim();
+            string actualAdjOutput = actualOutput.Substring(Math.Max(0, actualOutput.IndexOf("IP: port", StringComparison.InvariantCulture)));
+            actualAdjOutput = regEx.Replace(actualAdjOutput, " ").Trim();
             string expectedAdjOutput = regEx.Replace(expectedOutput, " ").Trim();
             Assert.That(actualAdjOutput, Does.Contain(expectedAdjOutput).IgnoreCase);
         }
