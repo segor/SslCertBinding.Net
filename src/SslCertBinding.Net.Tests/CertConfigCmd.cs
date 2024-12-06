@@ -76,7 +76,8 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task RemoveIpEndPoints(string thumbprint)
         {
-            foreach (IPEndPoint ipEndPoint in await GetIpEndPoints(thumbprint))
+            IPEndPoint[] ipEndPoints = await GetIpEndPoints(thumbprint);
+            foreach (IPEndPoint ipEndPoint in ipEndPoints)
             {
                 await ExecDelete(ipEndPoint);
             }
@@ -86,7 +87,7 @@ namespace SslCertBinding.Net.Tests
             if (result.Output.IndexOf(thumbprint, StringComparison.InvariantCultureIgnoreCase) >= 0)
 #pragma warning restore CA2249
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Сannot delete endponts {string.Join(" , ", ipEndPoints.Select(_ => _.ToString()))}. The output: {result.Output}");
             }
         }
 
