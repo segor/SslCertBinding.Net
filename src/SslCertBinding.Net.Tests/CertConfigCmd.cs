@@ -76,7 +76,7 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task RemoveIpEndPoints(string thumbprint)
         {
-            if (string.IsNullOrEmpty(thumbprint))
+            if (string.IsNullOrWhiteSpace(thumbprint))
             {
                 throw new ArgumentException("Argument is empty", nameof(thumbprint));
             }
@@ -92,20 +92,31 @@ namespace SslCertBinding.Net.Tests
             if (result.Output.IndexOf(thumbprint, StringComparison.InvariantCultureIgnoreCase) >= 0)
 #pragma warning restore CA2249
             {
-                throw new InvalidOperationException($"Сannot delete endponts {string.Join(" , ", ipEndPoints.Select(_ => _.ToString()))}. The output: {result.Output}");
+                throw new InvalidOperationException($"Сannot delete endponts [{string.Join(" , ", ipEndPoints.Select(_ => _.ToString()))}]. The output: {result.Output}");
             }
         }
 
-        public static async Task<IPEndPoint[]> GetIpEndPoints(string thumbprint = null)
+        public static async Task<IPEndPoint[]> GetIpEndPoints(string thumbprint)
         {
+            if (string.IsNullOrWhiteSpace(thumbprint))
+            {
+                throw new ArgumentException("Argument is empty", nameof(thumbprint));
+            }
+
             CommandResult result = await Show(throwExcepton: true);
-            string pattern = string.Format(CultureInfo.InvariantCulture, @"\s+IP:port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+",
-                string.IsNullOrEmpty(thumbprint) ? @"\S+" : thumbprint);
+            string pattern = string.Format(CultureInfo.InvariantCulture, @"\s+IP:port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+", thumbprint.Trim());
             MatchCollection matches = Regex.Matches(result.Output, pattern,
-                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant |
-                RegexOptions.Singleline);
+                RegexOptions.IgnoreCase | RegexOptions.CultureInvariant );
 
             IPEndPoint[] endPoints = matches.Cast<Match>().Select(match => IpEndpointTools.ParseIpEndPoint(match.Groups[1].Value)).ToArray();
+
+#pragma warning disable CA2249
+            if (endPoints.Length == 0 && result.Output.IndexOf(thumbprint, StringComparison.InvariantCultureIgnoreCase) >= 0 )
+#pragma warning restore CA2249
+            {
+                throw new InvalidOperationException($"Сannot find endponts with thumbprint {thumbprint}. The output: {result.Output}");
+            }
+
             return endPoints;
         }
 
