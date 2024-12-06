@@ -76,6 +76,11 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task RemoveIpEndPoints(string thumbprint)
         {
+            if (string.IsNullOrEmpty(thumbprint))
+            {
+                throw new ArgumentException("Argument is empty", nameof(thumbprint));
+            }
+
             IPEndPoint[] ipEndPoints = await GetIpEndPoints(thumbprint);
             foreach (IPEndPoint ipEndPoint in ipEndPoints)
             {
