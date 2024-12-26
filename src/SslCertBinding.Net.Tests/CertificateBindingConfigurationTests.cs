@@ -239,6 +239,20 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
+        public void DeleteNullEndPointShouldThrowArgumentNullException()
+        {
+            var config = new CertificateBindingConfiguration();
+            void delete() => config.Delete((IPEndPoint)null);
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(delete);
+            Assert.Multiple(() =>
+            {
+                Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
+                Assert.That(ex.ParamName, Is.EqualTo("endPoint"));
+            });
+        }
+
+        [Test]
         public async Task DeleteOne()
         {
             IPEndPoint ipPort = await GetEndpointWithFreeRandomPort();
@@ -341,6 +355,19 @@ namespace SslCertBinding.Net.Tests
             AssertOutput(result.Output, expectedOutput);
         }
 
+        [Test]
+        public void BindNullBindingShouldThrowArgumentNullException()
+        {
+            var config = new CertificateBindingConfiguration();
+            void bind() => config.Bind(null);
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(bind);
+            Assert.Multiple(() =>
+            {
+                Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
+                Assert.That(ex.ParamName, Is.EqualTo("binding"));
+            });
+        }
 
         private static string s_testingCertThumbprint = string.Empty;
 
