@@ -20,13 +20,13 @@ env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
   NUGET_XMLDOC_MODE: skip
 
-  Dotnet_Sdk_Version: 8.0.x
   Solution_Path: src/SslCertBinding.Net.sln
   Artifact_Dir: src/artifacts/
   Obj_Dir: src/artifacts/obj/
   Coverage_Dir: src/artifacts/coverage/
   NugetPackage_Dir: src/artifacts/package/
   DotNetFrameworkToTestOnLinux: net6.0
+  DotnetSdkVersionToTestOnLinux: 6.0.x
 
 jobs:
 
@@ -45,7 +45,7 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.Dotnet_Sdk_Version }}
+        global-json-file: src/global.json
 
     - name: Restore NuGet packages
       run: dotnet restore "${{ env.Solution_Path }}"
@@ -89,7 +89,8 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: ${{ env.Dotnet_Sdk_Version }}
+        dotnet-version: ${{ env.DotnetSdkVersionToTestOnLinux }}
+        global-json-file: src/global.json
 
     - name: Execute unit tests
       run: dotnet test "${{ env.Solution_Path }}" -c Release --framework "${{ env.DotNetFrameworkToTestOnLinux }}" --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
@@ -120,7 +121,7 @@ jobs:
     - name: Install .NET Core
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version:  ${{ env.Dotnet_Sdk_Version }}
+        global-json-file: src/global.json
 
     - name: Push NuGet packages to NuGet.org
       run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate --source https://api.nuget.org/v3/index.json
