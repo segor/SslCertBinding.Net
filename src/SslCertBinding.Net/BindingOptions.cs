@@ -2,10 +2,14 @@ using System;
 
 namespace SslCertBinding.Net
 {
+    /// <summary>
+    /// Represents additional options for binding an SSL certificate.
+    /// </summary>
     public class BindingOptions
     {
         /// <summary>
-        /// The time interval after which to check for an updated certificate revocation list (CRL). If this value is zero, the new CRL is updated only when the previous one expires.
+        /// The time interval after which to check for an updated certificate revocation list (CRL).
+        /// If this value is zero, the new CRL is updated only when the previous one expires.
         /// </summary>
         public TimeSpan RevocationFreshnessTime { get; set; }
 
@@ -15,7 +19,7 @@ namespace SslCertBinding.Net
         public TimeSpan RevocationUrlRetrievalTimeout { get; set; }
 
         /// <summary>
-        /// A SSL control identifier, which cpecifies the list of the certificate issuers that can be trusted. 
+        /// The SSL control identifier, which specifies the list of the certificate issuers that can be trusted.
         /// This list can be a subset of the certificate issuers that are trusted by the computer.
         /// </summary>
         public string SslCtlIdentifier { get; set; }
@@ -26,12 +30,12 @@ namespace SslCertBinding.Net
         public string SslCtlStoreName { get; set; }
 
         /// <summary>
-        /// If true, client certificates are mapped where possible to corresponding operating-system user accounts based on the certificate mapping rules stored in Active Directory.
+        /// Indicates whether client certificates are mapped where possible to corresponding operating-system user accounts based on the certificate mapping rules stored in Active Directory.
         /// </summary>
         public bool UseDsMappers { get; set; }
 
         /// <summary>
-        /// Enables a client certificate to be cached locally for subsequent use.
+        /// Indicates whether a client certificate is enabled to be cached locally for subsequent use.
         /// </summary>
         public bool NegotiateCertificate { get; set; }
 
@@ -41,22 +45,22 @@ namespace SslCertBinding.Net
         public bool DoNotPassRequestsToRawFilters { get; set; }
 
         /// <summary>
-        /// Client certificate is not to be verified for revocation. 
+        /// Indicates that the client certificate is not to be verified for revocation.
         /// </summary>
         public bool DoNotVerifyCertificateRevocation { get; set; }
 
         /// <summary>
-        /// Only cached certificate is to be used the revocation check. 
+        /// Indicates that only cached certificates are to be used for the revocation check.
         /// </summary>
         public bool VerifyRevocationWithCachedCertificateOnly { get; set; }
 
         /// <summary>
-        /// The RevocationFreshnessTime setting is enabled.
+        /// Indicates that the <see cref="RevocationFreshnessTime"/> setting is enabled.
         /// </summary>
         public bool EnableRevocationFreshnessTime { get; set; }
 
         /// <summary>
-        /// No usage check is to be performed.
+        /// Indicates that no usage check is to be performed.
         /// </summary>
         public bool NoUsageCheck { get; set; }
     }

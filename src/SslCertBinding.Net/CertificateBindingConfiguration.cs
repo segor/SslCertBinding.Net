@@ -1,16 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net
 {
+    
+    /// <summary>
+    /// Provides methods to manage SSL certificate bindings.
+    /// </summary>
 #if NET5_0_OR_GREATER
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif
     public class CertificateBindingConfiguration : ICertificateBindingConfiguration
     {
+        /// <summary>
+        /// Queries the SSL certificate bindings for the specified IP endpoint.
+        /// </summary>
+        /// <param name="ipPort">The IP endpoint to query. If <c>null</c>, all bindings are returned.</param>
+        /// <returns>A list of <see cref="CertificateBinding"/> objects.</returns>
         public IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null)
         {
             if (ipPort == null)
@@ -20,8 +30,19 @@ namespace SslCertBinding.Net
             return info == null ? Array.Empty<CertificateBinding>() : new[] { info };
         }
 
+        /// <summary>
+        /// Binds an SSL certificate to an IP endpoint.
+        /// </summary>
+        /// <param name="binding">The <see cref="CertificateBinding"/> object containing the binding information.</param> 
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="binding"/> is null.</exception>
+        /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
         public void Bind(CertificateBinding binding)
         {
+            if (binding is null)
+            {
+                throw new ArgumentNullException(nameof(binding));
+            }
+            
             HttpApi.CallHttpApi(
                 delegate
                 {
@@ -101,11 +122,28 @@ namespace SslCertBinding.Net
                 });
         }
 
+        /// <summary>
+        /// Deletes an SSL certificate binding for the specified IP endpoint.
+        /// </summary>
+        /// <param name="endPoint">The IP endpoint to delete the binding for.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="endPoint"/> is null.</exception>
+        /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
         public void Delete(IPEndPoint endPoint)
         {
+            if (endPoint is null)
+            {
+                throw new ArgumentNullException(nameof(endPoint));
+            }
+
             Delete(new[] { endPoint });
         }
 
+        /// <summary>
+        /// Deletes SSL certificate bindings for the specified IP endpoints.
+        /// </summary>
+        /// <param name="endPoints">The collection of IP endpoints to delete the bindings for.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="endPoints"/> is null.</exception>
+        /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
         public void Delete(IReadOnlyCollection<IPEndPoint> endPoints)
         {
             _ = endPoints ?? throw new ArgumentNullException(nameof(endPoints));
