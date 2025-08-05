@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Net;
-using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
 
 namespace SslCertBinding.Net
 {
     /// <summary>
-    /// Represents a record with binding of an SSL certificate to an IP endpoint in the SSL configuration store.
+    /// Represents a record with binding of an SSL certificate to an endpoint in the SSL configuration store.
     /// </summary>
     public class CertificateBinding
     {
@@ -60,21 +59,12 @@ namespace SslCertBinding.Net
         /// <param name="appId">The application ID.</param>
         /// <param name="options">Additional binding options.</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="certificateThumbprint"/> is null or empty.</exception>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipPort"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="endPoint"/> is null.</exception>
         public CertificateBinding(string certificateThumbprint, string certificateStoreName, BindingEndPoint endPoint, Guid appId, BindingOptions options = default)
         {
-            if (string.IsNullOrEmpty(certificateThumbprint))
-            {
-                throw new ArgumentException($"Value cannot be null or empty.", nameof(certificateThumbprint));
-            }
-            if (endPoint is null)
-            {
-                throw new ArgumentNullException(nameof(endPoint));
-            }
-
-            Thumbprint = certificateThumbprint;
+            Thumbprint = certificateThumbprint.ThrowIfNullOrEmpty(nameof(certificateThumbprint));
             StoreName = certificateStoreName ?? "MY"; // StoreName of null is assumed to be My / Personal. See https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
-            EndPoint = endPoint;
+            EndPoint = endPoint.ThrowIfNull(nameof(endPoint));
             AppId = appId;
             Options = options ?? new BindingOptions();
         }

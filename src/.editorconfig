@@ -123,7 +123,7 @@ csharp_using_directive_placement = outside_namespace:suggestion
 csharp_prefer_braces = true:silent
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = false:none
-csharp_prefer_static_local_function = false:suggestion
+csharp_prefer_static_local_function = true:suggestion
 csharp_prefer_simple_using_statement = false:none
 csharp_style_prefer_switch_expression = true:suggestion
 
@@ -207,6 +207,7 @@ csharp_style_prefer_pattern_matching = true:silent
 csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_prefer_extended_property_pattern = true:suggestion
 dotnet_diagnostic.IDE0090.severity = none
+csharp_prefer_system_threading_lock = true:suggestion
 
 # Visual Basic files
 [*.vb]

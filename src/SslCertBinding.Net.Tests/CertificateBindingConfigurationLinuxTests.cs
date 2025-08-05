@@ -31,7 +31,7 @@ namespace SslCertBinding.Net.Tests
         public void BindOnLinuxIsNotSupported()
         {
             var config = new CertificateBindingConfiguration();
-            BindingEndPoint iPEndPoint = new IPEndPoint(1, 1).ToBindingEndPoint();
+            var iPEndPoint = new IPEndPoint(1, 1).ToBindingEndPoint();
             var binding = new CertificateBinding("98BC1AACBC38F564B95E1499FA2BA0FC30899A3E", "MY", iPEndPoint, Guid.Empty);
             PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => config.Bind(binding));
             Assert.That(ex, Has.InnerException.TypeOf<DllNotFoundException>());

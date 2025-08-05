@@ -61,7 +61,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void QueryNone()
         {
-            BindingEndPoint notFoundIpPort = new IPEndPoint(0, IPEndPoint.MaxPort).ToBindingEndPoint();
+            BindingEndPoint notFoundIpPort = new IPEndPoint(0, IPEndPoint.MaxPort);
             var config = new CertificateBindingConfiguration();
             IReadOnlyList<CertificateBinding> bindingsByIpPort = config.Query(notFoundIpPort);
             Assert.That(bindingsByIpPort, Is.Empty);
@@ -220,7 +220,7 @@ namespace SslCertBinding.Net.Tests
             void delete()
             {
                 var config = new CertificateBindingConfiguration();
-                config.Delete((IReadOnlyCollection<DnsEndPoint>)null);
+                config.Delete((IReadOnlyCollection<BindingEndPoint>)null);
             }
 
             ArgumentNullException ex = Assert.Throws<ArgumentNullException>(delete);
@@ -242,7 +242,7 @@ namespace SslCertBinding.Net.Tests
         public void DeleteNullEndPointShouldThrowArgumentNullException()
         {
             var config = new CertificateBindingConfiguration();
-            void delete() => config.Delete((DnsEndPoint)null);
+            void delete() => config.Delete((BindingEndPoint)null);
 
             ArgumentNullException ex = Assert.Throws<ArgumentNullException>(delete);
             Assert.Multiple(() =>
@@ -414,7 +414,7 @@ namespace SslCertBinding.Net.Tests
             }
         }
 
-        private static async Task<BindingEndPoint> GetIpEndpointWithFreeRandomPort(string ip = "0.0.0.0")
+        private static async Task<IPEndPoint> GetIpEndpointWithFreeRandomPort(string ip = "0.0.0.0")
         {
             for (int port = 50000; port < 65535; port++)
             {
@@ -422,7 +422,7 @@ namespace SslCertBinding.Net.Tests
                 if (IpEndpointTools.IpEndpointIsAvailableForListening(ipPort))
                 {
                     if (!(await CertConfigCmd.IpPortIsPresentInConfig(ipPort.ToBindingEndPoint())))
-                        return ipPort.ToBindingEndPoint();
+                        return ipPort;
                 }
             }
 

@@ -23,7 +23,7 @@ namespace SslCertBinding.Net.Tests
         {
 #pragma warning disable CA1051 // Do not declare visible instance fields
 #pragma warning disable CS0649 // Field 'CertConfigCmd.Options.verifyclientcertrevocation' is never assigned to, and will always have its default value
-            public DnsEndPoint ipport;
+            public BindingEndPoint ipport;
             public string certhash;
             public Guid appid;
             public string certstorename;
@@ -40,20 +40,20 @@ namespace SslCertBinding.Net.Tests
 #pragma warning restore CA1051 // Do not declare visible instance fields
         }
 
-        public static Task<CommandResult> Show(BindingEndPoint ipPort = null, bool throwExcepton = false)
+        public static Task<CommandResult> Show(BindingEndPoint endPoint = null, bool throwExcepton = false)
         {
-            return ExecCommand(string.Format(CultureInfo.InvariantCulture, "http show sslcert {0}", ipPort), throwExcepton);
+            return ExecCommand(string.Format(CultureInfo.InvariantCulture, "http show sslcert {0}", endPoint), throwExcepton);
         }
 
-        public static async Task<bool> IpPortIsPresentInConfig(BindingEndPoint ipPort)
+        public static async Task<bool> IpPortIsPresentInConfig(BindingEndPoint endPoint)
         {
-            CommandResult result = await Show(ipPort);
+            CommandResult result = await Show(endPoint);
             return result.IsSuccessfull;
         }
 
         public static Task<CommandResult> Add(Options options)
         {
-            options = options ?? throw new ArgumentNullException(nameof(options));
+            _ = options ?? throw new ArgumentNullException(nameof(options));
 
             var sb = new StringBuilder();
             foreach (FieldInfo optionField in options.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))

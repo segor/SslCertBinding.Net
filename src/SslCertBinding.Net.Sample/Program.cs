@@ -6,7 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 namespace SslCertBinding.Net.Sample
 {
 #if NET5_0_OR_GREATER
-	[System.Runtime.Versioning.SupportedOSPlatform("windows")]
+    [System.Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif
     static class Program
     {
@@ -37,8 +37,8 @@ namespace SslCertBinding.Net.Sample
         {
             Console.WriteLine("SSL Certificate bindings:\r\n-------------------------\r\n");
             var stores = new Dictionary<string, X509Store>();
-            BindingEndPoint ipEndPoint = args.Length > 1 ? ParseEndPoint(args[1]) : null;
-            IReadOnlyList<CertificateBinding> certificateBindings = configuration.Query(ipEndPoint);
+            var endPoint = args.Length > 1 ? ParseEndPoint(args[1]) : null;
+            IReadOnlyList<CertificateBinding> certificateBindings = configuration.Query(endPoint);
             foreach (CertificateBinding info in certificateBindings)
             {
                 if (!stores.TryGetValue(info.StoreName, out X509Store store))
@@ -77,14 +77,14 @@ namespace SslCertBinding.Net.Sample
 
         private static void Bind(string[] args, CertificateBindingConfiguration configuration)
         {
-            BindingEndPoint endPoint = ParseEndPoint(args[3]);
+            var endPoint = ParseEndPoint(args[3]);
             configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
             Console.WriteLine("The binding record has been successfully applied.");
         }
 
         private static void Delete(string[] args, CertificateBindingConfiguration configuration)
         {
-            BindingEndPoint endPoint = ParseEndPoint(args[1]);
+            var endPoint = ParseEndPoint(args[1]);
             configuration.Delete(endPoint);
             Console.WriteLine("The binding record has been successfully removed.");
         }

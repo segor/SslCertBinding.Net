@@ -5,7 +5,7 @@ namespace SslCertBinding.Net
 {
     public static class BindingEndPointExtentions
     {       
-        public static BindingEndPoint ToBindingEndPoint(this DnsEndPoint dnsEndPoint) => dnsEndPoint as BindingEndPoint ?? new BindingEndPoint(dnsEndPoint);
+        public static BindingEndPoint ToBindingEndPoint(this DnsEndPoint dnsEndPoint) => new BindingEndPoint(dnsEndPoint);
 
         public static BindingEndPoint ToBindingEndPoint(this IPEndPoint ipEndPoint) => new BindingEndPoint(ipEndPoint);
 

@@ -21,7 +21,7 @@ namespace SslCertBinding.Net
         /// </summary>
         /// <param name="endPoint">The endpoint to query. If <c>null</c>, all bindings are returned.</param>
         /// <returns>A list of <see cref="CertificateBinding"/> objects.</returns>
-        public IReadOnlyList<CertificateBinding> Query(DnsEndPoint endPoint = null)
+        public IReadOnlyList<CertificateBinding> Query(BindingEndPoint endPoint = null)
         {
             if (endPoint == null)
                 return QueryInternal();
@@ -38,10 +38,7 @@ namespace SslCertBinding.Net
         /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
         public void Bind(CertificateBinding binding)
         {
-            if (binding is null)
-            {
-                throw new ArgumentNullException(nameof(binding));
-            }
+            _ = binding.ThrowIfNull(nameof(binding));
             
             HttpApi.CallHttpApi(
                 delegate
@@ -128,7 +125,7 @@ namespace SslCertBinding.Net
         /// <param name="endPoint">The endpoint to delete the binding for.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="endPoint"/> is null.</exception>
         /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
-        public void Delete(DnsEndPoint endPoint)
+        public void Delete(BindingEndPoint endPoint)
         {
             if (endPoint is null)
             {
@@ -141,19 +138,19 @@ namespace SslCertBinding.Net
         /// <summary>
         /// Deletes SSL certificate bindings for the specified endpoints.
         /// </summary>
-        /// <param name="endPoints">The collection of IP endpoints to delete the bindings for.</param>
+        /// <param name="endPoints">The collection of endpoints to delete the bindings for.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="endPoints"/> is null.</exception>
         /// <exception cref="Win32Exception">Thrown when an Win32 error occurred.</exception>
-        public void Delete(IReadOnlyCollection<DnsEndPoint> endPoints)
+        public void Delete(IReadOnlyCollection<BindingEndPoint> endPoints)
         {
-            endPoints = endPoints ?? throw new ArgumentNullException(nameof(endPoints));
+            _ = endPoints .ThrowIfNull(nameof(endPoints));
             if (endPoints.Count == 0)
                 return;
 
             HttpApi.CallHttpApi(
             delegate
             {
-                foreach (DnsEndPoint endPoint in endPoints)
+                foreach (BindingEndPoint endPoint in endPoints)
                 {
                     IPEndPoint ipPort = endPoint.ToIPEndPoint();
                     GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
