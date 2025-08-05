@@ -5,28 +5,29 @@ using System.Net.Sockets;
 
 namespace SslCertBinding.Net
 {
+
     public class BindingEndPoint : DnsEndPoint
     {
-        private IPEndPoint _ipEndPoint { get; }
+        private IPEndPoint _ipEndPoint;
 
         public bool IsIpEndpoint => _ipEndPoint != null;
-        public IPAddress IPAddress => _ipEndPoint?.Address;
 
         public BindingEndPoint(string host, int port) : this(
-            host, port,
-            TryGetIPAddressFromHost(host.ThrowIfNull(nameof(host))))
+                host.ThrowIfNull(nameof(host)),
+                port,
+                TryParseIPEndpoint(host, port))
         {
         }
 
-        public BindingEndPoint(IPAddress ipAddress, int port): this(
-            ipAddress.ThrowIfNull(nameof(ipAddress)).ToString(),
-            port, ipAddress)
+        public BindingEndPoint(IPAddress ipAddress, int port)
+            : this(new IPEndPoint(ipAddress.ThrowIfNull(nameof(ipAddress)), port))
         {
         }
 
         public BindingEndPoint(IPEndPoint ipEndPoint) : this(
-            ipEndPoint.ThrowIfNull(nameof(ipEndPoint)).Address,
-            ipEndPoint.Port)
+            ipEndPoint.ThrowIfNull(nameof(ipEndPoint)).Address.ToString(),
+            ipEndPoint.Port,
+            ipEndPoint)
         {
             if (ipEndPoint is null)
             {
@@ -34,33 +35,31 @@ namespace SslCertBinding.Net
             }
         }
 
-        public BindingEndPoint(DnsEndPoint dnsEndPoint) : this(
+        internal protected BindingEndPoint(DnsEndPoint dnsEndPoint) : this(
             dnsEndPoint.ThrowIfNull(nameof(dnsEndPoint)).Host,
             dnsEndPoint.Port)
         {
         }
 
-        private BindingEndPoint(string host, int port, IPAddress ipAddress)
-            : base(host, port, ipAddress?.AddressFamily ?? AddressFamily.Unspecified)
-        {            
-            _ipEndPoint = ipAddress == null
-                ? null
-                : new IPEndPoint(ipAddress, port);
+        private BindingEndPoint(string host, int port, IPEndPoint ipEndPoint)
+            : base(host, port, ipEndPoint?.AddressFamily ?? AddressFamily.Unspecified)
+        {
+            _ipEndPoint = ipEndPoint;
         }
 
-        //public static implicit operator BindingEndPoint(IPEndPoint ipEndPoint) => ipEndPoint == null ? null : new BindingEndPoint(ipEndPoint);
+        public static implicit operator BindingEndPoint(IPEndPoint ipEndPoint) => ipEndPoint == null ? null : new BindingEndPoint(ipEndPoint);
 
         public IPEndPoint ToIPEndPoint()
         {
             if (!IsIpEndpoint)
-                throw new InvalidOperationException("Endpoint is not IP address.");
+                throw new InvalidOperationException("Endpoint is not IP address");
             return _ipEndPoint;
         }
 
         public override string ToString()
         {
             if (IsIpEndpoint)
-                return ToIPEndPoint().ToString();
+                return _ipEndPoint.ToString();
             return $"{Host}:{Port.ToString(CultureInfo.InvariantCulture)}";
         }
 
@@ -88,11 +87,13 @@ namespace SslCertBinding.Net
             return true;
         }
 
-        private static IPAddress TryGetIPAddressFromHost(string host)
+        private static IPEndPoint TryParseIPEndpoint(string host, int port)
         {
-            return IPAddress.TryParse(host, out IPAddress ip)
-                ? ip
-                : null;
+            if (!IPAddress.TryParse(host, out IPAddress ipAddress))
+            {
+                return null;
+            }
+            return new IPEndPoint(ipAddress, port);
         }
     }
 }

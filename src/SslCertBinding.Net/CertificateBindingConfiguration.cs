@@ -373,7 +373,7 @@ namespace SslCertBinding.Net
                 UseDsMappers = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER),
                 DoNotPassRequestsToRawFilters = HasFlag(configInfo.ParamDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER),
             };
-            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort.ToBindingEndPoint(), appId, options);
+            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort, appId, options);
             return result;
         }
 

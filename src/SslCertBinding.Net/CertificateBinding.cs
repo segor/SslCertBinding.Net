@@ -48,7 +48,7 @@ namespace SslCertBinding.Net
         /// <param name="options">Additional binding options.</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="certificateThumbprint"/> is null or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipPort"/> is null.</exception>
-        public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, DnsEndPoint endPoint, Guid appId, BindingOptions options = default)
+        public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, BindingEndPoint endPoint, Guid appId, BindingOptions options = default)
             : this(certificateThumbprint, certificateStoreName.ToString(), endPoint, appId, options) { }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace SslCertBinding.Net
         /// <param name="options">Additional binding options.</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="certificateThumbprint"/> is null or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipPort"/> is null.</exception>
-        public CertificateBinding(string certificateThumbprint, string certificateStoreName, DnsEndPoint endPoint, Guid appId, BindingOptions options = default)
+        public CertificateBinding(string certificateThumbprint, string certificateStoreName, BindingEndPoint endPoint, Guid appId, BindingOptions options = default)
         {
             if (string.IsNullOrEmpty(certificateThumbprint))
             {
@@ -74,7 +74,7 @@ namespace SslCertBinding.Net
 
             Thumbprint = certificateThumbprint;
             StoreName = certificateStoreName ?? "MY"; // StoreName of null is assumed to be My / Personal. See https://msdn.microsoft.com/en-us/library/windows/desktop/aa364647(v=vs.85).aspx
-            EndPoint = endPoint.ToBindingEndPoint();
+            EndPoint = endPoint;
             AppId = appId;
             Options = options ?? new BindingOptions();
         }
