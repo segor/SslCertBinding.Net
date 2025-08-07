@@ -26,7 +26,7 @@ namespace SslCertBinding.Net
         /// <summary>
         /// Gets the address family of the endpoint.
         /// </summary>
-        public override AddressFamily AddressFamily => _dnsEndpoint.AddressFamily;
+        public override AddressFamily AddressFamily => _ipEndPoint?.AddressFamily ?? _dnsEndpoint.AddressFamily;
 
         /// <summary>
         /// Gets a value indicating whether this endpoint is based on IP address.
@@ -76,11 +76,10 @@ namespace SslCertBinding.Net
             _ipEndPoint = TryParseIPEndpoint(dnsEndPoint.Host, dnsEndPoint.Port);
         }
 
-
         private BindingEndPoint(string host, int port, IPEndPoint ipEndPoint)
         {
             _dnsEndpoint = new DnsEndPoint(
-                host,
+                ipEndPoint == null ? host : ipEndPoint.Address.ToString(),
                 port,
                 ipEndPoint?.AddressFamily ?? AddressFamily.Unspecified);
             _ipEndPoint = ipEndPoint;
@@ -122,7 +121,14 @@ namespace SslCertBinding.Net
         /// Returns a string representation of the endpoint.
         /// </summary>
         /// <returns></returns>
-        public override string ToString() => $"{Host}:{Port.ToString(CultureInfo.InvariantCulture)}";
+        public override string ToString()
+        {
+            if (IsIpEndpoint)
+            {
+                return _ipEndPoint.ToString();
+            }
+            return $"{_dnsEndpoint.Host}:{Port.ToString(CultureInfo.InvariantCulture)}";
+        }
 
         /// <summary>
         /// Determines whether the specified object is equal to the current <see cref="BindingEndPoint"/>.
