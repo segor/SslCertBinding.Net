@@ -223,6 +223,21 @@ namespace SslCertBinding.Net
             return true;
         }
 
+        /// <summary>
+        /// Parses a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
+        /// </summary>
+        /// <param name="endpointStr"></param>
+        /// <returns></returns>
+        /// <exception cref="FormatException">Invalid endpoint format</exception>
+        public static BindingEndPoint Parse (string endpointStr)
+        {
+            if (!TryParse(endpointStr, out BindingEndPoint endPoint))
+            {
+                throw new FormatException($"Invalid endpoint format: {endpointStr}");
+            }
+            return endPoint;
+        }
+
         private static IPEndPoint TryParseIPEndpoint(string host, int port)
         {
             if (!IPAddress.TryParse(host, out IPAddress ipAddress))

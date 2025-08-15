@@ -73,5 +73,77 @@ namespace SslCertBinding.Net
 
             return result;
         }
+
+
+        /// <summary>
+        /// Creates a SOCKADDR_STORAGE structure for the specified port number.
+        /// </summary>
+        public static HttpApi.SOCKADDR_STORAGE CreateSockaddrStorage(int port)
+        {
+            return CreateSockaddrStorage(new IPEndPoint(IPAddress.Any, port));
+        }
+
+
+        /// <summary>
+        /// Creates a SOCKADDR_STORAGE structure from an IPEndPoint.
+        /// </summary>
+        public static HttpApi.SOCKADDR_STORAGE CreateSockaddrStorage(IPEndPoint ipEndPoint)
+        {
+            var result = new HttpApi.SOCKADDR_STORAGE();
+            var socketAddress = ipEndPoint.Serialize();
+
+            // Set address family
+            result.ss_family = (short)ipEndPoint.AddressFamily;
+
+            // Fill __ss_pad1 (first 6 bytes after family)
+            result.__ss_pad1 = new byte[6];
+            for (int i = 2; i < 8 && i < socketAddress.Size; i++)
+            {
+                result.__ss_pad1[i - 2] = socketAddress[i];
+            }
+
+            // Fill __ss_pad2 (remaining bytes, up to 112)
+            result.__ss_pad2 = new byte[112];
+            for (int i = 8; i < socketAddress.Size && (i - 8) < result.__ss_pad2.Length; i++)
+            {
+                result.__ss_pad2[i - 8] = socketAddress[i];
+            }
+
+            // Alignment field is left as default (0)
+            return result;
+        }
+
+        /// <summary>
+        /// Creates an IPEndPoint from a SOCKADDR_STORAGE structure.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">The structure contains an unsupported address family</exception>
+        public static IPEndPoint CreateIPEndPoint(HttpApi.SOCKADDR_STORAGE storage)
+        {
+            // Determine address family and structure size
+            AddressFamily family = (AddressFamily)storage.ss_family;
+            int size = family == AddressFamily.InterNetwork ? 16 :
+                       family == AddressFamily.InterNetworkV6 ? 28 :
+                       throw new ArgumentOutOfRangeException(nameof(storage), $"Unsupported address family: {family}");
+
+            // Compose the raw bytes for SocketAddress
+            byte[] bytes = new byte[size];
+            bytes[0] = (byte)(storage.ss_family & 0xFF);
+            bytes[1] = (byte)((storage.ss_family >> 8) & 0xFF);
+            for (int i = 0; i < 6 && (i + 2) < size; i++)
+                bytes[i + 2] = storage.__ss_pad1[i];
+            for (int i = 0; i < storage.__ss_pad2.Length && (i + 8) < size; i++)
+                bytes[i + 8] = storage.__ss_pad2[i];
+
+            // Create SocketAddress and IPEndPoint
+            var socketAddress = new SocketAddress(family, size);
+            for (int i = 0; i < size; i++)
+                socketAddress[i] = bytes[i];
+
+            IPEndPoint anyEp = family == AddressFamily.InterNetwork
+                ? new IPEndPoint(IPAddress.Any, 0)
+                : new IPEndPoint(IPAddress.IPv6Any, 0);
+
+            return (IPEndPoint)anyEp.Create(socketAddress);
+        }
     }
 }

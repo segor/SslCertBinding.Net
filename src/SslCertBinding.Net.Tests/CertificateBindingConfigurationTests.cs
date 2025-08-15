@@ -21,27 +21,29 @@ namespace SslCertBinding.Net.Tests
     {
         [TestCase("0.0.0.0")]
         [TestCase("::")]
-        public async Task QueryOne(string ip)
+        [TestCase("localhost")]
+        [TestCase("ssl-cert-binding.net.com")]
+        public async Task QueryOne(string hostOrIp)
         {
-            BindingEndPoint ipPort = await GetIpEndpointWithFreeRandomPort(ip);
+            BindingEndPoint endPoint = await GetEndpointWithFreeRandomPort(hostOrIp);
             var appId = Guid.NewGuid();
 
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                ipport = ipPort,
+                endpoint = endPoint,
                 certhash = s_testingCertThumbprint,
                 appid = appId,
                 certstorename = null,
             });
 
             var config = new CertificateBindingConfiguration();
-            IReadOnlyList<CertificateBinding> bindingsByIpPort = config.Query(ipPort);
+            IReadOnlyList<CertificateBinding> bindingsByIpPort = config.Query(endPoint);
             Assert.That(bindingsByIpPort, Has.Count.EqualTo(1));
             CertificateBinding binding = bindingsByIpPort[0];
             Assert.Multiple(() =>
             {
                 Assert.That(binding.AppId, Is.EqualTo(appId));
-                Assert.That(binding.EndPoint, Is.EqualTo(ipPort));
+                Assert.That(binding.EndPoint, Is.EqualTo(endPoint));
                 Assert.That(binding.StoreName, Is.EqualTo("MY"));
                 Assert.That(binding.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
                 Assert.That(binding.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
@@ -70,21 +72,21 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task QueryAll()
         {
-            BindingEndPoint ipPort1 = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort1 = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId1 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                ipport = ipPort1,
+                endpoint = ipPort1,
                 certhash = s_testingCertThumbprint,
                 appid = appId1,
                 certstorename = StoreName.My.ToString(),
             });
 
-            BindingEndPoint ipPort2 = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort2 = await GetEndpointWithFreeRandomPort("localhost");
             var appId2 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                ipport = ipPort2,
+                endpoint = ipPort2,
                 certhash = s_testingCertThumbprint,
                 appid = appId2,
                 certstorename = StoreName.AuthRoot.ToString(),
@@ -143,7 +145,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task AddWithDefaultOptions()
         {
-            BindingEndPoint ipPort = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId = Guid.NewGuid();
                 
             var configuration = new CertificateBindingConfiguration();
@@ -173,7 +175,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task AddWithNonDefaultOptions()
         {
-            BindingEndPoint ipPort = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId = Guid.NewGuid();
 
             var configuration = new CertificateBindingConfiguration();
@@ -255,12 +257,12 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task DeleteOne()
         {
-            BindingEndPoint ipPort = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId = Guid.NewGuid();
 
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                ipport = ipPort,
+                endpoint = ipPort,
                 certhash = s_testingCertThumbprint,
                 appid = appId,
                 certstorename = null,
@@ -274,22 +276,22 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task DeleteMany()
         {
-            BindingEndPoint ipPort1 = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort1 = await GetEndpointWithFreeRandomPort("0.0.0.0");
 
             var appId1 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                ipport = ipPort1,
+                endpoint = ipPort1,
                 certhash = s_testingCertThumbprint,
                 appid = appId1,
             });
 
-            BindingEndPoint ipPort2 = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort2 = await GetEndpointWithFreeRandomPort("localhost");
 
             var appId2 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                ipport = ipPort2,
+                endpoint = ipPort2,
                 certhash = s_testingCertThumbprint,
                 appid = appId2,
             });
@@ -306,12 +308,12 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task UpdateAsync()
         {
-            BindingEndPoint ipPort = await GetIpEndpointWithFreeRandomPort();
+            BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId = Guid.NewGuid();
 
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                ipport = ipPort,
+                endpoint = ipPort,
                 certhash = s_testingCertThumbprint,
                 appid = appId,
                 certstorename = StoreName.AuthRoot.ToString(),
@@ -372,10 +374,11 @@ namespace SslCertBinding.Net.Tests
         private static string s_testingCertThumbprint = string.Empty;
 
         [SetUp]
-        public void TestInitialize()
+        public async Task TestInitialize()
         {
             Assert.That(WindowsIdentity.GetCurrent().Owner.IsWellKnown(WellKnownSidType.BuiltinAdministratorsSid), Is.True, "These unit-tests shoud run with Adminstrator permissions.");
 
+            await CertConfigCmd.RemoveBindingEndPoints(s_testingCertThumbprint);
             DoInLocalMachineCertStores(certStore =>
             {
                 var cert = new X509Certificate2(Resources.certCA, string.Empty, X509KeyStorageFlags.MachineKeySet);
@@ -387,7 +390,7 @@ namespace SslCertBinding.Net.Tests
         [TearDown]
         public async Task TestCleanup()
         {
-            await CertConfigCmd.RemoveIpEndPoints(s_testingCertThumbprint);
+            await CertConfigCmd.RemoveBindingEndPoints(s_testingCertThumbprint);
             DoInLocalMachineCertStores(certStore =>
             {
                 X509Certificate2Collection certs = certStore.Certificates.Find(X509FindType.FindByThumbprint, s_testingCertThumbprint, false);
@@ -414,15 +417,16 @@ namespace SslCertBinding.Net.Tests
             }
         }
 
-        private static async Task<IPEndPoint> GetIpEndpointWithFreeRandomPort(string ip = "0.0.0.0")
-        {
+        private static async Task<BindingEndPoint> GetEndpointWithFreeRandomPort(string hostOrIp)
+        {            
             for (int port = 50000; port < 65535; port++)
             {
-                var ipPort = new IPEndPoint(IPAddress.Parse(ip), port);
+                var endpoint = new BindingEndPoint(hostOrIp, port);
+                var ipPort = endpoint.IsIpEndpoint ? endpoint.ToIPEndPoint() : new IPEndPoint(IPAddress.Any, port);
                 if (IpEndpointTools.IpEndpointIsAvailableForListening(ipPort))
                 {
                     if (!(await CertConfigCmd.IpPortIsPresentInConfig(ipPort.ToBindingEndPoint())))
-                        return ipPort;
+                        return endpoint;
                 }
             }
 

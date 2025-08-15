@@ -86,6 +86,16 @@ namespace SslCertBinding.Net
             HttpServiceConfigIPListenList = 0,
             HttpServiceConfigSSLCertInfo,
             HttpServiceConfigUrlAclInfo,
+            HttpServiceConfigTimeout,
+            HttpServiceConfigCache,
+            HttpServiceConfigSslSniCertInfo,
+            HttpServiceConfigSslCcsCertInfo,
+            HttpServiceConfigSetting,
+            HttpServiceConfigSslCertInfoEx,
+            HttpServiceConfigSslSniCertInfoEx,
+            HttpServiceConfigSslCcsCertInfoEx,
+            HttpServiceConfigSslScopedCcsCertInfo,
+            HttpServiceConfigSslScopedCcsCertInfoEx,
             HttpServiceConfigMax
         }
 
@@ -144,6 +154,44 @@ namespace SslCertBinding.Net
             public HTTP_SERVICE_CONFIG_QUERY_TYPE QueryDesc;
             public HTTP_SERVICE_CONFIG_SSL_KEY KeyDesc;
             public uint dwToken;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct HTTP_SERVICE_CONFIG_SSL_SNI_SET
+        {
+            public HTTP_SERVICE_CONFIG_SSL_SNI_KEY KeyDesc;
+            public HTTP_SERVICE_CONFIG_SSL_PARAM ParamDesc;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct HTTP_SERVICE_CONFIG_SSL_SNI_KEY
+        {
+            public SOCKADDR_STORAGE IpPort;
+            [MarshalAs(UnmanagedType.LPWStr)]
+            public string Host;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct HTTP_SERVICE_CONFIG_SSL_SNI_QUERY
+        {
+            public HTTP_SERVICE_CONFIG_QUERY_TYPE QueryDesc;
+            public HTTP_SERVICE_CONFIG_SSL_SNI_KEY KeyDesc;
+            public uint dwToken;
+        }
+
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct SOCKADDR_STORAGE
+        {
+            public short ss_family;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+            public byte[] __ss_pad1;
+
+            public long __ss_align;
+
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 112)]
+            public byte[] __ss_pad2;
         }
 
         public enum HTTP_SERVICE_CONFIG_QUERY_TYPE
