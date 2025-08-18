@@ -5,27 +5,27 @@ using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net.Interop
 {
-    internal static class CertificateBindingMapper
+    internal static class BindingStructures
     {
-        public static CertificateBinding CreateCertificateBindingInfo(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct)
+        public static CertificateBinding CreateBinding(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct)
         {
             byte[] hash = new byte[bindingStruct.ParamDesc.SslHashLength];
             Marshal.Copy(bindingStruct.ParamDesc.pSslHash, hash, 0, hash.Length);
             Guid appId = bindingStruct.ParamDesc.AppId;
             string storeName = bindingStruct.ParamDesc.pSslCertStoreName;
-            IPEndPoint ipPort = SockaddrInterop.ReadSockaddrStructure(bindingStruct.KeyDesc.pIpPort);
+            IPEndPoint ipPort = SockaddrStructure.ReadSockaddrStructPtr(bindingStruct.KeyDesc.pIpPort);
             BindingOptions options = CreateBindingOptions(bindingStruct.ParamDesc);
             var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort, appId, options);
             return result;
         }
 
-        public static CertificateBinding CreateCertificateBindingInfo(HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET bindingStruct)
+        public static CertificateBinding CreateBinding(HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET bindingStruct)
         {
             byte[] hash = new byte[bindingStruct.ParamDesc.SslHashLength];
             Marshal.Copy(bindingStruct.ParamDesc.pSslHash, hash, 0, hash.Length);
             Guid appId = bindingStruct.ParamDesc.AppId;
             string storeName = bindingStruct.ParamDesc.pSslCertStoreName;
-            IPEndPoint ipPort = SockaddrInterop.CreateIPEndPoint(bindingStruct.KeyDesc.IpPort);
+            IPEndPoint ipPort = SockaddrStructure.CreateIPEndPoint(bindingStruct.KeyDesc.IpPort);
             var endPoint = new BindingEndPoint(bindingStruct.KeyDesc.Host, ipPort.Port);
             BindingOptions options = CreateBindingOptions(bindingStruct.ParamDesc);
             var result = new CertificateBinding(GetThumbrint(hash), storeName, endPoint, appId, options);
@@ -34,7 +34,7 @@ namespace SslCertBinding.Net.Interop
 
         public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SET CreateBindingStruct(CertificateBinding binding, out Action freeResourcesFunc)
         {
-            IntPtr ipPortPtr = SockaddrInterop.CreateSockaddrStructure(binding.EndPoint.ToIPEndPoint(), out Action freeSockAddress);
+            IntPtr ipPortPtr = SockaddrStructure.CreateSockaddrStructPtr(binding.EndPoint.ToIPEndPoint(), out Action freeSockAddress);
             byte[] hashBytes = GetHashBytes(binding.Thumbprint);
             GCHandle hashBytesHandle = GCHandle.Alloc(hashBytes, GCHandleType.Pinned);
             IntPtr hashBytesPtr = hashBytesHandle.AddrOfPinnedObject();
@@ -73,10 +73,10 @@ namespace SslCertBinding.Net.Interop
             };
         }
 
-        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SET CreateBindingStructForDeletion(BindingEndPoint endPoint, out Action freeResourcesFunc)
+        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SET CreateBindingStruct(BindingEndPoint endPoint, out Action freeResourcesFunc)
         {
             IPEndPoint ipPort = endPoint.ToIPEndPoint();
-            IntPtr ipPortPtr = SockaddrInterop.CreateSockaddrStructure(ipPort, out Action freeSockaddr);
+            IntPtr ipPortPtr = SockaddrStructure.CreateSockaddrStructPtr(ipPort, out Action freeSockaddr);
             freeResourcesFunc = () => freeSockaddr();
 
             return new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET

@@ -48,7 +48,7 @@ namespace SslCertBinding.Net
             HttpApi.CallHttpApi(
                 delegate
                 {
-                    HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct = CertificateBindingMapper.CreateBindingStruct(binding, out Action freeResources);
+                    HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct = BindingStructures.CreateBindingStruct(binding, out Action freeResources);
                     IntPtr bindingStructPtr = StructureToPtr(bindingStruct);
 
                     try
@@ -121,7 +121,7 @@ namespace SslCertBinding.Net
             {
                 foreach (BindingEndPoint endPoint in endPoints)
                 {
-                    HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct = CertificateBindingMapper.CreateBindingStructForDeletion(endPoint, out Action freeResources);
+                    HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct = BindingStructures.CreateBindingStruct(endPoint, out Action freeResources);
                     IntPtr bindingStructPtr = StructureToPtr(bindingStruct);
 
                     try
@@ -210,7 +210,7 @@ namespace SslCertBinding.Net
 
         private static CertificateBinding QuerySingle(IPEndPoint ipPort)
         {
-            IntPtr ipPortPtr = SockaddrInterop.CreateSockaddrStructure(ipPort, out Action freeResources);
+            IntPtr ipPortPtr = SockaddrStructure.CreateSockaddrStructPtr(ipPort, out Action freeResources);
             try
             {
                 var queryStruct = new HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY
@@ -221,7 +221,7 @@ namespace SslCertBinding.Net
                 return QuerySingle(
                     HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
                     queryStruct,
-                    (MapBinding<HttpApi.HTTP_SERVICE_CONFIG_SSL_SET>)CertificateBindingMapper.CreateCertificateBindingInfo);
+                    (MapBinding<HttpApi.HTTP_SERVICE_CONFIG_SSL_SET>)BindingStructures.CreateBinding);
             }
             finally
             {
@@ -231,7 +231,7 @@ namespace SslCertBinding.Net
 
         private static CertificateBinding QuerySingle(DnsEndPoint hostnamePort)
         {
-            var sockAddrStorage = SockaddrInterop.CreateSockaddrStorage(hostnamePort.Port);
+            var sockAddrStorage = SockaddrStructure.CreateSockaddrStorage(hostnamePort.Port);
             var queryStruct = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_QUERY
             {
                 QueryDesc = HttpApi.HTTP_SERVICE_CONFIG_QUERY_TYPE.HttpServiceConfigQueryExact,
@@ -241,7 +241,7 @@ namespace SslCertBinding.Net
             return QuerySingle(
                 HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSslSniCertInfo,
                 queryStruct,
-                (MapBinding<HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET>)CertificateBindingMapper.CreateCertificateBindingInfo);
+                (MapBinding<HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET>)BindingStructures.CreateBinding);
         }
 
         private static List<CertificateBinding> QueryMany()
@@ -296,7 +296,7 @@ namespace SslCertBinding.Net
 
                                     var bindingStruct = (HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)Marshal.PtrToStructure(
                                         bindingStructPtr, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET));
-                                    CertificateBinding resultItem = CertificateBindingMapper.CreateCertificateBindingInfo(bindingStruct);
+                                    CertificateBinding resultItem = BindingStructures.CreateBinding(bindingStruct);
                                     result.Add(resultItem);
                                     token++;
                                 }

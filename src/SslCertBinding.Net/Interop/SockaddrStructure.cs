@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net.Interop
 {
-    internal static class SockaddrInterop
+    internal static class SockaddrStructure
     {
         /// <summary>
         /// Creates an unmanaged sockaddr structure to pass to a WinAPI function.
@@ -13,7 +13,7 @@ namespace SslCertBinding.Net.Interop
         /// <param name="ipEndPoint">IP address and port number</param>
         /// <param name="freeResourcesFunc">Function to free unmanaged resources</param>
         /// <returns>Pointer to the unmanaged sockaddr structure</returns>
-        public static IntPtr CreateSockaddrStructure(IPEndPoint ipEndPoint, out Action freeResourcesFunc)
+        public static IntPtr CreateSockaddrStructPtr(IPEndPoint ipEndPoint, out Action freeResourcesFunc)
         {
             SocketAddress socketAddress = ipEndPoint.Serialize();
 
@@ -37,11 +37,11 @@ namespace SslCertBinding.Net.Interop
         /// <summary>
         /// Reads the unmanaged sockaddr structure returned by a WinAPI function
         /// </summary>
-        /// <param name="pSockaddrStructure">pointer to the unmanaged sockaddr structure</param>
+        /// <param name="sockaddrStructPtr">pointer to the unmanaged sockaddr structure</param>
         /// <returns>IP address and port number</returns>
-        public static IPEndPoint ReadSockaddrStructure(IntPtr pSockaddrStructure)
+        public static IPEndPoint ReadSockaddrStructPtr(IntPtr sockaddrStructPtr)
         {
-            short sAddressFamily = Marshal.ReadInt16(pSockaddrStructure);
+            short sAddressFamily = Marshal.ReadInt16(sockaddrStructPtr);
             AddressFamily addressFamily = (AddressFamily)sAddressFamily;
 
             int sockAddrSructureSize;
@@ -59,13 +59,13 @@ namespace SslCertBinding.Net.Interop
                     ipEndPointAny = new IPEndPoint(IPAddress.IPv6Any, 0);
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(pSockaddrStructure), $"Unsupported address family: {addressFamily}");
+                    throw new ArgumentOutOfRangeException(nameof(sockaddrStructPtr), $"Unsupported address family: {addressFamily}");
             }
 
 
             // get bytes of the sockadrr structure
             byte[] sockAddrSructureBytes = new byte[sockAddrSructureSize];
-            Marshal.Copy(pSockaddrStructure, sockAddrSructureBytes, 0, sockAddrSructureSize);
+            Marshal.Copy(sockaddrStructPtr, sockAddrSructureBytes, 0, sockAddrSructureSize);
 
             // create SocketAddress from bytes
             var socketAddress = new SocketAddress(AddressFamily.Unspecified, sockAddrSructureSize);
