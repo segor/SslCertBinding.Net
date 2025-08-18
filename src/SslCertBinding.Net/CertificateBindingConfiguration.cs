@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
 
 namespace SslCertBinding.Net
 {
-    
+
     /// <summary>
     /// Provides methods to manage SSL certificate bindings.
     /// </summary>
@@ -44,52 +43,19 @@ namespace SslCertBinding.Net
         public void Bind(CertificateBinding binding)
         {
             _ = binding.ThrowIfNull(nameof(binding));
-            
+
             HttpApi.CallHttpApi(
                 delegate
                 {
-                    GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(binding.EndPoint.ToIPEndPoint());
-                    IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-                    var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
-
-                    byte[] hash = GetHash(binding.Thumbprint);
-                    GCHandle handleHash = GCHandle.Alloc(hash, GCHandleType.Pinned);
-                    BindingOptions options = binding.Options;
-                    var configSslParam = new HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM
-                    {
-                        AppId = binding.AppId,
-                        DefaultCertCheckMode = (options.DoNotVerifyCertificateRevocation ? HttpApi.CertCheckModes.DoNotVerifyCertificateRevocation : 0)
-                            | (options.VerifyRevocationWithCachedCertificateOnly ? HttpApi.CertCheckModes.VerifyRevocationWithCachedCertificateOnly : 0)
-                            | (options.EnableRevocationFreshnessTime ? HttpApi.CertCheckModes.EnableRevocationFreshnessTime : 0)
-                            | (options.NoUsageCheck ? HttpApi.CertCheckModes.NoUsageCheck : 0),
-                        DefaultFlags = (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
-                            | (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)
-                            | (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0),
-                        DefaultRevocationFreshnessTime = (int)options.RevocationFreshnessTime.TotalSeconds,
-                        DefaultRevocationUrlRetrievalTimeout = (int)options.RevocationUrlRetrievalTimeout.TotalMilliseconds,
-                        pSslCertStoreName = binding.StoreName,
-                        pSslHash = handleHash.AddrOfPinnedObject(),
-                        SslHashLength = hash.Length,
-                        pDefaultSslCtlIdentifier = options.SslCtlIdentifier,
-                        pDefaultSslCtlStoreName = options.SslCtlStoreName
-                    };
-
-                    var configSslSet = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET
-                    {
-                        ParamDesc = configSslParam,
-                        KeyDesc = httpServiceConfigSslKey
-                    };
-
-                    IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-                        Marshal.SizeOf(typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)));
-                    Marshal.StructureToPtr(configSslSet, pInputConfigInfo, false);
+                    HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct = CertificateBindingMapper.CreateBindingStruct(binding, out Action freeResources);
+                    IntPtr bindingStructPtr = StructureToPtr(bindingStruct);
 
                     try
                     {
                         uint retVal = HttpApi.HttpSetServiceConfiguration(IntPtr.Zero,
                             HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-                            pInputConfigInfo,
-                            Marshal.SizeOf(configSslSet),
+                            bindingStructPtr,
+                            Marshal.SizeOf(bindingStruct),
                             IntPtr.Zero);
 
                         if (HttpApi.ERROR_ALREADY_EXISTS != retVal)
@@ -100,26 +66,23 @@ namespace SslCertBinding.Net
                         {
                             retVal = HttpApi.HttpDeleteServiceConfiguration(IntPtr.Zero,
                                 HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-                                pInputConfigInfo,
-                                Marshal.SizeOf(configSslSet),
+                                bindingStructPtr,
+                                Marshal.SizeOf(bindingStruct),
                                 IntPtr.Zero);
                             HttpApi.ThrowWin32ExceptionIfError(retVal);
 
                             retVal = HttpApi.HttpSetServiceConfiguration(IntPtr.Zero,
                                 HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-                                pInputConfigInfo,
-                                Marshal.SizeOf(configSslSet),
+                                bindingStructPtr,
+                                Marshal.SizeOf(bindingStruct),
                                 IntPtr.Zero);
                             HttpApi.ThrowWin32ExceptionIfError(retVal);
                         }
                     }
                     finally
                     {
-                        Marshal.FreeCoTaskMem(pInputConfigInfo);
-                        if (handleHash.IsAllocated)
-                            handleHash.Free();
-                        if (sockAddrHandle.IsAllocated)
-                            sockAddrHandle.Free();
+                        Marshal.FreeCoTaskMem(bindingStructPtr);
+                        freeResources();
                     }
                 });
         }
@@ -157,34 +120,22 @@ namespace SslCertBinding.Net
             {
                 foreach (BindingEndPoint endPoint in endPoints)
                 {
-                    IPEndPoint ipPort = endPoint.ToIPEndPoint();
-                    GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
-                    IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-                    var httpServiceConfigSslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
-
-                    var configSslSet = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET
-                    {
-                        KeyDesc = httpServiceConfigSslKey
-                    };
-
-                    IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-                            Marshal.SizeOf(typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)));
-                    Marshal.StructureToPtr(configSslSet, pInputConfigInfo, false);
+                    HttpApi.HTTP_SERVICE_CONFIG_SSL_SET bindingStruct = CertificateBindingMapper.CreateBindingStructForDeletion(endPoint, out Action freeResources);
+                    IntPtr bindingStructPtr = StructureToPtr(bindingStruct);
 
                     try
                     {
                         uint retVal = HttpApi.HttpDeleteServiceConfiguration(IntPtr.Zero,
                             HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-                            pInputConfigInfo,
-                            Marshal.SizeOf(configSslSet),
+                            bindingStructPtr,
+                            Marshal.SizeOf(bindingStruct),
                             IntPtr.Zero);
                         HttpApi.ThrowWin32ExceptionIfError(retVal);
                     }
                     finally
                     {
-                        Marshal.FreeCoTaskMem(pInputConfigInfo);
-                        if (sockAddrHandle.IsAllocated)
-                            sockAddrHandle.Free();
+                        Marshal.FreeCoTaskMem(bindingStructPtr);
+                        freeResources();
                     }
                 }
             });
@@ -192,7 +143,7 @@ namespace SslCertBinding.Net
 
        
         private static CertificateBinding QuerySingle<TQueryStruct, TBindingStruct>(HttpApi.HTTP_SERVICE_CONFIG_ID configId,
-            TQueryStruct queryStruct, MapBinding<TBindingStruct> mapFunc)
+            TQueryStruct queryStruct, MapBinding<TBindingStruct> mapFunc) where TQueryStruct : struct where TBindingStruct : struct
         {
             CertificateBinding result = null;
 
@@ -200,22 +151,18 @@ namespace SslCertBinding.Net
             HttpApi.CallHttpApi(
                 delegate
                 {
-
-                    IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-                        Marshal.SizeOf(queryStruct.GetType()));
-                    Marshal.StructureToPtr(queryStruct, pInputConfigInfo, false);
-
-                    IntPtr pOutputConfigInfo = IntPtr.Zero;
+                    IntPtr queryStructPtr = StructureToPtr(queryStruct);
+                    IntPtr bindingStructPtr = IntPtr.Zero;
                     int returnLength = 0;
 
                     try
                     {
-                        int inputConfigInfoSize = Marshal.SizeOf(queryStruct);
+                        int pQueryStructSize = Marshal.SizeOf(queryStruct);
                         retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
                             configId,
-                            pInputConfigInfo,
-                            inputConfigInfoSize,
-                            pOutputConfigInfo,
+                            queryStructPtr,
+                            pQueryStructSize,
+                            bindingStructPtr,
                             returnLength,
                             out returnLength,
                             IntPtr.Zero);
@@ -224,26 +171,25 @@ namespace SslCertBinding.Net
 
                         if (HttpApi.ERROR_INSUFFICIENT_BUFFER == retVal)
                         {
-                            pOutputConfigInfo = Marshal.AllocCoTaskMem(returnLength);
+                            bindingStructPtr = Marshal.AllocCoTaskMem(returnLength);
                             try
                             {
                                 retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
                                     configId,
-                                    pInputConfigInfo,
-                                    inputConfigInfoSize,
-                                    pOutputConfigInfo,
+                                    queryStructPtr,
+                                    pQueryStructSize,
+                                    bindingStructPtr,
                                     returnLength,
                                     out returnLength,
                                     IntPtr.Zero);
                                 HttpApi.ThrowWin32ExceptionIfError(retVal);
 
-                                var outputConfigInfo = (TBindingStruct)Marshal.PtrToStructure(
-                                    pOutputConfigInfo, typeof(TBindingStruct));
-                                result = mapFunc(outputConfigInfo);
+                                var bindingStruct = (TBindingStruct)Marshal.PtrToStructure(bindingStructPtr, typeof(TBindingStruct));
+                                result = mapFunc(bindingStruct);
                             }
                             finally
                             {
-                                Marshal.FreeCoTaskMem(pOutputConfigInfo);
+                                Marshal.FreeCoTaskMem(bindingStructPtr);
                             }
                         }
                         else
@@ -254,7 +200,7 @@ namespace SslCertBinding.Net
                     }
                     finally
                     {
-                        Marshal.FreeCoTaskMem(pInputConfigInfo);
+                        Marshal.FreeCoTaskMem(queryStructPtr);
                     }
                 });
 
@@ -263,18 +209,14 @@ namespace SslCertBinding.Net
 
         private static CertificateBinding QuerySingle(IPEndPoint ipPort)
         {
-            GCHandle sockAddrHandle = SockaddrInterop.CreateSockaddrStructure(ipPort);
-            IntPtr pIpPort = sockAddrHandle.AddrOfPinnedObject();
-            var sslKey = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(pIpPort);
-
-            var queryStruct = new HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY
-            {
-                QueryDesc = HttpApi.HTTP_SERVICE_CONFIG_QUERY_TYPE.HttpServiceConfigQueryExact,
-                KeyDesc = sslKey
-            };
-
+            IntPtr ipPortPtr = SockaddrInterop.CreateSockaddrStructure(ipPort, out Action freeResources);
             try
             {
+                var queryStruct = new HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY
+                {
+                    QueryDesc = HttpApi.HTTP_SERVICE_CONFIG_QUERY_TYPE.HttpServiceConfigQueryExact,
+                    KeyDesc = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(ipPortPtr)
+                };
                 return QuerySingle(
                     HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
                     queryStruct,
@@ -282,8 +224,7 @@ namespace SslCertBinding.Net
             }
             finally
             {
-                if (sockAddrHandle.IsAllocated)
-                    sockAddrHandle.Free();
+                freeResources();
             }
         }
 
@@ -310,31 +251,27 @@ namespace SslCertBinding.Net
                 delegate
                 {
                     uint token = 0;
-
                     uint retVal;
                     do
                     {
-                        var inputConfigInfoQuery = new HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY
+                        var queryStruct = new HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY
                         {
                             QueryDesc = HttpApi.HTTP_SERVICE_CONFIG_QUERY_TYPE.HttpServiceConfigQueryNext,
                             dwToken = token,
                         };
+                        IntPtr queryStructPtr = StructureToPtr(queryStruct);
 
-                        IntPtr pInputConfigInfo = Marshal.AllocCoTaskMem(
-                            Marshal.SizeOf(typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY)));
-                        Marshal.StructureToPtr(inputConfigInfoQuery, pInputConfigInfo, false);
-
-                        IntPtr pOutputConfigInfo = IntPtr.Zero;
+                        IntPtr bindingStructPtr = IntPtr.Zero;
                         int returnLength = 0;
 
                         try
                         {
-                            int inputConfigInfoSize = Marshal.SizeOf(inputConfigInfoQuery);
+                            int queryStructSize = Marshal.SizeOf(queryStruct);
                             retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
                                 HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-                                pInputConfigInfo,
-                                inputConfigInfoSize,
-                                pOutputConfigInfo,
+                                queryStructPtr,
+                                queryStructSize,
+                                bindingStructPtr,
                                 returnLength,
                                 out returnLength,
                                 IntPtr.Zero);
@@ -342,29 +279,29 @@ namespace SslCertBinding.Net
                                 break;
                             if (HttpApi.ERROR_INSUFFICIENT_BUFFER == retVal)
                             {
-                                pOutputConfigInfo = Marshal.AllocCoTaskMem(returnLength);
+                                bindingStructPtr = Marshal.AllocCoTaskMem(returnLength);
 
                                 try
                                 {
                                     retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
                                         HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSSLCertInfo,
-                                        pInputConfigInfo,
-                                        inputConfigInfoSize,
-                                        pOutputConfigInfo,
+                                        queryStructPtr,
+                                        queryStructSize,
+                                        bindingStructPtr,
                                         returnLength,
                                         out returnLength,
                                         IntPtr.Zero);
                                     HttpApi.ThrowWin32ExceptionIfError(retVal);
 
-                                    var outputConfigInfo = (HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)Marshal.PtrToStructure(
-                                        pOutputConfigInfo, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET));
-                                    CertificateBinding resultItem = CertificateBindingMapper.CreateCertificateBindingInfo(outputConfigInfo);
+                                    var bindingStruct = (HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)Marshal.PtrToStructure(
+                                        bindingStructPtr, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET));
+                                    CertificateBinding resultItem = CertificateBindingMapper.CreateCertificateBindingInfo(bindingStruct);
                                     result.Add(resultItem);
                                     token++;
                                 }
                                 finally
                                 {
-                                    Marshal.FreeCoTaskMem(pOutputConfigInfo);
+                                    Marshal.FreeCoTaskMem(bindingStructPtr);
                                 }
                             }
                             else
@@ -374,23 +311,20 @@ namespace SslCertBinding.Net
                         }
                         finally
                         {
-                            Marshal.FreeCoTaskMem(pInputConfigInfo);
+                            Marshal.FreeCoTaskMem(queryStructPtr);
                         }
 
                     } while (HttpApi.NOERROR == retVal);
-
                 });
 
             return result;
         }
 
-        private static byte[] GetHash(string thumbprint)
+        private static IntPtr StructureToPtr<TStruct>(TStruct structObj) where TStruct : struct
         {
-            int length = thumbprint.Length;
-            byte[] bytes = new byte[length / 2];
-            for (int i = 0; i < length; i += 2)
-                bytes[i / 2] = Convert.ToByte(thumbprint.Substring(i, 2), 16);
-            return bytes;
+            IntPtr structPtr = Marshal.AllocCoTaskMem(Marshal.SizeOf(structObj.GetType()));
+            Marshal.StructureToPtr(structObj, structPtr, false);
+            return structPtr;
         }
     }
 }

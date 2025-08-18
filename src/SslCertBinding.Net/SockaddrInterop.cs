@@ -11,9 +11,9 @@ namespace SslCertBinding.Net
         /// Creates an unmanaged sockaddr structure to pass to a WinAPI function.
         /// </summary>
         /// <param name="ipEndPoint">IP address and port number</param>
-        /// <returns>a handle for the structure. Use the AddrOfPinnedObject Method to get a stable pointer to the object. </returns>
-        /// <remarks>When the handle goes out of scope you must explicitly release it by calling the Free method; otherwise, memory leaks may occur. </remarks>
-        public static GCHandle CreateSockaddrStructure(IPEndPoint ipEndPoint)
+        /// <param name="freeResourcesFunc">Function to free unmanaged resources</param>
+        /// <returns>Pointer to the unmanaged sockaddr structure</returns>
+        public static IntPtr CreateSockaddrStructure(IPEndPoint ipEndPoint, out Action freeResourcesFunc)
         {
             SocketAddress socketAddress = ipEndPoint.Serialize();
 
@@ -24,7 +24,13 @@ namespace SslCertBinding.Net
             {
                 sockAddrStructureBytes[i] = socketAddress[i];
             }
-            return sockAddrHandle;
+
+            freeResourcesFunc = () =>
+            {
+                if (sockAddrHandle.IsAllocated)
+                    sockAddrHandle.Free();
+            };
+            return sockAddrHandle.AddrOfPinnedObject();
         }
 
 
