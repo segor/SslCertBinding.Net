@@ -155,7 +155,7 @@ namespace SslCertBinding.Net
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        bool IEquatable<BindingEndPoint>.Equals(BindingEndPoint other)
+        public bool Equals(BindingEndPoint other)
         {
             if (other == null)
                 return false;
@@ -167,7 +167,7 @@ namespace SslCertBinding.Net
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        bool IEquatable<DnsEndPoint>.Equals(DnsEndPoint other)
+        public bool Equals(DnsEndPoint other)
         {
             if (other == null)
                 return false;
@@ -179,7 +179,7 @@ namespace SslCertBinding.Net
         /// </summary>
         /// <param name="other"></param>
         /// <returns></returns>
-        bool IEquatable<IPEndPoint>.Equals(IPEndPoint other)
+        public bool Equals(IPEndPoint other)
         {
             if (other == null || _ipEndPoint == null)
                 return false;
