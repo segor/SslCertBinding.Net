@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
 
-namespace SslCertBinding.Net
+namespace SslCertBinding.Net.Interop
 {
     internal static class CertificateBindingMapper
     {

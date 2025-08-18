@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace SslCertBinding.Net
+namespace SslCertBinding.Net.Interop
 {
     internal static class SockaddrInterop
     {
@@ -110,7 +110,7 @@ namespace SslCertBinding.Net
 
             // Fill __ss_pad2 (remaining bytes, up to 112)
             result.__ss_pad2 = new byte[112];
-            for (int i = 8; i < socketAddress.Size && (i - 8) < result.__ss_pad2.Length; i++)
+            for (int i = 8; i < socketAddress.Size && i - 8 < result.__ss_pad2.Length; i++)
             {
                 result.__ss_pad2[i - 8] = socketAddress[i];
             }
@@ -134,10 +134,10 @@ namespace SslCertBinding.Net
             // Compose the raw bytes for SocketAddress
             byte[] bytes = new byte[size];
             bytes[0] = (byte)(storage.ss_family & 0xFF);
-            bytes[1] = (byte)((storage.ss_family >> 8) & 0xFF);
-            for (int i = 0; i < 6 && (i + 2) < size; i++)
+            bytes[1] = (byte)(storage.ss_family >> 8 & 0xFF);
+            for (int i = 0; i < 6 && i + 2 < size; i++)
                 bytes[i + 2] = storage.__ss_pad1[i];
-            for (int i = 0; i < storage.__ss_pad2.Length && (i + 8) < size; i++)
+            for (int i = 0; i < storage.__ss_pad2.Length && i + 8 < size; i++)
                 bytes[i + 8] = storage.__ss_pad2[i];
 
             // Create SocketAddress and IPEndPoint

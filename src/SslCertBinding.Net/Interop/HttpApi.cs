@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace SslCertBinding.Net
+namespace SslCertBinding.Net.Interop
 {
     internal class HttpApi
     {

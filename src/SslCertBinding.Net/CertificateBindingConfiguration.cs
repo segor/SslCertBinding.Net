@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Runtime.InteropServices;
+using SslCertBinding.Net.Interop;
 
 namespace SslCertBinding.Net
 {
