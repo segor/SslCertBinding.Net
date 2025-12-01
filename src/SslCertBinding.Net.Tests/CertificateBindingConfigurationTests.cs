@@ -160,6 +160,9 @@ namespace SslCertBinding.Net.Tests
     Certificate Store Name  : My 
     Verify Client Certificate Revocation    : Enabled
     Verify Revocation Using Cached Client Certificate Only    : Disabled
+    Use Revocation Freshness Time : Disabled
+    Verify Revocation Using Cached URLs Only : Disabled
+    Disable Authority Info Access : Disabled
     Usage Check    : Enabled
     Revocation Freshness Time : 0 
     URL Retrieval Timeout   : 0 
@@ -204,6 +207,9 @@ namespace SslCertBinding.Net.Tests
     Certificate Store Name  : My 
     Verify Client Certificate Revocation    : Disabled
     Verify Revocation Using Cached Client Certificate Only    : Enabled
+    Use Revocation Freshness Time : Enabled
+    Verify Revocation Using Cached URLs Only : Disabled
+    Disable Authority Info Access : Disabled
     Usage Check    : Disabled
     Revocation Freshness Time : 60 
     URL Retrieval Timeout   : 5000 
@@ -345,6 +351,9 @@ namespace SslCertBinding.Net.Tests
     Certificate Store Name  : My 
     Verify Client Certificate Revocation    : Disabled
     Verify Revocation Using Cached Client Certificate Only    : Enabled
+    Use Revocation Freshness Time : Enabled
+    Verify Revocation Using Cached URLs Only : Disabled
+    Disable Authority Info Access : Disabled
     Usage Check    : Disabled
     Revocation Freshness Time : 60 
     URL Retrieval Timeout   : 5000 

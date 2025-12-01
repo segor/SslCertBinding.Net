@@ -25,8 +25,8 @@ env:
   Obj_Dir: src/artifacts/obj/
   Coverage_Dir: src/artifacts/coverage/
   NugetPackage_Dir: src/artifacts/package/
-  DotNetFrameworkToTestOnLinux: net6.0
-  DotnetSdkVersionToTestOnLinux: 6.0.x
+  DotNetFrameworkToTestOnLinux: net8.0
+  DotnetSdkVersionToTestOnLinux: 8.0.x
 
 jobs:
 
@@ -38,12 +38,12 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
 
@@ -64,7 +64,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: Output artifacts
         path: |
@@ -82,12 +82,12 @@ jobs:
     steps:
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         fetch-depth: 0
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         dotnet-version: ${{ env.DotnetSdkVersionToTestOnLinux }}
         global-json-file: src/global.json
@@ -113,13 +113,13 @@ jobs:
     steps:
 
     - name: Download artifacts
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v6
       with:
         name: Output artifacts
         path: ${{ env.Artifact_Dir }}
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
         global-json-file: src/global.json
 
