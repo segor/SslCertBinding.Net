@@ -158,7 +158,7 @@ namespace SslCertBinding.Net.Tests
     Certificate Store Name  : My 
     Verify Client Certificate Revocation    : Enabled
     Verify Revocation Using Cached Client Certificate Only    : Disabled
-    Use Revocation Freshness Time : Enabled
+    Use Revocation Freshness Time : Disabled
     Verify Revocation Using Cached URLs Only : Disabled
     Disable Authority Info Access : Disabled
     Usage Check    : Enabled
