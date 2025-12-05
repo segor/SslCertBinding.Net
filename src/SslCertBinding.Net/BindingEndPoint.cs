@@ -37,7 +37,9 @@ namespace SslCertBinding.Net
         /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified host and port.
         /// </summary>
         /// <param name="hostOrIp">Host or IP address</param>
-        /// <param name="port"></param>
+        /// <param name="port">Port number. Must be between <see cref="System.Net.IPEndPoint.MinPort"/> and <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="hostOrIp"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
         public BindingEndPoint(string hostOrIp, int port) : this(
                 hostOrIp.ThrowIfNull(nameof(hostOrIp)),
                 port,
@@ -49,7 +51,9 @@ namespace SslCertBinding.Net
         /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified IP address and port.
         /// </summary>
         /// <param name="ipAddress">IP address</param>
-        /// <param name="port"></param>
+        /// <param name="port">Port number. Must be between <see cref="System.Net.IPEndPoint.MinPort"/> and <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipAddress"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
         public BindingEndPoint(IPAddress ipAddress, int port)
             : this(new IPEndPoint(ipAddress.ThrowIfNull(nameof(ipAddress)), port))
         {
@@ -58,7 +62,9 @@ namespace SslCertBinding.Net
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified IP endpoint.
         /// </summary>
-        /// <param name="ipEndPoint"><see cref="IPEndPoint"/></param>
+        /// <param name="ipEndPoint"><see cref="IPEndPoint"/>. The contained port must be in the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipEndPoint"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the contained port is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
         public BindingEndPoint(IPEndPoint ipEndPoint) : this(
             ipEndPoint.ThrowIfNull(nameof(ipEndPoint)).Address.ToString(),
             ipEndPoint.Port,
@@ -69,7 +75,8 @@ namespace SslCertBinding.Net
         /// <summary>
         /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified DNS endpoint.
         /// </summary>
-        /// <param name="dnsEndPoint">A network endpoint as a host name or a string representation of an IP address and a port number</param>
+        /// <param name="dnsEndPoint">A network endpoint as a host name or a string representation of an IP address and a port number. The contained port must be in the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="dnsEndPoint"/> is null.</exception>
         public BindingEndPoint(DnsEndPoint dnsEndPoint)
         {
             _dnsEndpoint = dnsEndPoint.ThrowIfNull(nameof(dnsEndPoint));
@@ -78,6 +85,9 @@ namespace SslCertBinding.Net
 
         private BindingEndPoint(string host, int port, IPEndPoint ipEndPoint)
         {
+            // When an IP endpoint is provided we store the textual host as the
+            // unbracketed IP address (IPAddress.ToString() returns unbracketed IPv6 like "::1").
+            // This ensures ToString() and equality/hashcode are normalized for IPv6.
             _dnsEndpoint = new DnsEndPoint(
                 ipEndPoint == null ? host : ipEndPoint.Address.ToString(),
                 port,
@@ -102,14 +112,13 @@ namespace SslCertBinding.Net
         /// Converts this <see cref="BindingEndPoint"/> to an <see cref="IPEndPoint"/> if it is an IP endpoint.
         /// </summary>
         /// <returns></returns>
-        /// <exception cref="InvalidOperationException">if the endpoint is not IP address</exception>
+        /// <exception cref="InvalidCastException">if the endpoint is not IP address</exception>
         public IPEndPoint ToIPEndPoint()
         {
             if (!IsIpEndpoint)
-                throw new InvalidOperationException("Endpoint is not IP address");
+                throw new InvalidCastException("Endpoint is not IP address");
             return _ipEndPoint;
         }
-
 
         /// <summary>
         /// Converts this <see cref="BindingEndPoint"/> to a <see cref="DnsEndPoint"/> if it is a DNS endpoint.
@@ -191,7 +200,15 @@ namespace SslCertBinding.Net
         /// Returns a hash code for the current <see cref="BindingEndPoint"/>.
         /// </summary>
         /// <returns></returns>
-        public override int GetHashCode() => _dnsEndpoint.GetHashCode();
+        public override int GetHashCode()
+        {
+            if (IsIpEndpoint)
+            {
+                return _ipEndPoint.GetHashCode();
+            }
+            return _dnsEndpoint.GetHashCode();
+        }
+
 
         /// <summary>
         /// Tries to parse a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
@@ -214,7 +231,7 @@ namespace SslCertBinding.Net
             if (string.IsNullOrEmpty(host))
                 return false;
 
-            if (!int.TryParse(portStr, out int port) || port < 0 || port > 65535)
+            if (!int.TryParse(portStr, out int port) || port < System.Net.IPEndPoint.MinPort || port > System.Net.IPEndPoint.MaxPort)
                 return false;
 
             endPoint = IPAddress.TryParse(host, out IPAddress ip)
@@ -229,7 +246,7 @@ namespace SslCertBinding.Net
         /// <param name="endpointStr"></param>
         /// <returns></returns>
         /// <exception cref="FormatException">Invalid endpoint format</exception>
-        public static BindingEndPoint Parse (string endpointStr)
+        public static BindingEndPoint Parse(string endpointStr)
         {
             if (!TryParse(endpointStr, out BindingEndPoint endPoint))
             {
