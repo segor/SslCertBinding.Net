@@ -92,7 +92,7 @@ namespace SslCertBinding.Net.Tests
             if (!string.IsNullOrEmpty(options.sslctlidentifier))
                 AppendArgument("sslctlidentifier", options.sslctlidentifier);
             if (!string.IsNullOrEmpty(options.sslctlstorename))
-                AppendArgument("sslctlstorename=", options.sslctlstorename);
+                AppendArgument("sslctlstorename", options.sslctlstorename);
             if (options.dsmapperusage.HasValue)
                 AppendArgument("dsmapperusage", BoolToEnableDisable(options.dsmapperusage.Value));
             if (options.clientcertnegotiation.HasValue)
