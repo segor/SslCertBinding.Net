@@ -168,6 +168,10 @@ namespace SslCertBinding.Net
         {
             if (other == null)
                 return false;
+            if (IsIpEndpoint && other.IsIpEndpoint)
+            {
+                return _ipEndPoint.Equals(other._ipEndPoint);
+            }
             return _dnsEndpoint.Equals(other._dnsEndpoint);
         }
 

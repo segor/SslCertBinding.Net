@@ -14,6 +14,7 @@ namespace SslCertBinding.Net.Tests
 {
     [TestFixture]
     [NonParallelizable]
+    [Platform(Include = "Win")]
 #if NET5_0_OR_GREATER
     [System.Runtime.Versioning.SupportedOSPlatform("windows")]
 #endif

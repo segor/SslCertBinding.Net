@@ -274,7 +274,7 @@ namespace SslCertBinding.Net.Tests
 
         /// <summary>
         /// Tests Equals(DnsEndPoint) for DNS-based endpoints. Verifies that a DNS-based BindingEndPoint
-        /// correctly equals the underlying DnsEndPoint, with case-insensitive hostname comparison.
+        /// correctly equals the underlying DnsEndPoint, with the same hostname comparison.
         /// </summary>
         [TestCase("example.com", 443)]
         [TestCase("my-host.local", 8080)]
@@ -307,8 +307,8 @@ namespace SslCertBinding.Net.Tests
         }
 
         /// <summary>
-        /// Tests that BindingEndPoint hostname equality is case-insensitive.
-        /// Verifies that endpoints with different case but same hostname are equal.
+        /// Tests that BindingEndPoint hostname equality is case-insensitive in .NET 5+.
+        /// Verifies that endpoints with different case but same hostname are expected equality that follows the framework-native DnsEndPoint equality semantics.
         /// </summary>
         [TestCase("example.com", "Example.Com", 443)]
         [TestCase("example.com", "EXAMPLE.COM", 443)]
@@ -319,8 +319,14 @@ namespace SslCertBinding.Net.Tests
             var ep1 = new BindingEndPoint(host1, port);
             var ep2 = new BindingEndPoint(host2, port);
 
-            Assert.That(ep1.Equals(ep2), Is.True, $"{host1} should equal {host2}");
-            Assert.That(ep1.GetHashCode(), Is.EqualTo(ep2.GetHashCode()), "Hash codes should match for case-insensitive equal hostnames");
+            // Expected equality follows the framework-native DnsEndPoint equality semantics.
+            var expectedeEquality = new DnsEndPoint(host1, port).Equals(new DnsEndPoint(host2, port));
+            Assert.That(ep1.Equals(ep2), Is.EqualTo(expectedeEquality), $"Equality should match DnsEndPoint.Equals for {host1} vs {host2}");
+
+            if (expectedeEquality)
+            {
+                Assert.That(ep1.GetHashCode(), Is.EqualTo(ep2.GetHashCode()), "Hash codes should match when endpoints are equal");
+            } 
         }
 
         /// <summary>

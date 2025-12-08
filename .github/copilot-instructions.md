@@ -46,11 +46,26 @@ dotnet build SslCertBinding.Net.sln -c Release
 
 ## Testing & Workflow
 
-### Test Execution
+### Test Execution Environment Constraints
+⚠️ **CRITICAL**: Test execution differs significantly by platform:
+
+**Linux (GitHub Codespace, Ubuntu):**
+- Only **cross-platform tests** can execute (net8.0 framework)
+- Windows-specific certificate binding tests are **automatically skipped** by the test framework (marked with `[SupportedOSPlatform("windows")]`)
+- This is an environmental limitation, not something to "fix" - Linux cannot manipulate Windows SSL certificates
+- Used for quick validation of non-Windows-specific logic only
+
+**Windows (GitHub Actions, windows-latest):**
+- All tests execute including Windows-specific certificate binding operations
+- **This is the authoritative test environment** for validating certificate binding functionality
+- Tests actually manipulate Windows SSL configuration and validate system state via netsh commands
+- Must pass before merging SNI changes
+
+### Test Execution Details
 - **Unit Tests**: `CertificateBindingConfigurationTests`, `BindingEndPointTests`, `CertificateBindingTests`
 - **Admin Requirement**: Tests need elevated permissions (run Visual Studio/terminal as Administrator)
 - **Test Fixture**: Uses NUnit `[NonParallelizable]` because tests modify system SSL configuration
-- **Linux Testing**: GitHub Actions runs `dotnet test` with `--framework net8.0` on Ubuntu (tests skip on non-Windows)
+- **Test Helper**: `CertConfigCmd` shells out to `netsh http show|add|delete sslcert` to validate system state
 
 ```bash
 # Local testing (requires admin)
