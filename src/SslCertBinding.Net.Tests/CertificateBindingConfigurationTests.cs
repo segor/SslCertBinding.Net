@@ -73,21 +73,21 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task QueryAll()
         {
-            BindingEndPoint ipPort1 = await GetEndpointWithFreeRandomPort("0.0.0.0");
+            BindingEndPoint endpoint1 = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId1 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                endpoint = ipPort1,
+                endpoint = endpoint1,
                 certhash = s_testingCertThumbprint,
                 appid = appId1,
                 certstorename = StoreName.My.ToString(),
             });
 
-            BindingEndPoint ipPort2 = await GetEndpointWithFreeRandomPort("localhost");
+            BindingEndPoint endpoint2 = await GetEndpointWithFreeRandomPort("localhost");
             var appId2 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                endpoint = ipPort2,
+                endpoint = endpoint2,
                 certhash = s_testingCertThumbprint,
                 appid = appId2,
                 certstorename = StoreName.AuthRoot.ToString(),
@@ -100,13 +100,13 @@ namespace SslCertBinding.Net.Tests
 
             var config = new CertificateBindingConfiguration();
             IReadOnlyList<CertificateBinding> allBindings = config.Query();
-            List<CertificateBinding> addedBindings = allBindings.Where(b => b.EndPoint.Equals(ipPort1) || b.EndPoint.Equals(ipPort2)).ToList();
+            List<CertificateBinding> addedBindings = allBindings.Where(b => b.EndPoint.Equals(endpoint1) || b.EndPoint.Equals(endpoint2)).ToList();
             Assert.That(addedBindings, Has.Count.EqualTo(2));
             CertificateBinding binding1 = addedBindings[0];
             Assert.Multiple(() =>
             {
                 Assert.That(binding1.AppId, Is.EqualTo(appId1));
-                Assert.That(binding1.EndPoint, Is.EqualTo(ipPort1));
+                Assert.That(binding1.EndPoint, Is.EqualTo(endpoint1));
                 Assert.That(binding1.StoreName, Is.EqualTo(StoreName.My.ToString()));
                 Assert.That(binding1.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
                 Assert.That(binding1.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
@@ -126,7 +126,7 @@ namespace SslCertBinding.Net.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(binding2.AppId, Is.EqualTo(appId2));
-                Assert.That(binding2.EndPoint, Is.EqualTo(ipPort2));
+                Assert.That(binding2.EndPoint, Is.EqualTo(endpoint2));
                 Assert.That(binding2.StoreName, Is.EqualTo(StoreName.AuthRoot.ToString()));
                 Assert.That(binding2.Thumbprint, Is.EqualTo(s_testingCertThumbprint));
                 Assert.That(binding2.Options.DoNotPassRequestsToRawFilters, Is.EqualTo(false));
@@ -144,7 +144,7 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public async Task AddWithDefaultOptions()
+        public async Task AddIpEndpointWithDefaultOptions()
         {
             BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId = Guid.NewGuid();
@@ -177,7 +177,40 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public async Task AddWithNonDefaultOptions()
+        public async Task AddDnsEndpointWithDefaultOptions()
+        {
+            BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("localhost");
+            var appId = Guid.NewGuid();
+                
+            var configuration = new CertificateBindingConfiguration();
+            configuration.Bind(new CertificateBinding(s_testingCertThumbprint, StoreName.My, ipPort, appId));
+
+            CertConfigCmd.CommandResult result = await CertConfigCmd.Show(ipPort);
+            Assert.That(result.IsSuccessfull, Is.True);
+            string expectedOutput = string.Format(CultureInfo.InvariantCulture,
+                @"  name:port                 : {0} 
+    Certificate Hash        : {1}
+    Application ID          : {2} 
+    Certificate Store Name  : My 
+    Verify Client Certificate Revocation    : Enabled
+    Verify Revocation Using Cached Client Certificate Only    : Disabled
+    Use Revocation Freshness Time : Disabled
+    Verify Revocation Using Cached URLs Only : Disabled
+    Disable Authority Info Access : Disabled
+    Usage Check    : Enabled
+    Revocation Freshness Time : 0 
+    URL Retrieval Timeout   : 0 
+    Ctl Identifier          : (null) 
+    Ctl Store Name          : (null) 
+    DS Mapper Usage    : Disabled
+    Negotiate Client Certificate    : Disabled",
+                ipPort, s_testingCertThumbprint, appId.ToString("B"));
+
+            AssertOutput(result.Output, expectedOutput);
+        }
+
+        [Test]
+        public async Task AddIpEndpointWithNonDefaultOptions()
         {
             BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId = Guid.NewGuid();
@@ -223,6 +256,53 @@ namespace SslCertBinding.Net.Tests
             AssertOutput(result.Output, expectedOutput);
         }
 
+[Test]
+        public async Task AddDnsEndpointWithNonDefaultOptions()
+        {
+            BindingEndPoint endpoint = await GetEndpointWithFreeRandomPort("localhost");
+            var appId = Guid.NewGuid();
+
+            var configuration = new CertificateBindingConfiguration();
+
+            var binding = new CertificateBinding(s_testingCertThumbprint, StoreName.My, endpoint, appId, new BindingOptions
+            {
+                DoNotPassRequestsToRawFilters = true,
+                DoNotVerifyCertificateRevocation = true,
+                EnableRevocationFreshnessTime = true,
+                NegotiateCertificate = true,
+                NoUsageCheck = true,
+                RevocationFreshnessTime = TimeSpan.FromMinutes(1),
+                RevocationUrlRetrievalTimeout = TimeSpan.FromSeconds(5),
+                UseDsMappers = true,
+                VerifyRevocationWithCachedCertificateOnly = true,
+            });
+
+            configuration.Bind(binding);
+
+            CertConfigCmd.CommandResult result = await CertConfigCmd.Show(endpoint);
+            Assert.That(result.IsSuccessfull, Is.True);
+            string expectedOutput = string.Format(CultureInfo.InvariantCulture,
+                @"  name:port                 : {0} 
+    Certificate Hash        : {1}
+    Application ID          : {2} 
+    Certificate Store Name  : My 
+    Verify Client Certificate Revocation    : Disabled
+    Verify Revocation Using Cached Client Certificate Only    : Enabled
+    Use Revocation Freshness Time : Enabled
+    Verify Revocation Using Cached URLs Only : Disabled
+    Disable Authority Info Access : Disabled
+    Usage Check    : Disabled
+    Revocation Freshness Time : 60 
+    URL Retrieval Timeout   : 5000 
+    Ctl Identifier          : (null) 
+    Ctl Store Name          : (null) 
+    DS Mapper Usage    : Enabled
+    Negotiate Client Certificate    : Enabled",
+                endpoint, s_testingCertThumbprint, appId.ToString("B"));
+
+            AssertOutput(result.Output, expectedOutput);
+        }
+
         [Test]
         public void DeleteNullCollectionArgument()
         {
@@ -261,54 +341,57 @@ namespace SslCertBinding.Net.Tests
             });
         }
 
-        [Test]
-        public async Task DeleteOne()
+        [TestCase("0.0.0.0")]
+        [TestCase("::")]
+        [TestCase("localhost")]
+        [TestCase("ssl-cert-binding.net.com")]
+        public async Task DeleteOne(string hostOrIp)
         {
-            BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("0.0.0.0");
+            BindingEndPoint endpoint = await GetEndpointWithFreeRandomPort("0.0.0.0");
             var appId = Guid.NewGuid();
 
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                endpoint = ipPort,
+                endpoint = endpoint,
                 certhash = s_testingCertThumbprint,
                 appid = appId,
                 certstorename = null,
             });
 
             var config = new CertificateBindingConfiguration();
-            config.Delete(ipPort);
-            Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort), Is.False);
+            config.Delete(endpoint);
+            Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(endpoint), Is.False);
         }
 
         [Test]
         public async Task DeleteMany()
         {
-            BindingEndPoint ipPort1 = await GetEndpointWithFreeRandomPort("0.0.0.0");
+            BindingEndPoint endpoint1 = await GetEndpointWithFreeRandomPort("0.0.0.0");
 
             var appId1 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                endpoint = ipPort1,
+                endpoint = endpoint1,
                 certhash = s_testingCertThumbprint,
                 appid = appId1,
             });
 
-            BindingEndPoint ipPort2 = await GetEndpointWithFreeRandomPort("localhost");
+            BindingEndPoint endpoint2 = await GetEndpointWithFreeRandomPort("localhost");
 
             var appId2 = Guid.NewGuid();
             await CertConfigCmd.Add(new CertConfigCmd.Options
             {
-                endpoint = ipPort2,
+                endpoint = endpoint2,
                 certhash = s_testingCertThumbprint,
                 appid = appId2,
             });
 
             var config = new CertificateBindingConfiguration();
-            config.Delete(new[] { ipPort1, ipPort2 });
+            config.Delete(new[] { endpoint1, endpoint2 });
             Assert.Multiple(async () =>
             {
-                Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort1), Is.False);
-                Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(ipPort2), Is.False);
+                Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(endpoint1), Is.False);
+                Assert.That(await CertConfigCmd.IpPortIsPresentInConfig(endpoint2), Is.False);
             });
         }
 

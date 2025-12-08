@@ -27,7 +27,11 @@ namespace SslCertBinding.Net
         public IReadOnlyList<CertificateBinding> Query(BindingEndPoint endPoint = null)
         {
             if (endPoint == null)
-                return QueryMany();
+            {
+                var list = QueryManyIpEndpoints();
+                list.AddRange(QueryManyDnsEndpoints());
+                return list;
+            }
 
             CertificateBinding info = endPoint.IsIpEndpoint
                 ? QuerySingle(endPoint.ToIPEndPoint())
@@ -243,8 +247,8 @@ namespace SslCertBinding.Net
                 queryStruct,
                 (MapBinding<HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET>)BindingStructures.CreateBinding);
         }
-
-        private static List<CertificateBinding> QueryMany()
+        
+        private static List<CertificateBinding> QueryManyIpEndpoints()
         {
             var result = new List<CertificateBinding>();
 
@@ -296,6 +300,83 @@ namespace SslCertBinding.Net
 
                                     var bindingStruct = (HttpApi.HTTP_SERVICE_CONFIG_SSL_SET)Marshal.PtrToStructure(
                                         bindingStructPtr, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SET));
+                                    CertificateBinding resultItem = BindingStructures.CreateBinding(bindingStruct);
+                                    result.Add(resultItem);
+                                    token++;
+                                }
+                                finally
+                                {
+                                    Marshal.FreeCoTaskMem(bindingStructPtr);
+                                }
+                            }
+                            else
+                            {
+                                HttpApi.ThrowWin32ExceptionIfError(retVal);
+                            }
+                        }
+                        finally
+                        {
+                            Marshal.FreeCoTaskMem(queryStructPtr);
+                        }
+
+                    } while (HttpApi.NOERROR == retVal);
+                });
+
+            return result;
+        }
+
+        private static List<CertificateBinding> QueryManyDnsEndpoints()
+        {
+            var result = new List<CertificateBinding>();
+
+            HttpApi.CallHttpApi(
+                delegate
+                {
+                    uint token = 0;
+                    uint retVal;
+                    do
+                    {
+                        var queryStruct = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_QUERY
+                        {
+                            QueryDesc = HttpApi.HTTP_SERVICE_CONFIG_QUERY_TYPE.HttpServiceConfigQueryNext,
+                            dwToken = token,
+                        };
+                        IntPtr queryStructPtr = StructureToPtr(queryStruct);
+
+                        IntPtr bindingStructPtr = IntPtr.Zero;
+                        int returnLength = 0;
+
+                        try
+                        {
+                            int queryStructSize = Marshal.SizeOf(queryStruct);
+                            retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
+                                HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSslSniCertInfo,
+                                queryStructPtr,
+                                queryStructSize,
+                                bindingStructPtr,
+                                returnLength,
+                                out returnLength,
+                                IntPtr.Zero);
+                            if (HttpApi.ERROR_NO_MORE_ITEMS == retVal)
+                                break;
+                            if (HttpApi.ERROR_INSUFFICIENT_BUFFER == retVal)
+                            {
+                                bindingStructPtr = Marshal.AllocCoTaskMem(returnLength);
+
+                                try
+                                {
+                                    retVal = HttpApi.HttpQueryServiceConfiguration(IntPtr.Zero,
+                                        HttpApi.HTTP_SERVICE_CONFIG_ID.HttpServiceConfigSslSniCertInfo,
+                                        queryStructPtr,
+                                        queryStructSize,
+                                        bindingStructPtr,
+                                        returnLength,
+                                        out returnLength,
+                                        IntPtr.Zero);
+                                    HttpApi.ThrowWin32ExceptionIfError(retVal);
+
+                                    var bindingStruct = (HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET)Marshal.PtrToStructure(
+                                        bindingStructPtr, typeof(HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET));
                                     CertificateBinding resultItem = BindingStructures.CreateBinding(bindingStruct);
                                     result.Add(resultItem);
                                     token++;
