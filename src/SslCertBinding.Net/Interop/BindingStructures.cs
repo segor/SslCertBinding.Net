@@ -32,37 +32,15 @@ namespace SslCertBinding.Net.Interop
             return result;
         }
 
-        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SET CreateBindingStruct(CertificateBinding binding, out Action freeResourcesFunc)
+        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SET CreateBindingStructForIpPort(CertificateBinding binding, out Action freeResourcesFunc)
         {
             IntPtr ipPortPtr = SockaddrStructure.CreateSockaddrStructPtr(binding.EndPoint.ToIPEndPoint(), out Action freeSockAddress);
-            byte[] hashBytes = GetHashBytes(binding.Thumbprint);
-            GCHandle hashBytesHandle = GCHandle.Alloc(hashBytes, GCHandleType.Pinned);
-            IntPtr hashBytesPtr = hashBytesHandle.AddrOfPinnedObject();
 
-            BindingOptions options = binding.Options;
-            var configSslParam = new HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM
-            {
-                AppId = binding.AppId,
-                DefaultCertCheckMode = (options.DoNotVerifyCertificateRevocation ? HttpApi.CertCheckModes.DoNotVerifyCertificateRevocation : 0)
-                    | (options.VerifyRevocationWithCachedCertificateOnly ? HttpApi.CertCheckModes.VerifyRevocationWithCachedCertificateOnly : 0)
-                    | (options.EnableRevocationFreshnessTime ? HttpApi.CertCheckModes.EnableRevocationFreshnessTime : 0)
-                    | (options.NoUsageCheck ? HttpApi.CertCheckModes.NoUsageCheck : 0),
-                DefaultFlags = (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
-                    | (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)
-                    | (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0),
-                DefaultRevocationFreshnessTime = (int)options.RevocationFreshnessTime.TotalSeconds,
-                DefaultRevocationUrlRetrievalTimeout = (int)options.RevocationUrlRetrievalTimeout.TotalMilliseconds,
-                pSslCertStoreName = binding.StoreName,
-                pSslHash = hashBytesPtr,
-                SslHashLength = hashBytes.Length,
-                pDefaultSslCtlIdentifier = options.SslCtlIdentifier,
-                pDefaultSslCtlStoreName = options.SslCtlStoreName
-            };
+            HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM configSslParam = CreateConfigSslParam(binding, out Action freeConfigSslParam);
 
             freeResourcesFunc = () =>
             {
-                if (hashBytesHandle.IsAllocated)
-                    hashBytesHandle.Free();
+                freeConfigSslParam();
                 freeSockAddress();
             };
 
@@ -73,7 +51,7 @@ namespace SslCertBinding.Net.Interop
             };
         }
 
-        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SET CreateBindingStruct(BindingEndPoint endPoint, out Action freeResourcesFunc)
+        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SET CreateBindingStructForIpPort(BindingEndPoint endPoint, out Action freeResourcesFunc)
         {
             IPEndPoint ipPort = endPoint.ToIPEndPoint();
             IntPtr ipPortPtr = SockaddrStructure.CreateSockaddrStructPtr(ipPort, out Action freeSockaddr);
@@ -82,6 +60,32 @@ namespace SslCertBinding.Net.Interop
             return new HttpApi.HTTP_SERVICE_CONFIG_SSL_SET
             {
                 KeyDesc = new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(ipPortPtr)
+            };
+        }
+
+        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET CreateBindingStructForSni(CertificateBinding binding, out Action freeResourcesFunc)
+        {
+            HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM configSslParam = CreateConfigSslParam(binding, out freeResourcesFunc);
+
+            return new HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET
+            {
+                ParamDesc = configSslParam,
+                KeyDesc = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_KEY 
+                { 
+                    Host = binding.EndPoint.Host, 
+                    IpPort = SockaddrStructure.CreateSockaddrStorage(binding.EndPoint.Port)
+                }
+            };
+        }
+
+        public static HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET CreateBindingStructForSni(BindingEndPoint endPoint)
+        {            
+            return new HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET
+            {
+                KeyDesc = new HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_KEY { 
+                    Host = endPoint.Host, 
+                    IpPort = SockaddrStructure.CreateSockaddrStorage(endPoint.Port)
+                } 
             };
         }
 
@@ -110,6 +114,42 @@ namespace SslCertBinding.Net.Interop
             UseDsMappers = HasFlag(paramDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER),
             DoNotPassRequestsToRawFilters = HasFlag(paramDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER),
         };
+
+        private static HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM CreateConfigSslParam(CertificateBinding binding, out Action freeResourcesFunc)
+        {
+
+            byte[] hashBytes = GetHashBytes(binding.Thumbprint);
+            GCHandle hashBytesHandle = GCHandle.Alloc(hashBytes, GCHandleType.Pinned);
+            IntPtr hashBytesPtr = hashBytesHandle.AddrOfPinnedObject();
+
+            BindingOptions options = binding.Options;
+            var configSslParam = new HttpApi.HTTP_SERVICE_CONFIG_SSL_PARAM
+            {
+                AppId = binding.AppId,
+                DefaultCertCheckMode = (options.DoNotVerifyCertificateRevocation ? HttpApi.CertCheckModes.DoNotVerifyCertificateRevocation : 0)
+                    | (options.VerifyRevocationWithCachedCertificateOnly ? HttpApi.CertCheckModes.VerifyRevocationWithCachedCertificateOnly : 0)
+                    | (options.EnableRevocationFreshnessTime ? HttpApi.CertCheckModes.EnableRevocationFreshnessTime : 0)
+                    | (options.NoUsageCheck ? HttpApi.CertCheckModes.NoUsageCheck : 0),
+                DefaultFlags = (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
+                    | (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)
+                    | (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0),
+                DefaultRevocationFreshnessTime = (int)options.RevocationFreshnessTime.TotalSeconds,
+                DefaultRevocationUrlRetrievalTimeout = (int)options.RevocationUrlRetrievalTimeout.TotalMilliseconds,
+                pSslCertStoreName = binding.StoreName,
+                pSslHash = hashBytesPtr,
+                SslHashLength = hashBytes.Length,
+                pDefaultSslCtlIdentifier = options.SslCtlIdentifier,
+                pDefaultSslCtlStoreName = options.SslCtlStoreName
+            };
+
+            freeResourcesFunc = () =>
+            {
+                if (hashBytesHandle.IsAllocated)
+                    hashBytesHandle.Free();
+            };
+
+            return configSslParam;
+        }
 
         private static bool HasFlag<T>(T value, T flag) where T : Enum
         {
