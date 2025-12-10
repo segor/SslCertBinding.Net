@@ -153,7 +153,6 @@ namespace SslCertBinding.Net.Tests
             configuration.Bind(new CertificateBinding(s_testingCertThumbprint, StoreName.My, ipPort, appId));
 
             CertConfigCmd.CommandResult result = await CertConfigCmd.Show(ipPort);
-            Assert.That(result.IsSuccessfull, Is.True);
             string expectedOutput = string.Format(CultureInfo.InvariantCulture,
                 @"  IP:port                 : {0} 
     Certificate Hash        : {1}
@@ -179,14 +178,13 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public async Task AddDnsEndpointWithDefaultOptions()
         {
-            BindingEndPoint ipPort = await GetEndpointWithFreeRandomPort("localhost");
+            BindingEndPoint endpoint = await GetEndpointWithFreeRandomPort("localhost");
             var appId = Guid.NewGuid();
                 
             var configuration = new CertificateBindingConfiguration();
-            configuration.Bind(new CertificateBinding(s_testingCertThumbprint, StoreName.My, ipPort, appId));
+            configuration.Bind(new CertificateBinding(s_testingCertThumbprint, StoreName.My, endpoint, appId));
 
-            CertConfigCmd.CommandResult result = await CertConfigCmd.Show(ipPort);
-            Assert.That(result.IsSuccessfull, Is.True);
+            CertConfigCmd.CommandResult result = await CertConfigCmd.Show(endpoint);
             string expectedOutput = string.Format(CultureInfo.InvariantCulture,
                 @"  name:port                 : {0} 
     Certificate Hash        : {1}
@@ -204,7 +202,7 @@ namespace SslCertBinding.Net.Tests
     Ctl Store Name          : (null) 
     DS Mapper Usage    : Disabled
     Negotiate Client Certificate    : Disabled",
-                ipPort, s_testingCertThumbprint, appId.ToString("B"));
+                endpoint, s_testingCertThumbprint, appId.ToString("B"));
 
             AssertOutput(result.Output, expectedOutput);
         }
@@ -233,7 +231,6 @@ namespace SslCertBinding.Net.Tests
             configuration.Bind(binding);
 
             CertConfigCmd.CommandResult result = await CertConfigCmd.Show(ipPort);
-            Assert.That(result.IsSuccessfull, Is.True);
             string expectedOutput = string.Format(CultureInfo.InvariantCulture,
                 @"  IP:port                 : {0} 
     Certificate Hash        : {1}
@@ -280,7 +277,6 @@ namespace SslCertBinding.Net.Tests
             configuration.Bind(binding);
 
             CertConfigCmd.CommandResult result = await CertConfigCmd.Show(endpoint);
-            Assert.That(result.IsSuccessfull, Is.True);
             string expectedOutput = string.Format(CultureInfo.InvariantCulture,
                 @"  name:port                 : {0} 
     Certificate Hash        : {1}
@@ -427,7 +423,6 @@ namespace SslCertBinding.Net.Tests
             configuration.Bind(binding);
 
             CertConfigCmd.CommandResult result = await CertConfigCmd.Show(ipPort);
-            Assert.That(result.IsSuccessfull, Is.True);
             string expectedOutput = string.Format(CultureInfo.InvariantCulture,
                 @"  IP:port                 : {0} 
     Certificate Hash        : {1}

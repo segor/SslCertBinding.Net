@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -40,14 +38,19 @@ namespace SslCertBinding.Net.Tests
 #pragma warning restore CA1051 // Do not declare visible instance fields
         }
 
-        public static Task<CommandResult> Show(BindingEndPoint endPoint = null, bool throwExcepton = false)
+        public static Task<CommandResult> Show(BindingEndPoint endPoint = null, bool throwExcepton = true)
         {
-            return ExecCommand(string.Format(CultureInfo.InvariantCulture, "http show sslcert {0}", endPoint), throwExcepton);
+            var sb = new StringBuilder("http show sslcert");
+            if (endPoint != null)
+            {
+                AppendArgument(sb, GetBindingTypeArgumentName(endPoint), endPoint.ToString());
+            }
+            return ExecCommand(sb.ToString(), throwExcepton);
         }
 
         public static async Task<bool> IpPortIsPresentInConfig(BindingEndPoint endPoint)
         {
-            CommandResult result = await Show(endPoint);
+            CommandResult result = await Show(endPoint, throwExcepton: false);
             return result.IsSuccessfull;
         }
 
@@ -58,45 +61,40 @@ namespace SslCertBinding.Net.Tests
 
             var sb = new StringBuilder("http add sslcert");
             CultureInfo cultureInfo = CultureInfo.InvariantCulture;
-            void AppendArgument(string argName, string argValue)
-                => sb.AppendFormat(cultureInfo, " {0}={1}", argName, argValue);
+
 
             if (options.endpoint != null) {
-                if (options.endpoint.IsIpEndpoint)
+                AppendArgument(sb, GetBindingTypeArgumentName(options.endpoint), options.endpoint.ToString());
+                if (!options.endpoint.IsIpEndpoint)
                 {
-                    AppendArgument("ipport", options.endpoint.ToString());
-                }
-                else
-                {
-                    AppendArgument("hostnameport", options.endpoint.ToString());
                     if (string.IsNullOrEmpty(options.certstorename))
                         options.certstorename = "MY"; // Default certificate store for hostname bindings, otherwise the command will fail.
                 }
             }
             if (!string.IsNullOrEmpty(options.certhash))
-                AppendArgument("certhash", options.certhash);
+                AppendArgument(sb, "certhash", options.certhash);
             if (options.appid != Guid.Empty)
-                AppendArgument("appid", options.appid.ToString("B"));
+                AppendArgument(sb, "appid", options.appid.ToString("B"));
             if (!string.IsNullOrEmpty(options.certstorename))
-                AppendArgument("certstorename", options.certstorename);
+                AppendArgument(sb, "certstorename", options.certstorename);
             if (options.verifyclientcertrevocation.HasValue)
-                AppendArgument("verifyclientcertrevocation", BoolToEnableDisable(options.verifyclientcertrevocation.Value));
+                AppendArgument(sb, "verifyclientcertrevocation", BoolToEnableDisable(options.verifyclientcertrevocation.Value));
             if (options.verifyrevocationwithcachedclientcertonly.HasValue)
-                AppendArgument("verifyrevocationwithcachedclientcertonly", BoolToEnableDisable(options.verifyrevocationwithcachedclientcertonly.Value));
+                AppendArgument(sb, "verifyrevocationwithcachedclientcertonly", BoolToEnableDisable(options.verifyrevocationwithcachedclientcertonly.Value));
             if (options.usagecheck.HasValue)
-                AppendArgument("usagecheck", BoolToEnableDisable(options.usagecheck.Value));
+                AppendArgument(sb, "usagecheck", BoolToEnableDisable(options.usagecheck.Value));
             if (options.revocationfreshnesstime.HasValue)
-                AppendArgument("revocationfreshnesstime", options.revocationfreshnesstime.Value.ToString(cultureInfo));
+                AppendArgument(sb, "revocationfreshnesstime", options.revocationfreshnesstime.Value.ToString(cultureInfo));
             if (options.urlretrievaltimeout.HasValue)
-                AppendArgument("urlretrievaltimeout", options.urlretrievaltimeout.Value.ToString(cultureInfo));
+                AppendArgument(sb, "urlretrievaltimeout", options.urlretrievaltimeout.Value.ToString(cultureInfo));
             if (!string.IsNullOrEmpty(options.sslctlidentifier))
-                AppendArgument("sslctlidentifier", options.sslctlidentifier);
+                AppendArgument(sb, "sslctlidentifier", options.sslctlidentifier);
             if (!string.IsNullOrEmpty(options.sslctlstorename))
-                AppendArgument("sslctlstorename", options.sslctlstorename);
+                AppendArgument(sb, "sslctlstorename", options.sslctlstorename);
             if (options.dsmapperusage.HasValue)
-                AppendArgument("dsmapperusage", BoolToEnableDisable(options.dsmapperusage.Value));
+                AppendArgument(sb, "dsmapperusage", BoolToEnableDisable(options.dsmapperusage.Value));
             if (options.clientcertnegotiation.HasValue)
-                AppendArgument("clientcertnegotiation", BoolToEnableDisable(options.clientcertnegotiation.Value));
+                AppendArgument(sb, "clientcertnegotiation", BoolToEnableDisable(options.clientcertnegotiation.Value));
 
             return ExecCommand(sb.ToString(), true);
 
@@ -113,7 +111,7 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task<BindingEndPoint[]> GetBindingEndPoints(string thumbprint = null)
         {
-            CommandResult result = await Show(throwExcepton: true);
+            CommandResult result = await Show();
             string pattern = string.Format(CultureInfo.InvariantCulture, @"\s+(IP|Hostname):port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+",
                 string.IsNullOrEmpty(thumbprint) ? @"\S+" : thumbprint);
             MatchCollection matches = Regex.Matches(result.Output, pattern,
@@ -159,8 +157,12 @@ namespace SslCertBinding.Net.Tests
 
         private static Task<CommandResult> ExecDelete(BindingEndPoint endPoint)
         {
-            string bindingType = endPoint.IsIpEndpoint ? "ipport" : "hostnameport";
+            string bindingType = GetBindingTypeArgumentName(endPoint);
             return ExecCommand(string.Format(CultureInfo.InvariantCulture, "http delete sslcert {0}={1}", bindingType, endPoint), true);
         }
+
+        private static string GetBindingTypeArgumentName(BindingEndPoint endPoint) => endPoint.IsIpEndpoint ? "ipport" : "hostnameport";
+        private static void AppendArgument(StringBuilder sb, string argName, string argValue)
+                => sb.AppendFormat(CultureInfo.InvariantCulture, " {0}={1}", argName, argValue);
     }
 }
