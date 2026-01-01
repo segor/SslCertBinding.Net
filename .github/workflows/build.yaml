@@ -64,7 +64,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: Output artifacts
         path: |
@@ -113,7 +113,7 @@ jobs:
     steps:
 
     - name: Download artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: Output artifacts
         path: ${{ env.Artifact_Dir }}
