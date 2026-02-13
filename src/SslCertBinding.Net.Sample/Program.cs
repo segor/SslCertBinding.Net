@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Net;
 using System.Security.Cryptography.X509Certificates;
 
 namespace SslCertBinding.Net.Sample
@@ -38,8 +37,8 @@ namespace SslCertBinding.Net.Sample
         {
             Console.WriteLine("SSL Certificate bindings:\r\n-------------------------\r\n");
             var stores = new Dictionary<string, X509Store>();
-            IPEndPoint ipEndPoint = args.Length > 1 ? ParseIpEndPoint(args[1]) : null;
-            IReadOnlyList<CertificateBinding> certificateBindings = configuration.Query(ipEndPoint);
+            var endPoint = args.Length > 1 ? ParseEndPoint(args[1]) : null;
+            IReadOnlyList<CertificateBinding> certificateBindings = configuration.Query(endPoint);
             foreach (CertificateBinding info in certificateBindings)
             {
                 if (!stores.TryGetValue(info.StoreName, out X509Store store))
@@ -67,7 +66,7 @@ namespace SslCertBinding.Net.Sample
  DS Mapper Usage             : {13}
  Negotiate Client Certificate: {14}
 ",
-                    info.Thumbprint, info.StoreName, info.IpPort, info.AppId, certificate.Subject, certificate.Issuer,
+                    info.Thumbprint, info.StoreName, info.EndPoint, info.AppId, certificate.Subject, certificate.Issuer,
                     !info.Options.DoNotVerifyCertificateRevocation, info.Options.VerifyRevocationWithCachedCertificateOnly, !info.Options.NoUsageCheck,
                     info.Options.RevocationFreshnessTime + (info.Options.EnableRevocationFreshnessTime ? string.Empty : " (disabled)"),
                     info.Options.RevocationUrlRetrievalTimeout, info.Options.SslCtlIdentifier, info.Options.SslCtlStoreName,
@@ -78,22 +77,23 @@ namespace SslCertBinding.Net.Sample
 
         private static void Bind(string[] args, CertificateBindingConfiguration configuration)
         {
-            IPEndPoint endPoint = ParseIpEndPoint(args[3]);
+            var endPoint = ParseEndPoint(args[3]);
             configuration.Bind(new CertificateBinding(args[1], args[2], endPoint, Guid.Parse(args[4])));
             Console.WriteLine("The binding record has been successfully applied.");
         }
 
         private static void Delete(string[] args, CertificateBindingConfiguration configuration)
         {
-            IPEndPoint endPoint = ParseIpEndPoint(args[1]);
+            var endPoint = ParseEndPoint(args[1]);
             configuration.Delete(endPoint);
             Console.WriteLine("The binding record has been successfully removed.");
         }
 
-        private static IPEndPoint ParseIpEndPoint(string str)
+        private static BindingEndPoint ParseEndPoint(string str)
         {
-            string[] ipPort = str.Split(':');
-            return new IPEndPoint(IPAddress.Parse(ipPort[0]), int.Parse(ipPort[1], CultureInfo.InvariantCulture));
+            return BindingEndPoint.TryParse(str, out BindingEndPoint endpoint)
+                ? endpoint
+                : throw new FormatException();
         }
     }
 }

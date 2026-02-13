@@ -29,7 +29,7 @@ namespace SslCertBinding.Net.Tests
             Assert.Multiple(() =>
             {
                 Assert.That(ex.Message, Does.StartWith("Value cannot be null."));
-                Assert.That(ex.ParamName, Is.EqualTo("ipPort"));
+                Assert.That(ex.ParamName, Is.EqualTo("endPoint"));
             });
         }
     }
