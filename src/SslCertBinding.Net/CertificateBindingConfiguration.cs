@@ -62,7 +62,8 @@ namespace SslCertBinding.Net
                             | (options.NoUsageCheck ? HttpApi.CertCheckModes.NoUsageCheck : 0),
                         DefaultFlags = (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
                             | (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)
-                            | (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0),
+                            | (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0)
+                            | (options.DisableTlsv12 ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_TLS_1_2 : 0),
                         DefaultRevocationFreshnessTime = (int)options.RevocationFreshnessTime.TotalSeconds,
                         DefaultRevocationUrlRetrievalTimeout = (int)options.RevocationUrlRetrievalTimeout.TotalMilliseconds,
                         pSslCertStoreName = binding.StoreName,

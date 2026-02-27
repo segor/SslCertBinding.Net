@@ -204,6 +204,11 @@ namespace SslCertBinding.Net
             /// Prevents SSL requests from being passed to low-level ISAPI filters.
             /// </summary>
             NO_RAW_FILTER = 0x00000004,
+
+            /// <summary>
+            /// Can be used to disable TLS v 1.2.
+            /// </summary>
+            DISABLE_TLS_1_2 = 0x00001000,
         }
 
         #endregion
