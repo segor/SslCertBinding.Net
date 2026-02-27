@@ -192,6 +192,7 @@ namespace SslCertBinding.Net.Tests
                 RevocationUrlRetrievalTimeout = TimeSpan.FromSeconds(5),
                 UseDsMappers = true,
                 VerifyRevocationWithCachedCertificateOnly = true,
+                DisableTlsv12 = true,
             });
 
             configuration.Bind(binding);
@@ -214,7 +215,11 @@ namespace SslCertBinding.Net.Tests
     Ctl Identifier          : (null) 
     Ctl Store Name          : (null) 
     DS Mapper Usage    : Enabled
-    Negotiate Client Certificate    : Enabled",
+    Negotiate Client Certificate    : Enabled
+    Reject Connections : Disabled
+    Disable HTTP2 : Not Set
+    Disable QUIC : Not Set 
+    Disable TLS1.2 : Set",
                 ipPort, s_testingCertThumbprint, appId.ToString("B"));
 
             AssertOutput(result.Output, expectedOutput);
