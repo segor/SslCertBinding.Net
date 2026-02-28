@@ -120,8 +120,6 @@ jobs:
 
     - name: Install .NET Core
       uses: actions/setup-dotnet@v5
-      with:
-        global-json-file: src/global.json
 
     - name: Push NuGet packages to NuGet.org
       run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate --source https://api.nuget.org/v3/index.json
