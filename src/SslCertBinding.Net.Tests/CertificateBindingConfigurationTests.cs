@@ -55,6 +55,7 @@ namespace SslCertBinding.Net.Tests
                 Assert.That(binding.Options.SslCtlStoreName, Is.EqualTo(null));
                 Assert.That(binding.Options.UseDsMappers, Is.EqualTo(false));
                 Assert.That(binding.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
+                Assert.That(binding.Options.DisableTls12, Is.EqualTo(false));
             });
         }
 
@@ -117,6 +118,7 @@ namespace SslCertBinding.Net.Tests
                 Assert.That(binding1.Options.SslCtlStoreName, Is.EqualTo(null));
                 Assert.That(binding1.Options.UseDsMappers, Is.EqualTo(false));
                 Assert.That(binding1.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(false));
+                Assert.That(binding1.Options.DisableTls12, Is.EqualTo(false));
             });
 
             CertificateBinding binding2 = addedBindings[1];
@@ -137,6 +139,7 @@ namespace SslCertBinding.Net.Tests
                 Assert.That(binding2.Options.SslCtlStoreName, Is.EqualTo(null));
                 Assert.That(binding2.Options.UseDsMappers, Is.EqualTo(false));
                 Assert.That(binding2.Options.VerifyRevocationWithCachedCertificateOnly, Is.EqualTo(true));
+                Assert.That(binding2.Options.DisableTls12, Is.EqualTo(false));
             });
         }
 
@@ -192,7 +195,7 @@ namespace SslCertBinding.Net.Tests
                 RevocationUrlRetrievalTimeout = TimeSpan.FromSeconds(5),
                 UseDsMappers = true,
                 VerifyRevocationWithCachedCertificateOnly = true,
-                DisableTlsv12 = true,
+                DisableTls12 = true,
             });
 
             configuration.Bind(binding);

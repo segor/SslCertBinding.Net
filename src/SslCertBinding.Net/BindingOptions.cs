@@ -65,8 +65,8 @@ namespace SslCertBinding.Net
         public bool NoUsageCheck { get; set; }
 
         /// <summary>
-        /// Disables the use of TLS 1.2 for the SSL binding.
+        /// Disables version 1.2 of the TLS protocol.
         /// </summary>
-        public bool DisableTlsv12 { get; set; }
+        public bool DisableTls12 { get; set; }
     }
 }
