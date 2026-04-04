@@ -252,6 +252,11 @@ namespace SslCertBinding.Net.Interop
             /// Prevents SSL requests from being passed to low-level ISAPI filters.
             /// </summary>
             NO_RAW_FILTER = 0x00000004,
+
+            /// <summary>
+            /// Disables TLS 1.2.
+            /// </summary>
+            DISABLE_TLS_1_2 = 0x00001000,
         }
 
         #endregion

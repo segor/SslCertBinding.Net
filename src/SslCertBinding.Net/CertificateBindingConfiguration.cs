@@ -111,6 +111,41 @@ namespace SslCertBinding.Net
                         Marshal.FreeCoTaskMem(bindingStructPtr);
                         freeResources();
                     }
+
+                    try
+                    {
+                        uint retVal = HttpApi.HttpSetServiceConfiguration(IntPtr.Zero,
+                            configId,
+                            bindingStructPtr,
+                            Marshal.SizeOf(bindingStruct),
+                            IntPtr.Zero);
+
+                        if (HttpApi.ERROR_ALREADY_EXISTS != retVal)
+                        {
+                            HttpApi.ThrowWin32ExceptionIfError(retVal);
+                        }
+                        else
+                        {
+                            retVal = HttpApi.HttpDeleteServiceConfiguration(IntPtr.Zero,
+                                configId,
+                                bindingStructPtr,
+                                Marshal.SizeOf(bindingStruct),
+                                IntPtr.Zero);
+                            HttpApi.ThrowWin32ExceptionIfError(retVal);
+
+                            retVal = HttpApi.HttpSetServiceConfiguration(IntPtr.Zero,
+                                configId,
+                                bindingStructPtr,
+                                Marshal.SizeOf(bindingStruct),
+                                IntPtr.Zero);
+                            HttpApi.ThrowWin32ExceptionIfError(retVal);
+                        }
+                    }
+                    finally
+                    {
+                        Marshal.FreeCoTaskMem(bindingStructPtr);
+                        freeResources();
+                    }
                 });
         }
 
