@@ -31,12 +31,12 @@ namespace SslCertBinding.Net.Tests
         [TestCase("localhost", 900, AddressFamily.Unspecified, false)]
         public void ConstructorWithHostAndPortHandlesVariousCases(string host, int port, AddressFamily expectedFamily, bool isIp)
         {
-            var ep = new BindingEndPoint(host, port);
+            var ep = BindingEndPoint.Create(host, port);
 
             Assert.That(ep.Host, Is.EqualTo(host.Trim('[', ']')));
             Assert.That(ep.Port, Is.EqualTo(port));
-            Assert.That(ep.AddressFamily, Is.EqualTo(expectedFamily));
-            Assert.That(ep.IsIpEndpoint, Is.EqualTo(isIp));
+            // Assert.That(ep.AddressFamily, Is.EqualTo(expectedFamily));
+            Assert.That(ep is IpPort, Is.EqualTo(isIp));
             if (isIp)
             {
                 Assert.That(ep.ToIPEndPoint(), Is.EqualTo(new IPEndPoint(IPAddress.Parse(host), port)));
@@ -62,12 +62,12 @@ namespace SslCertBinding.Net.Tests
         public void ConstructorWithIPAddressAndPortSetsProperties(string ipStr, int port, AddressFamily expectedFamily)
         {
             var ip = IPAddress.Parse(ipStr);
-            var ep = new BindingEndPoint(ip, port);
+            var ep = new IpPort(ip, port);
 
             Assert.That(ep.Host, Is.EqualTo(ip.ToString()));
             Assert.That(ep.Port, Is.EqualTo(port));
-            Assert.That(ep.AddressFamily, Is.EqualTo(expectedFamily));
-            Assert.That(ep.IsIpEndpoint, Is.True);
+            // Assert.That(ep.AddressFamily, Is.EqualTo(expectedFamily));
+            Assert.That(ep is IpPort, Is.True);
             Assert.That(ep.ToIPEndPoint(), Is.EqualTo(new IPEndPoint(ip, port)));
         }
 
@@ -83,12 +83,12 @@ namespace SslCertBinding.Net.Tests
         public void ConstructorWithDnsEndPointSetsProperties(string host, int port, AddressFamily expectedFamily, bool isIp)
         {
             var dnsEndPoint = new DnsEndPoint(host, port);
-            var bindingEndPoint = new BindingEndPoint(dnsEndPoint);
+            BindingEndPoint bindingEndPoint = dnsEndPoint.ToBindingEndPoint();
 
             Assert.That(bindingEndPoint.Host, Is.EqualTo(host));
             Assert.That(bindingEndPoint.Port, Is.EqualTo(port));
-            Assert.That(bindingEndPoint.AddressFamily, Is.EqualTo(expectedFamily));
-            Assert.That(bindingEndPoint.IsIpEndpoint, Is.EqualTo(isIp));
+            // Assert.That(bindingEndPoint.AddressFamily, Is.EqualTo(expectedFamily));
+            Assert.That(bindingEndPoint is IpPort, Is.EqualTo(isIp));
             Assert.That(bindingEndPoint.ToDnsEndPoint(), Is.EqualTo(dnsEndPoint));
         }
 
@@ -113,10 +113,10 @@ namespace SslCertBinding.Net.Tests
         [TestCase("XN--D1ACUFC.XN--P1AI", 443, "XN--D1ACUFC.XN--P1AI:443")]
         public void ToStringReturnsExpectedStringForIPv4IPv6AndComplexDns(string host, int port, string expected)
         {
-            var ep = new BindingEndPoint(host, port);
+            var ep = BindingEndPoint.Create(host, port);
             Assert.That(ep.ToString(), Is.EqualTo(expected));
 
-            var dnsEp = new BindingEndPoint(new DnsEndPoint(host, port));
+            var dnsEp = new DnsEndPoint(host, port).ToBindingEndPoint();
             Assert.That(dnsEp.ToString(), Is.EqualTo(expected));
         }
 
@@ -148,7 +148,7 @@ namespace SslCertBinding.Net.Tests
             Assert.That(result, Is.True);
             Assert.That(ep.Host, Is.EqualTo(expectedHost));
             Assert.That(ep.Port, Is.EqualTo(expectedPort));
-            Assert.That(ep.IsIpEndpoint, Is.EqualTo(isIp));
+            Assert.That(ep is IpPort, Is.EqualTo(isIp));
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace SslCertBinding.Net.Tests
         [TestCase("example.com", 443)]
         public void RoundtripParseToStringParse(string host, int port)
         {
-            var original = new BindingEndPoint(host, port);
+            var original = BindingEndPoint.Create(host, port);
             var stringForm = original.ToString();
             var parsed = BindingEndPoint.Parse(stringForm);
 
@@ -226,9 +226,9 @@ namespace SslCertBinding.Net.Tests
         public void EqualityAndHashCodeConsistentAcrossConstructorPathsIPv4(string ipStr, int port)
         {
             var ipAddr = IPAddress.Parse(ipStr);
-            var ep1 = new BindingEndPoint(ipStr, port);
-            var ep2 = new BindingEndPoint(ipAddr, port);
-            var ep3 = new BindingEndPoint(new IPEndPoint(ipAddr, port));
+            var ep1 = BindingEndPoint.Create(ipStr, port);
+            var ep2 = new IpPort(ipAddr, port);
+            var ep3 = new IpPort(new IPEndPoint(ipAddr, port));
 
             Assert.That(ep1, Is.EqualTo(ep2), "String constructor should equal IPAddress constructor");
             Assert.That(ep2, Is.EqualTo(ep3), "IPAddress constructor should equal IPEndPoint constructor");
@@ -246,9 +246,9 @@ namespace SslCertBinding.Net.Tests
         public void EqualityAndHashCodeConsistentAcrossConstructorPathsIPv6(string ipStr, int port)
         {
             var ipAddr = IPAddress.Parse(ipStr);
-            var ep1 = new BindingEndPoint(ipStr, port);
-            var ep2 = new BindingEndPoint(ipAddr, port);
-            var ep3 = new BindingEndPoint(new IPEndPoint(ipAddr, port));
+            var ep1 = BindingEndPoint.Create(ipStr, port);
+            var ep2 = new IpPort(ipAddr, port);
+            var ep3 = new IpPort(new IPEndPoint(ipAddr, port));
 
             Assert.That(ep1, Is.EqualTo(ep2), "String constructor should equal IPAddress constructor");
             Assert.That(ep2, Is.EqualTo(ep3), "IPAddress constructor should equal IPEndPoint constructor");
@@ -266,7 +266,7 @@ namespace SslCertBinding.Net.Tests
         public void EqualsIPEndPointWorksForIPv6(string ipStr, int port)
         {
             var ipEp = new IPEndPoint(IPAddress.Parse(ipStr), port);
-            var ep = new BindingEndPoint(ipEp);
+            var ep = new IpPort(ipEp);
 
             Assert.That(((IEquatable<IPEndPoint>)ep).Equals(ipEp), Is.True);
             Assert.That(ep.GetHashCode(), Is.EqualTo(ipEp.GetHashCode()), "Hash codes should match for equal endpoints");
@@ -284,7 +284,7 @@ namespace SslCertBinding.Net.Tests
         public void EqualsDnsEndPointWorks(string host, int port)
         {
             var dnsEp = new DnsEndPoint(host, port);
-            var bindingEp = new BindingEndPoint(host, port);
+            var bindingEp = BindingEndPoint.Create(host, port);
 
             Assert.That(bindingEp.Equals(dnsEp), Is.True, "BindingEndPoint should equal DnsEndPoint");
             Assert.That(bindingEp.GetHashCode(), Is.EqualTo(dnsEp.GetHashCode()), "Hash codes should match for equal endpoints");
@@ -297,8 +297,8 @@ namespace SslCertBinding.Net.Tests
         [TestCase("example.com", 443)]
         public void DnsNotEqualsIpEndpoint(string host, int port)
         {
-            var dns = new BindingEndPoint(host, port);
-            var ip = new BindingEndPoint(IPAddress.Loopback, port);
+            var dns = BindingEndPoint.Create(host, port);
+            var ip = new IpPort(IPAddress.Loopback, port);
 
             Assert.That(dns.Equals((object)ip), Is.False);
             Assert.That(dns.Equals(ip), Is.False);
@@ -316,8 +316,8 @@ namespace SslCertBinding.Net.Tests
         [TestCase("Sub.Domain.Example.Com", "sub.domain.example.com", 1234)]
         public void BindingEndPointHostnameEqualityIsCaseInsensitive(string host1, string host2, int port)
         {
-            var ep1 = new BindingEndPoint(host1, port);
-            var ep2 = new BindingEndPoint(host2, port);
+            var ep1 = BindingEndPoint.Create(host1, port);
+            var ep2 = BindingEndPoint.Create(host2, port);
 
             // Expected equality follows the framework-native DnsEndPoint equality semantics.
             var expectedeEquality = new DnsEndPoint(host1, port).Equals(new DnsEndPoint(host2, port));
@@ -336,7 +336,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void EqualsObjectReturnsFalseForNonEndpointTypes()
         {
-            var ep = new BindingEndPoint("example.com", 443);
+            var ep = new HostnamePort("example.com", 443);
 
             Assert.That(ep.Equals((object)"example.com:443"), Is.False);
             Assert.That(ep.Equals((object)443), Is.False);
@@ -360,7 +360,7 @@ namespace SslCertBinding.Net.Tests
         {
             var ipAddr = IPAddress.Parse(ipStr);
             var ipEp = new IPEndPoint(ipAddr, port);
-            BindingEndPoint bindingEp = ipEp;
+            BindingEndPoint bindingEp = ipEp.ToBindingEndPoint();
 
             Assert.That(bindingEp, Is.Not.Null);
             Assert.That(bindingEp.Port, Is.EqualTo(port));
@@ -375,7 +375,7 @@ namespace SslCertBinding.Net.Tests
         public void ImplicitConversionFromDnsEndPoint(string host, int port)
         {
             var dnsEp = new DnsEndPoint(host, port);
-            BindingEndPoint bindingEp = dnsEp;
+            BindingEndPoint bindingEp = dnsEp.ToBindingEndPoint();
 
             Assert.That(bindingEp, Is.Not.Null);
             Assert.That(bindingEp.Host, Is.EqualTo(host));
@@ -391,8 +391,8 @@ namespace SslCertBinding.Net.Tests
             IPEndPoint nullIpEp = null;
             DnsEndPoint nullDnsEp = null;
 
-            BindingEndPoint bindingEpFromIp = nullIpEp;
-            BindingEndPoint bindingEpFromDns = nullDnsEp;
+            BindingEndPoint bindingEpFromIp = nullIpEp?.ToBindingEndPoint();
+            BindingEndPoint bindingEpFromDns = nullDnsEp?.ToBindingEndPoint();
 
             Assert.That(bindingEpFromIp, Is.Null);
             Assert.That(bindingEpFromDns, Is.Null);

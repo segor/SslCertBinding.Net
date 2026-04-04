@@ -65,7 +65,7 @@ namespace SslCertBinding.Net.Tests
 
             if (options.endpoint != null) {
                 AppendArgument(sb, GetBindingTypeArgumentName(options.endpoint), options.endpoint.ToString());
-                if (!options.endpoint.IsIpEndpoint)
+                if (options.endpoint is HostnamePort)
                 {
                     if (string.IsNullOrEmpty(options.certstorename))
                         options.certstorename = "MY"; // Default certificate store for hostname bindings, otherwise the command will fail.

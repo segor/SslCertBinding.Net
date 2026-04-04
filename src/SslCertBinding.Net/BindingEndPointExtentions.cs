@@ -5,10 +5,16 @@ namespace SslCertBinding.Net
 {
     public static class BindingEndPointExtentions
     {       
-        public static BindingEndPoint ToBindingEndPoint(this DnsEndPoint dnsEndPoint) => new BindingEndPoint(dnsEndPoint);
+        public static BindingEndPoint ToBindingEndPoint(this DnsEndPoint dnsEndPoint)
+        {
+            if (dnsEndPoint == null)
+            {
+                throw new ArgumentNullException(nameof(dnsEndPoint));
+            }
 
-        public static BindingEndPoint ToBindingEndPoint(this IPEndPoint ipEndPoint) => new BindingEndPoint(ipEndPoint);
+            return BindingEndPoint.Create(dnsEndPoint.Host, dnsEndPoint.Port);
+        }
 
-        public static IPEndPoint ToIPEndPoint(this DnsEndPoint dnsEndPoint) => dnsEndPoint.ToBindingEndPoint().ToIPEndPoint();
+        public static IpPort ToBindingEndPoint(this IPEndPoint ipEndPoint) => new IpPort(ipEndPoint);
     }
 }

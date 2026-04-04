@@ -64,7 +64,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void QueryNone()
         {
-            BindingEndPoint notFoundIpPort = new IPEndPoint(0, IPEndPoint.MaxPort);
+            BindingEndPoint notFoundIpPort = new IPEndPoint(IPAddress.Any, IPEndPoint.MaxPort).ToBindingEndPoint();
             var config = new CertificateBindingConfiguration();
             IReadOnlyList<CertificateBinding> bindingsByIpPort = config.Query(notFoundIpPort);
             Assert.That(bindingsByIpPort, Is.Empty);
@@ -509,8 +509,8 @@ namespace SslCertBinding.Net.Tests
         {            
             for (int port = 50000; port < 65535; port++)
             {
-                var endpoint = new BindingEndPoint(hostOrIp, port);
-                var ipPort = endpoint.IsIpEndpoint ? endpoint.ToIPEndPoint() : new IPEndPoint(IPAddress.Any, port);
+                var endpoint = BindingEndPoint.Create(hostOrIp, port);
+                var ipPort = endpoint is IpPort ? endpoint.ToIPEndPoint() : new IPEndPoint(IPAddress.Any, port);
                 if (IpEndpointTools.IpEndpointIsAvailableForListening(ipPort))
                 {
                     if (!(await CertConfigCmd.IpPortIsPresentInConfig(ipPort.ToBindingEndPoint())))

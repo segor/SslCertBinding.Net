@@ -36,7 +36,7 @@ namespace SslCertBinding.Net
                 return list;
             }
 
-            CertificateBinding info = endPoint.IsIpEndpoint
+            CertificateBinding info = endPoint is IpPort
                 ? QuerySingle(endPoint.ToIPEndPoint())
                 : QuerySingle(endPoint.ToDnsEndPoint());
             return info == null ? Array.Empty<CertificateBinding>() : new[] { info };
@@ -52,7 +52,7 @@ namespace SslCertBinding.Net
         {
             _ = binding.ThrowIfNull(nameof(binding));
 
-            if (binding.EndPoint.IsIpEndpoint)
+            if (binding.EndPoint is IpPort)
             {
                 Bind(
                     binding,
@@ -155,7 +155,7 @@ namespace SslCertBinding.Net
 
         private static void DeleteInternal(BindingEndPoint endPoint)
         {
-            if (endPoint.IsIpEndpoint)
+            if (endPoint is IpPort)
             {
                 DeleteInternal(
                     endPoint,

@@ -15,7 +15,7 @@ namespace SslCertBinding.Net.Interop
             string storeName = bindingStruct.ParamDesc.pSslCertStoreName;
             IPEndPoint ipPort = SockaddrStructure.ReadSockaddrStructPtr(bindingStruct.KeyDesc.pIpPort);
             BindingOptions options = CreateBindingOptions(bindingStruct.ParamDesc);
-            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort, appId, options);
+            var result = new CertificateBinding(GetThumbrint(hash), storeName, ipPort.ToBindingEndPoint(), appId, options);
             return result;
         }
 
@@ -26,7 +26,7 @@ namespace SslCertBinding.Net.Interop
             Guid appId = bindingStruct.ParamDesc.AppId;
             string storeName = bindingStruct.ParamDesc.pSslCertStoreName;
             IPEndPoint ipPort = SockaddrStructure.CreateIPEndPoint(bindingStruct.KeyDesc.IpPort);
-            var endPoint = new BindingEndPoint(bindingStruct.KeyDesc.Host, ipPort.Port);
+            var endPoint = new HostnamePort(bindingStruct.KeyDesc.Host, ipPort.Port);
             BindingOptions options = CreateBindingOptions(bindingStruct.ParamDesc);
             var result = new CertificateBinding(GetThumbrint(hash), storeName, endPoint, appId, options);
             return result;

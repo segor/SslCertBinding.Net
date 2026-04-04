@@ -1,218 +1,46 @@
 ﻿using System;
 using System.Globalization;
 using System.Net;
-using System.Net.Sockets;
 
 namespace SslCertBinding.Net
 {
-    /// <summary>
-    ///  Represents a network endpoint as a host name or a string representation of an IP address and a port number.
-    /// </summary>
-    public class BindingEndPoint : EndPoint, IEquatable<BindingEndPoint>, IEquatable<IPEndPoint>, IEquatable<DnsEndPoint>
+
+
+    public enum BindingHostType
     {
-        private readonly DnsEndPoint _dnsEndpoint;
-        private readonly IPEndPoint _ipEndPoint;
+        IpAddress,
+        Hostname,
+        AnyHost
+    }
 
-        /// <summary>
-        /// Gets the host name or text representation of the IP address of the endpoint.
-        /// </summary>
-        public string Host => _dnsEndpoint.Host;
 
-        /// <summary>
-        /// Gets the port number of the endpoint.
-        /// </summary>
-        public int Port => _dnsEndpoint.Port;
+    public interface IBindingEndPoint
+    {
 
-        /// <summary>
-        /// Gets the address family of the endpoint.
-        /// </summary>
-        public override AddressFamily AddressFamily => _ipEndPoint?.AddressFamily ?? _dnsEndpoint.AddressFamily;
+        string Host { get; }
+        int Port { get; }
 
-        /// <summary>
-        /// Gets a value indicating whether this endpoint is based on IP address.
-        /// </summary>
-        public bool IsIpEndpoint => _ipEndPoint != null;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified host and port.
-        /// </summary>
-        /// <param name="hostOrIp">Host or IP address</param>
-        /// <param name="port">Port number. Must be between <see cref="System.Net.IPEndPoint.MinPort"/> and <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="hostOrIp"/> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
-        public BindingEndPoint(string hostOrIp, int port) : this(
-                hostOrIp.ThrowIfNull(nameof(hostOrIp)),
-                port,
-                TryParseIPEndpoint(hostOrIp, port))
+        EndPoint ToEndPoint();
+
+    }
+
+    public abstract class BindingEndPoint : IBindingEndPoint
+    {
+        public BindingEndPoint(string host, int port)
         {
+            Host = host;
+            Port = port;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified IP address and port.
-        /// </summary>
-        /// <param name="ipAddress">IP address</param>
-        /// <param name="port">Port number. Must be between <see cref="System.Net.IPEndPoint.MinPort"/> and <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipAddress"/> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
-        public BindingEndPoint(IPAddress ipAddress, int port)
-            : this(new IPEndPoint(ipAddress.ThrowIfNull(nameof(ipAddress)), port))
-        {
-        }
+        public string Host { get; }
+        public int Port { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified IP endpoint.
-        /// </summary>
-        /// <param name="ipEndPoint"><see cref="IPEndPoint"/>. The contained port must be in the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipEndPoint"/> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when the contained port is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
-        public BindingEndPoint(IPEndPoint ipEndPoint) : this(
-            ipEndPoint.ThrowIfNull(nameof(ipEndPoint)).Address.ToString(),
-            ipEndPoint.Port,
-            ipEndPoint)
-        {
-        }
+        public bool IsIpEndpoint => this is IpPort;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified DNS endpoint.
-        /// </summary>
-        /// <param name="dnsEndPoint">A network endpoint as a host name or a string representation of an IP address and a port number. The contained port must be in the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="dnsEndPoint"/> is null.</exception>
-        public BindingEndPoint(DnsEndPoint dnsEndPoint)
-        {
-            _dnsEndpoint = dnsEndPoint.ThrowIfNull(nameof(dnsEndPoint));
-            _ipEndPoint = TryParseIPEndpoint(dnsEndPoint.Host, dnsEndPoint.Port);
-        }
-
-        private BindingEndPoint(string host, int port, IPEndPoint ipEndPoint)
-        {
-            // When an IP endpoint is provided we store the textual host as the
-            // unbracketed IP address (IPAddress.ToString() returns unbracketed IPv6 like "::1").
-            // This ensures ToString() and equality/hashcode are normalized for IPv6.
-            _dnsEndpoint = new DnsEndPoint(
-                ipEndPoint == null ? host : ipEndPoint.Address.ToString(),
-                port,
-                ipEndPoint?.AddressFamily ?? AddressFamily.Unspecified);
-            _ipEndPoint = ipEndPoint;
-        }
-
-        /// <summary>
-        /// Implicitly converts an <see cref="IPEndPoint"/> to a <see cref="BindingEndPoint"/>.
-        /// </summary>
-        /// <param name="ipEndPoint"></param>
-        public static implicit operator BindingEndPoint(IPEndPoint ipEndPoint) => ipEndPoint == null ? null : new BindingEndPoint(ipEndPoint);
-
-        /// <summary>
-        /// Implicitly converts an <see cref="DnsEndPoint"/> to a <see cref="BindingEndPoint"/>.
-        /// </summary>
-        /// <param name="dnsEndPoint">A network endpoint as a host name or a string representation of an IP address and a port number</param>
-        public static implicit operator BindingEndPoint(DnsEndPoint dnsEndPoint) => dnsEndPoint == null ? null : new BindingEndPoint(dnsEndPoint);
-
-
-        /// <summary>
-        /// Converts this <see cref="BindingEndPoint"/> to an <see cref="IPEndPoint"/> if it is an IP endpoint.
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="InvalidCastException">if the endpoint is not IP address</exception>
-        public IPEndPoint ToIPEndPoint()
-        {
-            if (!IsIpEndpoint)
-                throw new InvalidCastException("Endpoint is not IP address");
-            return _ipEndPoint;
-        }
-
-        /// <summary>
-        /// Converts this <see cref="BindingEndPoint"/> to a <see cref="DnsEndPoint"/> if it is a DNS endpoint.
-        /// </summary>
-        /// <returns>A network endpoint as a host name or a string representation of an IP address and a port number</returns>
-        public DnsEndPoint ToDnsEndPoint() => _dnsEndpoint;
-
-        /// <summary>
-        /// Returns a string representation of the endpoint.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            if (IsIpEndpoint)
-            {
-                return _ipEndPoint.ToString();
-            }
-            return $"{_dnsEndpoint.Host}:{Port.ToString(CultureInfo.InvariantCulture)}";
-        }
-
-        /// <summary>
-        /// Determines whether the specified object is equal to the current <see cref="BindingEndPoint"/>.
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        public override bool Equals(object obj)
-        {
-            switch (obj)
-            {
-                case BindingEndPoint bindingEndPoint:
-                    return Equals(bindingEndPoint);
-                case IPEndPoint ipEndPoint:
-                    return Equals(ipEndPoint);
-                case DnsEndPoint dnsEndPoint:
-                    return Equals(dnsEndPoint);
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Determines whether the specified <see cref="BindingEndPoint"/> is equal to the current <see cref="BindingEndPoint"/>.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(BindingEndPoint other)
-        {
-            if (other == null)
-                return false;
-            if (IsIpEndpoint && other.IsIpEndpoint)
-            {
-                return _ipEndPoint.Equals(other._ipEndPoint);
-            }
-            return _dnsEndpoint.Equals(other._dnsEndpoint);
-        }
-
-        /// <summary>
-        /// Determines whether the specified <see cref="DnsEndPoint"/> is equal to the current <see cref="BindingEndPoint"/>.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(DnsEndPoint other)
-        {
-            if (other == null)
-                return false;
-            return _dnsEndpoint.Equals(other);
-        }
-
-        /// <summary>
-        /// Determines whether the specified <see cref="IPEndPoint"/> is equal to the current <see cref="BindingEndPoint"/>.
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns></returns>
-        public bool Equals(IPEndPoint other)
-        {
-            if (other == null || _ipEndPoint == null)
-                return false;
-            return _ipEndPoint.Equals(other);
-        }
-
-
-        /// <summary>
-        /// Returns a hash code for the current <see cref="BindingEndPoint"/>.
-        /// </summary>
-        /// <returns></returns>
-        public override int GetHashCode()
-        {
-            if (IsIpEndpoint)
-            {
-                return _ipEndPoint.GetHashCode();
-            }
-            return _dnsEndpoint.GetHashCode();
-        }
-
+        public abstract EndPoint ToEndPoint();
+        public abstract IPEndPoint ToIPEndPoint();
+        public abstract DnsEndPoint ToDnsEndPoint();
 
         /// <summary>
         /// Tries to parse a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
@@ -223,49 +51,466 @@ namespace SslCertBinding.Net
         /// <exception cref="ArgumentNullException">if endpointStr is null</exception>
         public static bool TryParse(string endpointStr, out BindingEndPoint endPoint)
         {
+            if (AnyHostPort.TryParse(endpointStr, out AnyHostPort anyHostPort))
+            {
+                endPoint = anyHostPort;
+                return true;
+            }
+            
+            if (IpPort.TryParse(endpointStr, out IpPort ipPort))
+            {
+                endPoint = ipPort;
+                return true;
+            }
+
+            if (HostnamePort.TryParse(endpointStr, out HostnamePort hostnamePort))
+            {
+                endPoint = hostnamePort;
+                return true;
+            }
+
             endPoint = null;
-            endpointStr = endpointStr.ThrowIfNull(nameof(endpointStr)).Trim();
-            int portSeparatorIndex = endpointStr.LastIndexOf(':');
-            if (portSeparatorIndex == -1)
-                return false;
-
-            string host = endpointStr.Substring(0, portSeparatorIndex).Trim();
-            string portStr = endpointStr.Substring(portSeparatorIndex + 1).Trim();
-
-            if (string.IsNullOrEmpty(host))
-                return false;
-
-            if (!int.TryParse(portStr, out int port) || port < System.Net.IPEndPoint.MinPort || port > System.Net.IPEndPoint.MaxPort)
-                return false;
-
-            endPoint = IPAddress.TryParse(host, out IPAddress ip)
-                ? new BindingEndPoint(ip, port)
-                : new BindingEndPoint(host, port);
-            return true;
+            return false;
         }
 
-        /// <summary>
-        /// Parses a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
-        /// </summary>
-        /// <param name="endpointStr"></param>
-        /// <returns></returns>
-        /// <exception cref="FormatException">Invalid endpoint format</exception>
         public static BindingEndPoint Parse(string endpointStr)
         {
-            if (!TryParse(endpointStr, out BindingEndPoint endPoint))
+            if (!TryParse(endpointStr.ThrowIfNull(nameof(endpointStr)), out BindingEndPoint endPoint))
             {
-                throw new FormatException($"Invalid endpoint format: {endpointStr}");
+                throw new FormatException("Invalid endpoint format.");
             }
             return endPoint;
         }
 
-        private static IPEndPoint TryParseIPEndpoint(string host, int port)
+        public static BindingEndPoint Create(string host, int port)
         {
-            if (!IPAddress.TryParse(host, out IPAddress ipAddress))
+            if (AnyHostPort.TryParse(host, port, out AnyHostPort anyHostPort))
             {
-                return null;
+                return anyHostPort;
             }
-            return new IPEndPoint(ipAddress, port);
+            else if (IpPort.TryParse(host, port, out IpPort ipPort))
+            {
+                return ipPort;
+            }
+             
+            return new HostnamePort(host, port);
+        }     
+    }
+
+    internal static class BindingEndPointParser
+    {
+
+        public static bool TryParse(string endpointStr, out BindingEndPoint endPoint)
+        {
+            if (AnyHostPort.TryParse(endpointStr, out AnyHostPort anyHostPort))
+            {
+                endPoint = anyHostPort;
+                return true;
+            }
+            
+            if (IpPort.TryParse(endpointStr, out IpPort ipPort))
+            {
+                endPoint = ipPort;
+                return true;
+            }
+
+            if (HostnamePort.TryParse(endpointStr, out HostnamePort hostnamePort))
+            {
+                endPoint = hostnamePort;
+                return true;
+            }
+
+            endPoint = null;
+            return false;
+        } 
+
+        internal static bool TryParseHostPort(string endpointStr, out string host, out int port)
+        {
+
+            host = null;
+            port = 0;
+
+            if (string.IsNullOrEmpty(endpointStr))
+                return false;
+
+            endpointStr = endpointStr.Trim();
+            int portSeparatorIndex = endpointStr.LastIndexOf(':');
+            if (portSeparatorIndex == -1)
+                return false;
+
+            string hostParsed = endpointStr.Substring(0, portSeparatorIndex).Trim();
+            string portStr = endpointStr.Substring(portSeparatorIndex + 1).Trim();
+
+            if (string.IsNullOrEmpty(hostParsed))
+                return false;
+            
+            if (!TryParsePort(portStr, out int portParsed))
+                return false;
+
+            host = hostParsed;
+            port = portParsed;
+            return true;
         }
+
+        internal static bool TryParsePort(string portStr, out int port)
+        {
+            return int.TryParse(portStr, out port) 
+                && IsValidPort(port);
+        }
+
+        internal static bool IsValidPort(int port)
+        {
+            return port >= IPEndPoint.MinPort && port <= IPEndPoint.MaxPort;
+        }
+
+    }
+
+    public class IpPort : BindingEndPoint, IEquatable<IpPort>, IEquatable<IPEndPoint>
+    {
+        private const string FormatErrorMessage = "Invalid IP endpoint format.";
+
+        private readonly IPEndPoint _endPoint;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified IP address and port.
+        /// </summary>
+        /// <param name="ipAddress">IP address</param>
+        /// <param name="port">Port number. Must be between <see cref="System.Net.IPEndPoint.MinPort"/> and <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipAddress"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
+        public IpPort(IPAddress ipAddress, int port)
+            : this(new IPEndPoint(ipAddress.ThrowIfNull(nameof(ipAddress)), port))
+        {
+        }
+
+        public IpPort(IPEndPoint ipEndPoint) : base(ipEndPoint.ThrowIfNull(nameof(ipEndPoint)).Address.ToString(), ipEndPoint.Port)
+        {
+            _endPoint = ipEndPoint.ThrowIfNull(nameof(ipEndPoint));
+        }
+
+        public IPAddress Address => _endPoint.Address;
+
+        public override EndPoint ToEndPoint() => ToIPEndPoint();
+
+        public override IPEndPoint ToIPEndPoint() => _endPoint;
+        public override DnsEndPoint ToDnsEndPoint() => new DnsEndPoint(Host, Port);
+        
+        /// <summary>
+        /// Returns a string representation of the endpoint.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+           return _endPoint.ToString();
+        }
+
+        public bool Equals(IpPort other)
+        {
+            if (other == null)
+                return false;
+
+            return _endPoint.Equals(other._endPoint);
+        }
+
+        public bool Equals(IPEndPoint other) => _endPoint.Equals(other);
+
+        public override bool Equals(object obj)
+        {
+            switch (obj)
+            {
+                case IPEndPoint ipEndPoint:
+                    return Equals(ipEndPoint);
+                case IpPort ipPort:
+                    return Equals(ipPort);
+                default:
+                    return false;
+            }
+        }
+
+
+        public override int GetHashCode()
+            => _endPoint.GetHashCode();
+
+        /// <summary>
+        /// Tries to parse a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
+        /// </summary>
+        /// <param name="ipPortStr"></param>
+        /// <param name="endPoint"></param>
+        /// <returns></returns>
+        public static bool TryParse(string ipPortStr, out IpPort endPoint)
+        {
+            endPoint = null;
+
+            if (!BindingEndPointParser.TryParseHostPort(ipPortStr, out string host, out int port))
+                return false;
+
+            return TryParse(host, port, out endPoint);
+        }
+
+        public static bool TryParse(string host, int port, out IpPort endPoint)
+        {
+            endPoint = null;
+
+            if (!BindingEndPointParser.IsValidPort(port))
+                return false;
+
+            if (!IPAddress.TryParse(host, out IPAddress ip))
+                return false;
+            var ipEndPoint = new IPEndPoint(ip, port);
+
+            endPoint = new IpPort(ipEndPoint);
+            return true;
+        }
+
+
+        /// <summary>
+        /// Parses a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
+        /// </summary>
+        /// <param name="ipPortStr"></param>
+        /// <returns></returns>
+        /// <exception cref="FormatException">Invalid endpoint format</exception>
+        /// <exception cref="ArgumentNullException">endpointStr is null</exception>
+        public static new IpPort Parse(string ipPortStr)
+        {
+            if (!TryParse(ipPortStr.ThrowIfNull(nameof(ipPortStr)), out IpPort endPoint))
+            {
+                throw new FormatException(FormatErrorMessage);
+            }
+            return endPoint;
+        }
+    }
+
+     public class HostnamePort : BindingEndPoint, IEquatable<HostnamePort>, IEquatable<DnsEndPoint>
+    {
+        private const string FormatErrorMessage = "Invalid DNS endpoint format.";
+
+        private readonly DnsEndPoint _endPoint;
+        
+        public HostnamePort(string hostname, int port)
+            : this(new DnsEndPoint(hostname.ThrowIfNullOrEmpty(nameof(hostname)), port))
+        {            
+        }
+
+        public HostnamePort(DnsEndPoint dnsEndPoint) : base(dnsEndPoint.ThrowIfNull(nameof(dnsEndPoint)).Host, dnsEndPoint.Port)
+        {
+            if (IPAddress.TryParse(dnsEndPoint.Host, out _))
+            {
+                throw new ArgumentException("Host cannot be an IP address.", nameof(dnsEndPoint));
+            }
+            _endPoint = dnsEndPoint.ThrowIfNull(nameof(dnsEndPoint));
+        }
+
+
+        public override DnsEndPoint ToDnsEndPoint() => _endPoint;
+
+        public override EndPoint ToEndPoint() =>  ToDnsEndPoint();
+
+        public override IPEndPoint ToIPEndPoint()
+        {
+            throw new InvalidCastException("Cannot convert a hostname endpoint to an IPEndPoint.");
+        }
+
+        /// <summary>
+        /// Returns a string representation of the endpoint.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {            
+            return $"{Host}:{Port.ToString(CultureInfo.InvariantCulture)}";
+        }
+
+         public bool Equals(HostnamePort other)
+        {
+            if (other == null)
+                return false;
+
+            return _endPoint.Equals(other._endPoint);
+        }
+
+        public bool Equals(DnsEndPoint other) => _endPoint.Equals(other);
+
+        public override bool Equals(object obj)
+        {
+            switch (obj)
+            {
+                case DnsEndPoint dnsEndPoint:
+                    return Equals(dnsEndPoint);
+                case HostnamePort hostnamePort:
+                    return Equals(hostnamePort);
+                default:
+                    return false;
+            }
+            
+        }
+
+
+        public override int GetHashCode()
+            => _endPoint.GetHashCode();
+
+
+
+        /// <summary>
+        /// Tries to parse a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
+        /// </summary>
+        /// <param name="hostnamePortStr"></param>
+        /// <param name="endPoint"></param>
+        /// <returns></returns>
+        public static bool TryParse(string hostnamePortStr, out HostnamePort endPoint)
+        {         
+            endPoint = null;
+
+            if(!BindingEndPointParser.TryParseHostPort(hostnamePortStr, out string host, out int port))
+                return false;
+
+            return TryParse(host, port, out endPoint);
+        }
+
+        public static bool TryParse(string host, int port, out HostnamePort endPoint)
+        {
+            endPoint = null;
+
+            if (!BindingEndPointParser.IsValidPort(port))
+                return false;
+
+            if (IPAddress.TryParse(host, out _))
+                return false;
+
+            var dnsEndPoint = new DnsEndPoint(host, port);
+
+            endPoint = new HostnamePort(dnsEndPoint);
+            return true;
+        }
+
+
+        /// <summary>
+        /// Parses a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
+        /// </summary>
+        /// <param name="hostnamePortStr"></param>
+        /// <returns></returns>
+        /// <exception cref="FormatException">Invalid endpoint format</exception>
+        /// <exception cref="ArgumentNullException">endpointStr is null</exception>
+        public static new HostnamePort Parse(string hostnamePortStr)
+        {
+            if (!TryParse(hostnamePortStr.ThrowIfNull(nameof(hostnamePortStr)), out HostnamePort endPoint))
+            {
+                throw new FormatException(FormatErrorMessage);
+            }
+            return endPoint;
+        }
+
+        
+
+    }
+
+
+     public class AnyHostPort : BindingEndPoint, IEquatable<AnyHostPort>, IEquatable<int>
+    {
+        private const string FormatErrorMessage = "Invalid port format.";
+        private const string AnyHostname = "*";
+        private readonly IPEndPoint _endPoint;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BindingEndPoint"/> class with the specified IP address and port.
+        /// </summary>
+        /// <param name="port">Port number. Must be between <see cref="System.Net.IPEndPoint.MinPort"/> and <see cref="System.Net.IPEndPoint.MaxPort"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipAddress"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="port"/> is outside the range <see cref="System.Net.IPEndPoint.MinPort"/> to <see cref="System.Net.IPEndPoint.MaxPort"/>.</exception>
+        public AnyHostPort(int port) : base(string.Empty, port)
+        {
+            _endPoint = new IPEndPoint(IPAddress.Any, port);
+        }
+        public override EndPoint ToEndPoint() => ToIPEndPoint();
+
+        public override IPEndPoint ToIPEndPoint() => _endPoint;
+        public override DnsEndPoint ToDnsEndPoint() => new DnsEndPoint(Host, Port);
+        /// <summary>
+        /// Returns a string representation of the endpoint.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+           return _endPoint.Port.ToString(CultureInfo.InvariantCulture);
+        }
+
+        public bool Equals(AnyHostPort other)
+        {
+            if (other == null)
+                return false;
+
+            return Port.Equals(other.Port);
+        }
+
+        public bool Equals(int other) => Port == other;
+
+        public override bool Equals(object obj)
+        { 
+            switch(obj)
+            {
+                case int port:
+                    return Equals(port);
+                case AnyHostPort anyHostPort:
+                    return Equals(anyHostPort);
+                default:
+                    return false;
+            }
+        }
+
+        public override int GetHashCode()
+            => Port.GetHashCode();
+
+        /// <summary>
+        /// Tries to parse a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
+        /// </summary>
+        /// <param name="portStr"></param>
+        /// <param name="endPoint"></param>
+        /// <returns></returns>
+        public static bool TryParse(string portStr, out AnyHostPort endPoint)
+        {         
+            endPoint = null;
+
+            if (int.TryParse(portStr, out int port) && port >= 0 && port <= 65535)
+            {
+                endPoint = new AnyHostPort(port);
+                return true;
+            }
+
+            return false;
+        }
+
+        internal static bool TryParse(string host, int port, out AnyHostPort endPoint)
+        {
+            endPoint = null;
+
+            if (!BindingEndPointParser.IsValidPort(port))
+                return false;
+
+            if (string.IsNullOrEmpty(host) || host == AnyHostname)
+            {
+                endPoint = new AnyHostPort(port);
+                return true;
+            }
+
+            return false;
+        }
+
+
+        /// <summary>
+        /// Parses a string representation of an endpoint into a <see cref="BindingEndPoint"/> instance.
+        /// </summary>
+        /// <param name="portStr"></param>
+        /// <returns></returns>
+        /// <exception cref="FormatException">Invalid endpoint format</exception>
+        /// <exception cref="ArgumentNullException">endpointStr is null</exception>
+        public static new AnyHostPort Parse(string portStr)
+        {
+            if (!TryParse(portStr.ThrowIfNull(nameof(portStr)), out AnyHostPort endPoint))
+            {
+                throw new FormatException(FormatErrorMessage);
+            }
+            return endPoint;
+        }
+
+        
+
     }
 }
