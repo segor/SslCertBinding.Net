@@ -5,7 +5,6 @@ using System.Net;
 namespace SslCertBinding.Net
 {
 
-
     public enum BindingHostType
     {
         IpAddress,
