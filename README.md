@@ -3,7 +3,7 @@
 
 SslCertBinding.Net is a library for .NET and Windows and provides a simple API to add, remove or retrieve bindings between a https port and a SSL certificate.
 
-This library can be considered as a programmatic alternative to Windows command line tools `netsh http show|add|delete sslcert` or `httpcfg query|set|delete ssl`. 
+This library can be considered as a programmatic alternative to Windows command line tools `netsh http show|add|delete sslcert` or `httpcfg query|set|delete ssl`.
 
 **Important: The library uses the Win32 API and works on the Windows platform only.**
 
@@ -15,25 +15,121 @@ dotnet add package SslCertBinding.Net
 ```
 
 ## Usage
-You can add, update or delete a SSL certificate binding by using the `CertificateBindingConfiguration` class as shown below:
+The public API is centered on `SslBindingConfiguration`.
+
+The current implementation supports these binding families:
+
+- `ipport=<ip>:<port>`
+- `hostnameport=<host>:<port>`
+- `ccs=<port>`
+- `scopedccs=<host>:<port>`
+
+| Netsh shape | Recommended key type | Recommended binding type |
+| --- | --- | --- |
+| `ipport=1.1.1.1:443` | `IpPortKey` | `IpPortBinding` |
+| `ipport=0.0.0.0:443` | `IpPortKey` | `IpPortBinding` |
+| `hostnameport=www.contoso.com:443` | `HostnamePortKey` | `HostnamePortBinding` |
+| `ccs=443` | `CcsPortKey` | `CcsPortBinding` |
+| `scopedccs=www.contoso.com:443` | `ScopedCcsKey` | `ScopedCcsBinding` |
+
 ```c#
-var config = new CertificateBindingConfiguration();
-var ipPort = new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443); 
-var certificateThumbprint = "372680E4AEC4A57CAE698307347C65D3CE38AF60";
+var config = new SslBindingConfiguration();
+var certificate = new SslCertificateReference(
+    "372680E4AEC4A57CAE698307347C65D3CE38AF60",
+    StoreName.My);
 var appId = Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a");
 
-// add a new binding record
-config.Bind( new CertificateBinding(certificateThumbprint, StoreName.My, ipPort, appId) );
+config.Upsert(new IpPortBinding(
+    new IpPortKey(IPAddress.Parse("0.0.0.0"), 443),
+    certificate,
+    appId));
 
-// get the binding record
-var certificateBinding = config.Query(ipPort)[0];
+config.Upsert(new HostnamePortBinding(
+    new HostnamePortKey("www.contoso.com", 443),
+    certificate,
+    appId));
 
-// set an option and update the binding record
-certificateBinding.Options.DoNotVerifyCertificateRevocation = true;
-config.Bind(certificateBinding);
+config.Upsert(new CcsPortBinding(
+    new CcsPortKey(443),
+    appId));
 
-// remove the binding record
-config.Delete(ipPort);
+config.Upsert(new ScopedCcsBinding(
+    new ScopedCcsKey("www.contoso.com", 443),
+    appId));
+
+IReadOnlyList<ISslBinding> allBindings = config.Query();
+HostnamePortBinding sniBinding = config.Query(new HostnamePortKey("www.contoso.com", 443))[0];
+IpPortBinding ipBinding = config.Query(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443))[0];
+CcsPortBinding ccsBinding = config.Query(new CcsPortKey(443))[0];
+ScopedCcsBinding scopedCcsBinding = config.Query(new ScopedCcsKey("www.contoso.com", 443))[0];
+HostnamePortBinding sniBindingFromEndPoint = config.Query(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey())[0];
+ScopedCcsBinding scopedCcsBindingFromEndPoint = config.Query(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey())[0];
+IpPortBinding ipBindingFromEndPoint = config.Query(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey())[0];
+
+config.Delete(new HostnamePortKey("www.contoso.com", 443));
+config.Delete(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443));
+config.Delete(new CcsPortKey(443));
+config.Delete(new ScopedCcsKey("www.contoso.com", 443));
+config.Delete(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey());
+config.Delete(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey());
+config.Delete(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey());
+```
+
+If you want family-specific enumeration, you can use:
+
+```c#
+IReadOnlyList<IpPortBinding> ipBindings = config.Query<IpPortBinding>();
+IReadOnlyList<HostnamePortBinding> hostnameBindings = config.Query<HostnamePortBinding>();
+IReadOnlyList<CcsPortBinding> ccsBindings = config.Query<CcsPortBinding>();
+IReadOnlyList<ScopedCcsBinding> scopedCcsBindings = config.Query<ScopedCcsBinding>();
+```
+
+`IpPortKey`, `HostnamePortKey`, and `ScopedCcsKey` define implicit conversions to and from the matching `IPEndPoint` or `DnsEndPoint` shapes where that mapping is natural. `IPEndPoint.ToSslBindingKey()` remains available for the IP family, while `DnsEndPoint` now uses explicit `ToHostnamePortKey()` and `ToScopedCcsKey()` conversions so the hostname-based families stay unambiguous.
+
+Only `IpPortBinding` and `HostnamePortBinding` expose `SslCertificateReference`. `CcsPortBinding` and `ScopedCcsBinding` rely on HTTP.sys central certificate store resolution and therefore do not carry certificate thumbprint/store state in the public model.
+
+`BindingOptions` support is not identical across the CCS families. `ScopedCcsBinding` can use the shared option surface, but `CcsPortBinding` is currently limited to default options only because HTTP.sys rejects non-default plain CCS option combinations on environments where CCS support is available.
+
+The type model uses a hybrid interface/class model:
+
+- `ISslBinding` is the non-generic root for mixed-family enumeration.
+- `SslBinding<TKey>` provides the typed `Key` plus shared binding-state implementation for each binding family.
+
+## Legacy API
+The legacy IP-only API remains available as a soft migration path:
+
+1. `CertificateBinding`, `ICertificateBindingConfiguration`, and `CertificateBindingConfiguration` still ship in this version.
+2. They are marked obsolete and hidden from IntelliSense for new code.
+3. They remain intentionally limited to `ipport` bindings.
+4. They do not enumerate or expose `hostnameport`/SNI bindings.
+
+Legacy usage remains supported:
+
+```c#
+#pragma warning disable CS0618
+var legacyConfig = new CertificateBindingConfiguration();
+legacyConfig.Bind(new CertificateBinding(
+    "372680E4AEC4A57CAE698307347C65D3CE38AF60",
+    StoreName.My,
+    new IPEndPoint(IPAddress.Any, 443),
+    Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a")));
+
+IReadOnlyList<CertificateBinding> legacyBindings = legacyConfig.Query();
+#pragma warning restore CS0618
+```
+
+Recommended migration:
+
+```c#
+var migratedConfig = new SslBindingConfiguration();
+migratedConfig.Upsert(new IpPortBinding(
+    new IpPortKey(IPAddress.Any, 443),
+    new SslCertificateReference(
+        "372680E4AEC4A57CAE698307347C65D3CE38AF60",
+        StoreName.My),
+    Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a")));
+
+IReadOnlyList<IpPortBinding> migratedBindings = migratedConfig.Query<IpPortBinding>();
 ```
 
 ## FAQ
@@ -42,4 +138,4 @@ config.Delete(ipPort);
 Cerificates configuration needs elevated permissions. Run Visual Studio as an Administrator before running unit tests.
 
 ### I am getting the error "A specified logon session does not exist. It may have already been terminated". How to fix it?
-Make sure that you have installed your certificate properly, certificate has a private key, your private key store is not broken, etc. Try binding your certificate with `netsh` CLI tool. If you get the same error it should not be a bug in `SslCertBinding.Net`. 
+Make sure that you have installed your certificate properly, certificate has a private key, your private key store is not broken, etc. Try binding your certificate with `netsh` CLI tool. If you get the same error it should not be a bug in `SslCertBinding.Net`.
