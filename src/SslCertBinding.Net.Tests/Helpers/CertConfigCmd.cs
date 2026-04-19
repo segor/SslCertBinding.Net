@@ -250,7 +250,7 @@ namespace SslCertBinding.Net.Tests
                     key),
                 true);
         }
-
+        
         private static async Task<CommandResult> ExecCommand(string arguments, bool throwExcepton)
         {
             var psi = new ProcessStartInfo("netsh")
@@ -266,16 +266,19 @@ namespace SslCertBinding.Net.Tests
             using (var process = new Process { StartInfo = psi })
             {
                 var outputBuilder = new StringBuilder();
-                process.OutputDataReceived += (sender, e) => { outputBuilder.AppendLine(e.Data); };
-                process.ErrorDataReceived += (sender, e) => { outputBuilder.AppendLine(e.Data); };
+                process.OutputDataReceived += (sender, e) => { if (e.Data != null) outputBuilder.AppendLine(e.Data); };
+                process.ErrorDataReceived += (sender, e) => { if (e.Data != null) outputBuilder.AppendLine(e.Data); };
 
                 process.Start();
-
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
                 await process.WaitForExitAsync();
-
+                
+                // CRITICAL: WaitForExitAsync() only waits for process to exit, not for async event handlers to finish
+                // Call the synchronous WaitForExit() to ensure all buffered data is read
+                process.WaitForExit();
+                
                 commandResult = new CommandResult { ExitCode = process.ExitCode, Output = outputBuilder.ToString() };
             }
 
