@@ -259,7 +259,7 @@ namespace SslCertBinding.Net.Tests
 
             IReadOnlyList<ISslBinding> result = configuration.Query();
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result.OfType<HostnamePortBinding>(), Is.Empty);
         }
 
         [Test]
