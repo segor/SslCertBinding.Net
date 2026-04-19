@@ -4,7 +4,8 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-    <AnalysisLevel>6.0-recommended</AnalysisLevel>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <LangVersion>12.0</LangVersion>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   

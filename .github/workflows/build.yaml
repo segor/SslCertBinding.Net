@@ -6,10 +6,12 @@ on:
     tags: [ 'v*' ]
     paths:
       - 'src/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ master ]
     paths:
       - 'src/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 env:
@@ -52,6 +54,16 @@ jobs:
 
     - name: Build all targets
       run: dotnet build "${{ env.Solution_Path }}" -c Release --no-restore
+
+    - name: Configure IIS Centralized Certificates
+      shell: powershell
+      run: |
+        $ccsPath = Join-Path "${{ runner.temp }}" "ccs"
+        Enable-WindowsOptionalFeature -Online -FeatureName IIS-CertProvider -All -NoRestart
+        New-Item -ItemType Directory -Path $ccsPath -Force | Out-Null
+        New-Item -Path "HKLM:\SOFTWARE\Microsoft\IIS\CentralCertProvider" -Force | Out-Null
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\IIS\CentralCertProvider" -Name CertStoreLocation -Value $ccsPath
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\IIS\CentralCertProvider" -Name Enabled -Value 1
    
     - name: Execute unit tests
       run: dotnet test "${{ env.Solution_Path }}" -c Release --no-build --no-restore --verbosity normal --collect:"XPlat Code Coverage" --results-directory "${{ env.Coverage_Dir }}"
