@@ -13,7 +13,7 @@ namespace SslCertBinding.Net
         /// <param name="key">The scoped CCS binding key.</param>
         /// <param name="appId">The application identifier.</param>
         /// <param name="options">The binding options.</param>
-        public ScopedCcsBinding(ScopedCcsKey key, Guid appId, BindingOptions options = null)
+        public ScopedCcsBinding(ScopedCcsKey key, Guid appId, BindingOptions? options = null)
             : base(appId, options)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));

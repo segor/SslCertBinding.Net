@@ -17,7 +17,7 @@ namespace SslCertBinding.Net
     public class CertificateBinding
     {
         /// <inheritdoc cref="CertificateBinding.CertificateBinding(string, string, System.Net.IPEndPoint, System.Guid, BindingOptions)" />
-        public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = null)
+        public CertificateBinding(string certificateThumbprint, StoreName certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions? options = null)
             : this(certificateThumbprint, certificateStoreName.ToString(), ipPort, appId, options)
         {
         }
@@ -32,7 +32,7 @@ namespace SslCertBinding.Net
         /// <param name="options">Additional binding options.</param>
         /// <exception cref="ArgumentException">Thrown when <paramref name="certificateThumbprint"/> is null or empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="ipPort"/> is <c>null</c>.</exception>
-        public CertificateBinding(string certificateThumbprint, string certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions options = null)
+        public CertificateBinding(string certificateThumbprint, string? certificateStoreName, IPEndPoint ipPort, Guid appId, BindingOptions? options = null)
         {
             if (string.IsNullOrEmpty(certificateThumbprint))
             {
@@ -93,7 +93,7 @@ namespace SslCertBinding.Net
                 CloneOptions(Options));
         }
 
-        internal static BindingOptions CloneOptions(BindingOptions options) =>
+        internal static BindingOptions CloneOptions(BindingOptions? options) =>
             options == null
                 ? new()
                 : new()

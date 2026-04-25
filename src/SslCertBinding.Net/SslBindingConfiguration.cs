@@ -75,42 +75,42 @@ namespace SslCertBinding.Net
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<IpPortBinding> Query(IpPortKey key)
+        public IpPortBinding? Find(IpPortKey key)
         {
             ThrowHelper.ThrowIfNull(key, nameof(key));
-            return GetSupportedBindingOperations(key).QueryExact(key).Cast<IpPortBinding>().ToArray();
+            return (IpPortBinding?)GetSupportedBindingOperations(key).FindExact(key);
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<HostnamePortBinding> Query(HostnamePortKey key)
+        public HostnamePortBinding? Find(HostnamePortKey key)
         {
             ThrowHelper.ThrowIfNull(key, nameof(key));
             ISslBindingFamilyOperations operations = GetSupportedBindingOperations(key);
-            return operations.QueryExact(key).Cast<HostnamePortBinding>().ToArray();
+            return (HostnamePortBinding?)operations.FindExact(key);
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<CcsPortBinding> Query(CcsPortKey key)
+        public CcsPortBinding? Find(CcsPortKey key)
         {
             ThrowHelper.ThrowIfNull(key, nameof(key));
             ISslBindingFamilyOperations operations = GetSupportedBindingOperations(key);
-            return operations.QueryExact(key).Cast<CcsPortBinding>().ToArray();
+            return (CcsPortBinding?)operations.FindExact(key);
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<ScopedCcsBinding> Query(ScopedCcsKey key)
+        public ScopedCcsBinding? Find(ScopedCcsKey key)
         {
             ThrowHelper.ThrowIfNull(key, nameof(key));
             ISslBindingFamilyOperations operations = GetSupportedBindingOperations(key);
-            return operations.QueryExact(key).Cast<ScopedCcsBinding>().ToArray();
+            return (ScopedCcsBinding?)operations.FindExact(key);
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<ISslBinding> Query(SslBindingKey key)
+        public ISslBinding? Find(SslBindingKey key)
         {
             ThrowHelper.ThrowIfNull(key, nameof(key));
             ISslBindingFamilyOperations operations = GetSupportedBindingOperations(key);
-            return operations.QueryExact(key);
+            return operations.FindExact(key);
         }
 
         /// <inheritdoc />
@@ -254,7 +254,7 @@ namespace SslCertBinding.Net
 
         private static ISslBindingFamilyOperations GetBindingOperations(SslBindingKind kind)
         {
-            if (BindingFamilyOperationsByKind.TryGetValue(kind, out ISslBindingFamilyOperations operations))
+            if (BindingFamilyOperationsByKind.TryGetValue(kind, out ISslBindingFamilyOperations? operations))
             {
                 return operations;
             }
@@ -263,7 +263,7 @@ namespace SslCertBinding.Net
         }
 
         private static ISslBindingFamilyOperations GetBindingOperations(SslBindingKey key) =>
-            BindingFamilyOperationsByKeyType.TryGetValue(key.GetType(), out ISslBindingFamilyOperations operations)
+            BindingFamilyOperationsByKeyType.TryGetValue(key.GetType(), out ISslBindingFamilyOperations? operations)
                 ? operations
                 : throw CreateNotSupportedException(key.GetType());
 
@@ -273,7 +273,7 @@ namespace SslCertBinding.Net
 
         private static ISslBindingFamilyOperations GetBindingOperationsForBindingType(Type type)
         {
-            if (BindingFamilyOperationsByBindingType.TryGetValue(type, out ISslBindingFamilyOperations operations))
+            if (BindingFamilyOperationsByBindingType.TryGetValue(type, out ISslBindingFamilyOperations? operations))
             {
                 return operations;
             }

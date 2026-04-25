@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using NUnit.Framework;
 
+#nullable disable
 namespace SslCertBinding.Net.Tests
 {
     [TestFixture]

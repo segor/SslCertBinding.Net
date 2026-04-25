@@ -22,7 +22,7 @@ namespace SslCertBinding.Net.Internal
 
         IReadOnlyList<ISslBinding> QueryAll();
 
-        IReadOnlyList<ISslBinding> QueryExact(SslBindingKey key);
+        ISslBinding? FindExact(SslBindingKey key);
 
         void Upsert(ISslBinding binding);
 
@@ -64,10 +64,10 @@ namespace SslCertBinding.Net.Internal
 
         public IReadOnlyList<ISslBinding> QueryAll() => QueryAllCore().Cast<ISslBinding>().ToArray();
 
-        public IReadOnlyList<ISslBinding> QueryExact(SslBindingKey key)
+        public ISslBinding? FindExact(SslBindingKey key)
         {
-            TBinding binding = QueryExactCore((TKey)key);
-            return binding == null ? Array.Empty<ISslBinding>() : new ISslBinding[] { binding };
+            TBinding? binding = QueryExactCore((TKey)key);
+            return binding;
         }
 
         public void Upsert(ISslBinding binding) => UpsertCore((TBinding)binding);
@@ -78,7 +78,7 @@ namespace SslCertBinding.Net.Internal
 
         protected abstract IReadOnlyList<TBinding> QueryAllCore();
 
-        protected abstract TBinding QueryExactCore(TKey key);
+        protected abstract TBinding? QueryExactCore(TKey key);
 
         protected virtual void UpsertCore(TBinding binding)
         {
@@ -111,7 +111,7 @@ namespace SslCertBinding.Net.Internal
                 BindingStructures.CreateNextIpQuery,
                 BindingStructures.MapIpBinding);
 
-        protected override IpPortBinding QueryExactCore(IpPortKey key) =>
+        protected override IpPortBinding? QueryExactCore(IpPortKey key) =>
             BindingFamilyInterop.QuerySingle<HttpApi.HTTP_SERVICE_CONFIG_SSL_QUERY, HttpApi.HTTP_SERVICE_CONFIG_SSL_SET, IpPortBinding>(
                 ConfigId,
                 BindingStructures.CreateExactQuery(key),
@@ -149,7 +149,7 @@ namespace SslCertBinding.Net.Internal
                 BindingStructures.CreateNextHostnameQuery,
                 BindingStructures.MapHostnameBinding);
 
-        protected override HostnamePortBinding QueryExactCore(HostnamePortKey key) =>
+        protected override HostnamePortBinding? QueryExactCore(HostnamePortKey key) =>
             BindingFamilyInterop.QuerySingle<HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_QUERY, HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET, HostnamePortBinding>(
                 ConfigId,
                 BindingStructures.CreateExactQuery(key),
@@ -187,7 +187,7 @@ namespace SslCertBinding.Net.Internal
                 BindingStructures.CreateNextCcsQuery,
                 BindingStructures.MapCcsBinding);
 
-        protected override CcsPortBinding QueryExactCore(CcsPortKey key) =>
+        protected override CcsPortBinding? QueryExactCore(CcsPortKey key) =>
             BindingFamilyInterop.QuerySingle<HttpApi.HTTP_SERVICE_CONFIG_SSL_CCS_QUERY, HttpApi.HTTP_SERVICE_CONFIG_SSL_CCS_SET, CcsPortBinding>(
                 ConfigId,
                 BindingStructures.CreateExactQuery(key),
@@ -231,7 +231,7 @@ namespace SslCertBinding.Net.Internal
                 BindingStructures.CreateNextScopedCcsQuery,
                 BindingStructures.MapScopedCcsBinding);
 
-        protected override ScopedCcsBinding QueryExactCore(ScopedCcsKey key) =>
+        protected override ScopedCcsBinding? QueryExactCore(ScopedCcsKey key) =>
             BindingFamilyInterop.QuerySingle<HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_QUERY, HttpApi.HTTP_SERVICE_CONFIG_SSL_SNI_SET, ScopedCcsBinding>(
                 ConfigId,
                 BindingStructures.CreateExactQuery(key),

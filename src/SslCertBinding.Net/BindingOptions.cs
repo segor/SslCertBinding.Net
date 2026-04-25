@@ -21,13 +21,15 @@ namespace SslCertBinding.Net
         /// <summary>
         /// The SSL control identifier, which specifies the list of the certificate issuers that can be trusted.
         /// This list can be a subset of the certificate issuers that are trusted by the computer.
+        /// A <c>null</c> value means no explicit SSL control identifier is configured.
         /// </summary>
-        public string SslCtlIdentifier { get; set; }
+        public string? SslCtlIdentifier { get; set; }
 
         /// <summary>
         /// The name of the store under the Local Machine store location where the control identifier pointed to by <see cref="SslCtlIdentifier"/> is stored.
+        /// A <c>null</c> value means no explicit SSL control store is configured.
         /// </summary>
-        public string SslCtlStoreName { get; set; }
+        public string? SslCtlStoreName { get; set; }
 
         /// <summary>
         /// Indicates whether client certificates are mapped where possible to corresponding operating-system user accounts based on the certificate mapping rules stored in Active Directory.

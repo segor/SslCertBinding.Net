@@ -13,129 +13,135 @@ namespace SslCertBinding.Net.Tests
     public class SslBindingConfigurationContractTests
     {
         [Test]
-        public void QueryByIpKeyRejectsNull()
+        public void FindByIpKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            IpPortKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Query((IpPortKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
         [Test]
-        public void QueryByHostnameKeyRejectsNull()
+        public void FindByHostnameKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            HostnamePortKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Query((HostnamePortKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
         [Test]
-        public void QueryByUntypedKeyRejectsNull()
+        public void FindByUntypedKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            SslBindingKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Query((SslBindingKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
         [Test]
-        public void QueryByUntypedIpKeyDispatchesToIpQuery()
+        public void FindByUntypedIpKeyDispatchesToIpFind()
         {
             var configuration = new SslBindingConfiguration();
 
-            IReadOnlyList<ISslBinding> result = configuration.Query((SslBindingKey)new IpPortKey(IPAddress.Any, 65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new IpPortKey(IPAddress.Any, 65535));
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result, Is.Null);
         }
 
         [Test]
-        public void QueryByUntypedHostnameKeyDispatchesToHostnameQuery()
+        public void FindByUntypedHostnameKeyDispatchesToHostnameFind()
         {
             var configuration = new SslBindingConfiguration();
 
-            IReadOnlyList<ISslBinding> result = configuration.Query((SslBindingKey)new HostnamePortKey("localhost", 65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new HostnamePortKey("localhost", 65535));
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result, Is.Null);
         }
 
         [Test]
-        public void QueryByCcsKeyRejectsNull()
+        public void FindByCcsKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            CcsPortKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Query((CcsPortKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
         [Test]
-        public void QueryByScopedCcsKeyRejectsNull()
+        public void FindByScopedCcsKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            ScopedCcsKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Query((ScopedCcsKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
         [Test]
-        public void QueryByUntypedCcsKeyDispatchesToCcsQuery()
+        public void FindByUntypedCcsKeyDispatchesToCcsFind()
         {
             var configuration = new SslBindingConfiguration();
 
-            IReadOnlyList<ISslBinding> result = configuration.Query((SslBindingKey)new CcsPortKey(65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new CcsPortKey(65535));
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result, Is.Null);
         }
 
         [Test]
-        public void QueryByUntypedScopedCcsKeyDispatchesToScopedCcsQuery()
+        public void FindByUntypedScopedCcsKeyDispatchesToScopedCcsFind()
         {
             var configuration = new SslBindingConfiguration();
 
-            IReadOnlyList<ISslBinding> result = configuration.Query((SslBindingKey)new ScopedCcsKey("localhost", 65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new ScopedCcsKey("localhost", 65535));
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result, Is.Null);
         }
 
         [Test]
-        public void QueryByIpEndPointUsesImplicitKeyConversion()
+        public void FindByIpEndPointUsesImplicitKeyConversion()
         {
             var configuration = new SslBindingConfiguration();
             var endPoint = new IPEndPoint(IPAddress.Any, 65535);
 
-            IReadOnlyList<IpPortBinding> result = configuration.Query(endPoint.ToSslBindingKey());
+            IpPortBinding? result = configuration.Find(endPoint.ToIpPortKey()!);
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result, Is.Null);
         }
 
         [Test]
-        public void QueryByDnsEndPointUsesImplicitKeyConversion()
+        public void FindByDnsEndPointUsesImplicitKeyConversion()
         {
             var configuration = new SslBindingConfiguration();
             var endPoint = new DnsEndPoint("localhost", 65535);
 
-            IReadOnlyList<HostnamePortBinding> result = configuration.Query(endPoint.ToHostnamePortKey());
+            HostnamePortBinding? result = configuration.Find(endPoint.ToHostnamePortKey()!);
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result, Is.Null);
         }
 
         [Test]
-        public void QueryByDnsEndPointUsesScopedCcsKeyConversion()
+        public void FindByDnsEndPointUsesScopedCcsKeyConversion()
         {
             var configuration = new SslBindingConfiguration();
             var endPoint = new DnsEndPoint("localhost", 65535);
 
-            IReadOnlyList<ScopedCcsBinding> result = configuration.Query(endPoint.ToScopedCcsKey());
+            ScopedCcsBinding? result = configuration.Find(endPoint.ToScopedCcsKey()!);
 
-            Assert.That(result, Is.Empty);
+            Assert.That(result, Is.Null);
         }
 
         [Test]
         public void UpsertRejectsNullBinding()
         {
             var configuration = new SslBindingConfiguration();
+            ISslBinding? binding = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Upsert(null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Upsert(binding!));
             Assert.That(ex.ParamName, Is.EqualTo("binding"));
         }
 
@@ -143,8 +149,9 @@ namespace SslCertBinding.Net.Tests
         public void DeleteRejectsNullKey()
         {
             var configuration = new SslBindingConfiguration();
+            SslBindingKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete((SslBindingKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -152,8 +159,9 @@ namespace SslCertBinding.Net.Tests
         public void DeleteRejectsNullKeyCollection()
         {
             var configuration = new SslBindingConfiguration();
+            IReadOnlyCollection<SslBindingKey>? keys = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete((IReadOnlyCollection<SslBindingKey>)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete(keys!));
             Assert.That(ex.ParamName, Is.EqualTo("keys"));
         }
 
@@ -169,7 +177,7 @@ namespace SslCertBinding.Net.Tests
         public void DeleteRejectsCollectionContainingNullItem()
         {
             var configuration = new SslBindingConfiguration();
-            SslBindingKey[] keys = { new IpPortKey(IPAddress.Any, 65535), null };
+            SslBindingKey[] keys = { new IpPortKey(IPAddress.Any, 65535), null! };
 
             ArgumentException ex = Assert.Throws<ArgumentException>(() => configuration.Delete(keys));
             Assert.That(ex.ParamName, Is.EqualTo("keys"));
@@ -185,11 +193,11 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void QueryByUnsupportedKeyTypeThrows()
+        public void FindByUnsupportedKeyTypeThrows()
         {
             var configuration = new SslBindingConfiguration();
 
-            NotSupportedException ex = Assert.Throws<NotSupportedException>(() => configuration.Query(new UnsupportedBindingKey("unsupported")));
+            NotSupportedException ex = Assert.Throws<NotSupportedException>(() => configuration.Find(new UnsupportedBindingKey("unsupported")));
             Assert.That(ex.Message, Does.Contain(typeof(UnsupportedBindingKey).FullName));
         }
 
@@ -212,17 +220,17 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void ToSslBindingKeyReturnsNullForNullIpEndPoint()
+        public void ToIpPortKeyReturnsNullForNullIpEndPoint()
         {
-            IPEndPoint endPoint = null;
+            IPEndPoint? endPoint = null;
 
-            Assert.That(endPoint.ToSslBindingKey(), Is.Null);
+            Assert.That(endPoint.ToIpPortKey(), Is.Null);
         }
 
         [Test]
         public void ToHostnamePortKeyReturnsNullForNullDnsEndPoint()
         {
-            DnsEndPoint endPoint = null;
+            DnsEndPoint? endPoint = null;
 
             Assert.That(endPoint.ToHostnamePortKey(), Is.Null);
         }
@@ -230,7 +238,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ToScopedCcsKeyReturnsNullForNullDnsEndPoint()
         {
-            DnsEndPoint endPoint = null;
+            DnsEndPoint? endPoint = null;
 
             Assert.That(endPoint.ToScopedCcsKey(), Is.Null);
         }
@@ -263,13 +271,13 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void QueryByHostnameKeyThrowsPlatformNotSupportedWhenSniIsNotSupported()
+        public void FindByHostnameKeyThrowsPlatformNotSupportedWhenSniIsNotSupported()
         {
             ConfigureUnsupportedSni();
             var configuration = new SslBindingConfiguration();
 
             Assert.That(
-                () => configuration.Query(new HostnamePortKey("localhost", 443)),
+                () => configuration.Find(new HostnamePortKey("localhost", 443)),
                 Throws.TypeOf<PlatformNotSupportedException>());
         }
 
@@ -322,13 +330,13 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void QueryByCcsKeyThrowsPlatformNotSupportedWhenCcsIsNotSupported()
+        public void FindByCcsKeyThrowsPlatformNotSupportedWhenCcsIsNotSupported()
         {
             ConfigureUnsupportedCcs();
             var configuration = new SslBindingConfiguration();
 
             Assert.That(
-                () => configuration.Query(new CcsPortKey(443)),
+                () => configuration.Find(new CcsPortKey(443)),
                 Throws.TypeOf<PlatformNotSupportedException>());
         }
 
@@ -391,13 +399,13 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void QueryByScopedCcsKeyThrowsPlatformNotSupportedWhenScopedCcsIsNotSupported()
+        public void FindByScopedCcsKeyThrowsPlatformNotSupportedWhenScopedCcsIsNotSupported()
         {
             ConfigureUnsupportedScopedCcs();
             var configuration = new SslBindingConfiguration();
 
             Assert.That(
-                () => configuration.Query(new ScopedCcsKey("localhost", 443)),
+                () => configuration.Find(new ScopedCcsKey("localhost", 443)),
                 Throws.TypeOf<PlatformNotSupportedException>());
         }
 

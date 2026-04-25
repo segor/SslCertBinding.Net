@@ -8,8 +8,6 @@ It focuses on the API surface that exists today:
 2. the CCS and scoped CCS families exposed by the same model
 3. the active non-obsolete configuration and binding types used by that model
 
-`SslBindingConfiguration` also exposes concrete exact-query overloads for `CcsPortKey` and `ScopedCcsKey`. They are intentionally not part of `ISslBindingConfiguration`, which stays source/binary-compatible for downstream custom implementations.
-
 `SslBindingKeyExtensions` is intentionally omitted from the diagram because it provides endpoint conversion helpers but does not change the core object model.
 
 ## Class Diagram
@@ -90,17 +88,14 @@ classDiagram
         <<interface>>
         +Query() IReadOnlyList~ISslBinding~
         +Query~TBinding~() IReadOnlyList~TBinding~
-        +Query(IpPortKey key) IReadOnlyList~IpPortBinding~
-        +Query(HostnamePortKey key) IReadOnlyList~HostnamePortBinding~
-        +Query(SslBindingKey key) IReadOnlyList~ISslBinding~
+        +Find(IpPortKey key) IpPortBinding?
+        +Find(HostnamePortKey key) HostnamePortBinding?
+        +Find(CcsPortKey key) CcsPortBinding?
+        +Find(ScopedCcsKey key) ScopedCcsBinding?
+        +Find(SslBindingKey key) ISslBinding?
         +Upsert(ISslBinding binding)
         +Delete(SslBindingKey key)
         +Delete(IReadOnlyCollection~SslBindingKey~ keys)
-    }
-
-    class SslBindingConfiguration {
-        +Query(CcsPortKey key) IReadOnlyList~CcsPortBinding~
-        +Query(ScopedCcsKey key) IReadOnlyList~ScopedCcsBinding~
     }
 
     SslBindingKey --> SslBindingKind
@@ -125,12 +120,14 @@ classDiagram
     IpPortBinding --> SslCertificateReference
     HostnamePortBinding --> SslCertificateReference
 
-    ISslBindingConfiguration <|.. SslBindingConfiguration
     ISslBindingConfiguration ..> ISslBinding
     ISslBindingConfiguration ..> SslBindingKey
     ISslBindingConfiguration ..> IpPortBinding
     ISslBindingConfiguration ..> HostnamePortBinding
+    ISslBindingConfiguration <|.. SslBindingConfiguration
 ```
+
+Exact lookup now uses `Find(...)` and returns the matching binding or `null` when no binding exists for the specified key.
 
 ## Endpoint Conversions
 
@@ -152,7 +149,7 @@ The extension methods support the endpoint-to-key direction when you want the ca
 
 ```mermaid
 flowchart LR
-    IPEndPoint -->|"ToSslBindingKey()"| IpPortKey
+    IPEndPoint -->|"ToIpPortKey()"| IpPortKey
     DnsEndPoint -->|"ToHostnamePortKey()"| HostnamePortKey
     DnsEndPoint -->|"ToScopedCcsKey()"| ScopedCcsKey
 ```
@@ -182,7 +179,7 @@ DnsEndPoint roundTrippedScopedDnsEndPoint = scopedCcsKey;
 ### Extension Method Examples
 
 ```csharp
-IpPortKey ipKey = new IPEndPoint(IPAddress.Any, 443).ToSslBindingKey();
+IpPortKey ipKey = new IPEndPoint(IPAddress.Any, 443).ToIpPortKey();
 HostnamePortKey hostnameKey = new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey();
 ScopedCcsKey scopedCcsKey = new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey();
 ```
@@ -190,8 +187,17 @@ ScopedCcsKey scopedCcsKey = new DnsEndPoint("www.contoso.com", 443).ToScopedCcsK
 ### When To Use Which
 
 1. Use the implicit operators when you want concise type-safe conversion between a concrete endpoint type and its matching concrete key type.
-2. Use `ToSslBindingKey()`, `ToHostnamePortKey()`, or `ToScopedCcsKey()` when you want the code to read explicitly as a binding-key conversion at the call site.
+2. Use `ToIpPortKey()`, `ToHostnamePortKey()`, or `ToScopedCcsKey()` when you want the code to read explicitly as a binding-key conversion at the call site.
 3. Use the concrete key constructors or `From(...)` methods when that style is clearer for your codebase than either operators or extension methods.
+
+## Nullable Notes
+
+The current API is annotated for nullable reference types.
+
+1. `Find(...)` returns the matching binding or `null` when no binding exists for the specified key.
+2. Endpoint conversion helpers return `null` when the source endpoint is `null`.
+3. `BindingOptions.SslCtlIdentifier` and `BindingOptions.SslCtlStoreName` are optional and may be `null`.
+4. `SslCertificateReference` does not accept a `null` store name. Use `new SslCertificateReference(thumbprint)` when you want the default `MY` store.
 
 ## Scope Notes
 

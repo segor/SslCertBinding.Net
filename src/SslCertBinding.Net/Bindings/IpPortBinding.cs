@@ -14,8 +14,8 @@ namespace SslCertBinding.Net
         /// <param name="certificateThumbprint">The thumbprint of the bound certificate.</param>
         /// <param name="certificateStoreName">The certificate store name.</param>
         /// <param name="appId">The application identifier.</param>
-        /// <param name="options">The binding options.</param>
-        public IpPortBinding(IpPortKey key, string certificateThumbprint, string certificateStoreName, Guid appId, BindingOptions options = null)
+        /// <param name="options">The binding options, or <c>null</c> to use default options.</param>
+        public IpPortBinding(IpPortKey key, string certificateThumbprint, string certificateStoreName, Guid appId, BindingOptions? options = null)
             : this(key, new(certificateThumbprint, certificateStoreName), appId, options)
         {
         }
@@ -26,8 +26,8 @@ namespace SslCertBinding.Net
         /// <param name="key">The IP binding key.</param>
         /// <param name="certificate">The bound certificate.</param>
         /// <param name="appId">The application identifier.</param>
-        /// <param name="options">The binding options.</param>
-        public IpPortBinding(IpPortKey key, SslCertificateReference certificate, Guid appId, BindingOptions options = null)
+        /// <param name="options">The binding options, or <c>null</c> to use default options.</param>
+        public IpPortBinding(IpPortKey key, SslCertificateReference certificate, Guid appId, BindingOptions? options = null)
             : base(appId, options)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));

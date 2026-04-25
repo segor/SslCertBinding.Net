@@ -22,7 +22,7 @@ namespace SslCertBinding.Net
         /// <returns>A list of <see cref="CertificateBinding"/> objects.</returns>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform.</exception>
         /// <exception cref="System.ComponentModel.Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null);
+        IReadOnlyList<CertificateBinding> Query(IPEndPoint? ipPort = null);
 
         /// <summary>
         /// Adds or updates an SSL certificate binding.

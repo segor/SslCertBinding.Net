@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using NUnit.Framework;
 
+#nullable disable
 namespace SslCertBinding.Net.Tests
 {
     [TestFixture]
@@ -23,11 +24,11 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void IpEndPointToSslBindingKeyReturnsIpPortKey()
+        public void IpEndPointToIpPortKeyReturnsIpPortKey()
         {
             var endPoint = new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443);
 
-            IpPortKey key = endPoint.ToSslBindingKey();
+            IpPortKey key = endPoint.ToIpPortKey();
 
             Assert.Multiple(() =>
             {

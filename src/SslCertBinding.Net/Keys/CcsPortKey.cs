@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using SslCertBinding.Net.Internal;
 
@@ -47,7 +48,7 @@ namespace SslCertBinding.Net
         /// <param name="value">The textual representation of the key.</param>
         /// <param name="key">When this method returns, contains the parsed key if parsing succeeded.</param>
         /// <returns><c>true</c> if parsing succeeded; otherwise <c>false</c>.</returns>
-        public static bool TryParse(string value, out CcsPortKey key)
+        public static bool TryParse(string? value, [NotNullWhen(true)] out CcsPortKey? key)
         {
             key = null;
             if (!BindingKeyParser.TryParsePort(value, out int port))
@@ -68,7 +69,7 @@ namespace SslCertBinding.Net
         /// <exception cref="FormatException">Thrown when <paramref name="value"/> is not a valid CCS binding key.</exception>
         public static CcsPortKey Parse(string value)
         {
-            if (!TryParse(value ?? throw new ArgumentNullException(nameof(value)), out CcsPortKey key))
+            if (!TryParse(value ?? throw new ArgumentNullException(nameof(value)), out CcsPortKey? key))
             {
                 throw new FormatException(FormatErrorMessage);
             }
@@ -80,12 +81,12 @@ namespace SslCertBinding.Net
         public override string ToString() => Port.ToString(CultureInfo.InvariantCulture);
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => obj is CcsPortKey key && Equals(key);
+        public override bool Equals(object? obj) => obj is CcsPortKey key && Equals(key);
 
         /// <inheritdoc />
         public override int GetHashCode() => Port.GetHashCode();
 
         /// <inheritdoc />
-        public bool Equals(CcsPortKey other) => other != null && Port == other.Port;
+        public bool Equals(CcsPortKey? other) => other != null && Port == other.Port;
     }
 }

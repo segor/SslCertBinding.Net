@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using SslCertBinding.Net.Internal;
 
@@ -67,10 +68,10 @@ namespace SslCertBinding.Net
         /// <param name="value">The textual representation of the key.</param>
         /// <param name="key">When this method returns, contains the parsed key if parsing succeeded.</param>
         /// <returns><c>true</c> if parsing succeeded; otherwise <c>false</c>.</returns>
-        public static bool TryParse(string value, out IpPortKey key)
+        public static bool TryParse(string? value, [NotNullWhen(true)] out IpPortKey? key)
         {
             key = null;
-            if (!BindingKeyParser.TryParseIpPort(value, out IPAddress address, out int port))
+            if (!BindingKeyParser.TryParseIpPort(value, out IPAddress? address, out int port))
             {
                 return false;
             }
@@ -88,7 +89,7 @@ namespace SslCertBinding.Net
         /// <exception cref="FormatException">Thrown when <paramref name="value"/> is not a valid IP binding key.</exception>
         public static IpPortKey Parse(string value)
         {
-            if (!TryParse(value ?? throw new ArgumentNullException(nameof(value)), out IpPortKey key))
+            if (!TryParse(value ?? throw new ArgumentNullException(nameof(value)), out IpPortKey? key))
             {
                 throw new FormatException(FormatErrorMessage);
             }
@@ -100,7 +101,7 @@ namespace SslCertBinding.Net
         public override string ToString() => ToIPEndPoint().ToString();
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => obj switch
+        public override bool Equals(object? obj) => obj switch
         {
             IPEndPoint endPoint => Equals(endPoint),
             IpPortKey key => Equals(key),
@@ -111,13 +112,13 @@ namespace SslCertBinding.Net
         public override int GetHashCode() => ToIPEndPoint().GetHashCode();
 
         /// <inheritdoc />
-        public bool Equals(IpPortKey other)
+        public bool Equals(IpPortKey? other)
         {
             return other != null && Address.Equals(other.Address) && Port == other.Port;
         }
 
         /// <inheritdoc />
-        public bool Equals(IPEndPoint other)
+        public bool Equals(IPEndPoint? other)
         {
             return other != null && ToIPEndPoint().Equals(other);
         }
@@ -126,12 +127,12 @@ namespace SslCertBinding.Net
         /// Converts an <see cref="IPEndPoint"/> to an <see cref="IpPortKey"/>.
         /// </summary>
         /// <param name="endPoint">The endpoint to convert.</param>
-        public static implicit operator IpPortKey(IPEndPoint endPoint) => From(endPoint);
+        public static implicit operator IpPortKey?(IPEndPoint? endPoint) => endPoint == null ? null : From(endPoint);
 
         /// <summary>
         /// Converts an <see cref="IpPortKey"/> to an <see cref="IPEndPoint"/>.
         /// </summary>
         /// <param name="key">The key to convert.</param>
-        public static implicit operator IPEndPoint(IpPortKey key) => key?.ToIPEndPoint();
+        public static implicit operator IPEndPoint?(IpPortKey? key) => key?.ToIPEndPoint();
     }
 }

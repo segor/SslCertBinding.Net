@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 using SslCertBinding.Net.Internal;
@@ -70,10 +71,10 @@ namespace SslCertBinding.Net
         /// <param name="value">The textual representation of the key.</param>
         /// <param name="key">When this method returns, contains the parsed key if parsing succeeded.</param>
         /// <returns><c>true</c> if parsing succeeded; otherwise <c>false</c>.</returns>
-        public static bool TryParse(string value, out HostnamePortKey key)
+        public static bool TryParse(string? value, [NotNullWhen(true)] out HostnamePortKey? key)
         {
             key = null;
-            if (!BindingKeyParser.TryParseHostPort(value, out string host, out int port))
+            if (!BindingKeyParser.TryParseHostPort(value, out string? host, out int port))
             {
                 return false;
             }
@@ -91,7 +92,7 @@ namespace SslCertBinding.Net
         /// <exception cref="FormatException">Thrown when <paramref name="value"/> is not a valid hostname binding key.</exception>
         public static HostnamePortKey Parse(string value)
         {
-            if (!TryParse(value ?? throw new ArgumentNullException(nameof(value)), out HostnamePortKey key))
+            if (!TryParse(value ?? throw new ArgumentNullException(nameof(value)), out HostnamePortKey? key))
             {
                 throw new FormatException(FormatErrorMessage);
             }
@@ -103,7 +104,7 @@ namespace SslCertBinding.Net
         public override string ToString() => string.Format(CultureInfo.InvariantCulture, "{0}:{1}", Hostname, Port);
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => obj switch
+        public override bool Equals(object? obj) => obj switch
         {
             DnsEndPoint endPoint => Equals(endPoint),
             HostnamePortKey key => Equals(key),
@@ -114,7 +115,7 @@ namespace SslCertBinding.Net
         public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Hostname) ^ Port.GetHashCode();
 
         /// <inheritdoc />
-        public bool Equals(HostnamePortKey other)
+        public bool Equals(HostnamePortKey? other)
         {
             return other != null
                 && StringComparer.OrdinalIgnoreCase.Equals(Hostname, other.Hostname)
@@ -122,7 +123,7 @@ namespace SslCertBinding.Net
         }
 
         /// <inheritdoc />
-        public bool Equals(DnsEndPoint other)
+        public bool Equals(DnsEndPoint? other)
         {
             return other != null
                 && StringComparer.OrdinalIgnoreCase.Equals(Hostname, other.Host)
@@ -133,12 +134,12 @@ namespace SslCertBinding.Net
         /// Converts a <see cref="DnsEndPoint"/> to a <see cref="HostnamePortKey"/>.
         /// </summary>
         /// <param name="endPoint">The endpoint to convert.</param>
-        public static implicit operator HostnamePortKey(DnsEndPoint endPoint) => From(endPoint);
+        public static implicit operator HostnamePortKey?(DnsEndPoint? endPoint) => endPoint == null ? null : From(endPoint);
 
         /// <summary>
         /// Converts a <see cref="HostnamePortKey"/> to a <see cref="DnsEndPoint"/>.
         /// </summary>
         /// <param name="key">The key to convert.</param>
-        public static implicit operator DnsEndPoint(HostnamePortKey key) => key?.ToDnsEndPoint();
+        public static implicit operator DnsEndPoint?(HostnamePortKey? key) => key?.ToDnsEndPoint();
     }
 }

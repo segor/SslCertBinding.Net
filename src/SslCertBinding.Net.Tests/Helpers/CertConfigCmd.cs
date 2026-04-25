@@ -15,7 +15,7 @@ namespace SslCertBinding.Net.Tests
         {
             public int ExitCode { get; set; }
 
-            public string Output { get; set; }
+            public string Output { get; set; } = string.Empty;
 
             public bool IsSuccessfull
             {
@@ -27,18 +27,18 @@ namespace SslCertBinding.Net.Tests
         {
 #pragma warning disable CA1051 // Do not declare visible instance fields
 #pragma warning disable CS0649 // Test option bag fields are populated selectively by tests.
-            public SslBindingKey key;
-            public IPEndPoint ipport;
-            public string certhash;
+            public SslBindingKey? key;
+            public IPEndPoint? ipport;
+            public string? certhash;
             public Guid appid;
-            public string certstorename;
+            public string? certstorename;
             public bool? verifyclientcertrevocation;
             public bool? verifyrevocationwithcachedclientcertonly;
             public bool? usagecheck;
             public int? revocationfreshnesstime;
             public int? urlretrievaltimeout;
-            public string sslctlidentifier;
-            public string sslctlstorename;
+            public string? sslctlidentifier;
+            public string? sslctlstorename;
             public bool? dsmapperusage;
             public bool? clientcertnegotiation;
 #pragma warning restore CS0649 // Test option bag fields are populated selectively by tests.
@@ -47,22 +47,22 @@ namespace SslCertBinding.Net.Tests
 
         public sealed class BindingRecord
         {
-            public SslBindingKey Key { get; set; }
+            public SslBindingKey Key { get; set; } = null!;
 
             public Guid AppId { get; set; }
         }
 
-        public static Task<CommandResult> Show(IPEndPoint ipPort = null, bool throwExcepton = false)
+        public static Task<CommandResult> Show(IPEndPoint? ipPort = null, bool throwExcepton = false)
         {
-            return Show(ipPort == null ? (SslBindingKey)null : new IpPortKey(ipPort), throwExcepton);
+            return Show(ipPort == null ? (SslBindingKey?)null : new IpPortKey(ipPort), throwExcepton);
         }
 
-        public static Task<CommandResult> Show(SslBindingKey key, bool throwExcepton = false)
+        public static Task<CommandResult> Show(SslBindingKey? key, bool throwExcepton = false)
         {
             var sb = new StringBuilder("http show sslcert");
             if (key != null)
             {
-                AppendArgument(sb, GetArgumentName(key.Kind), key.ToString());
+                AppendArgument(sb, GetArgumentName(key.Kind), key.ToString() ?? string.Empty);
             }
 
             return ExecCommand(sb.ToString(), throwExcepton);
@@ -89,13 +89,13 @@ namespace SslCertBinding.Net.Tests
             _ = options ?? throw new ArgumentNullException(nameof(options));
 
             var sb = new StringBuilder("http add sslcert");
-            SslBindingKey key = options.key ?? (options.ipport == null ? null : new IpPortKey(options.ipport));
+            SslBindingKey? key = options.key ?? (options.ipport == null ? null : new IpPortKey(options.ipport));
             bool expectsCertificate = key == null
                 || key.Kind == SslBindingKind.IpPort
                 || key.Kind == SslBindingKind.HostnamePort;
             if (key != null)
             {
-                AppendArgument(sb, GetArgumentName(key.Kind), key.ToString());
+                AppendArgument(sb, GetArgumentName(key.Kind), key.ToString() ?? string.Empty);
                 if (key.Kind == SslBindingKind.HostnamePort && string.IsNullOrEmpty(options.certstorename))
                 {
                     options.certstorename = "MY";
@@ -103,11 +103,11 @@ namespace SslCertBinding.Net.Tests
             }
 
             if (expectsCertificate && !string.IsNullOrEmpty(options.certhash))
-                AppendArgument(sb, "certhash", options.certhash);
+                AppendArgument(sb, "certhash", options.certhash!);
             if (options.appid != Guid.Empty)
                 AppendArgument(sb, "appid", options.appid.ToString("B"));
             if (expectsCertificate && !string.IsNullOrEmpty(options.certstorename))
-                AppendArgument(sb, "certstorename", options.certstorename);
+                AppendArgument(sb, "certstorename", options.certstorename!);
             if (options.verifyclientcertrevocation.HasValue)
                 AppendArgument(sb, "verifyclientcertrevocation", BoolToEnableDisable(options.verifyclientcertrevocation.Value));
             if (options.verifyrevocationwithcachedclientcertonly.HasValue)
@@ -119,9 +119,9 @@ namespace SslCertBinding.Net.Tests
             if (options.urlretrievaltimeout.HasValue)
                 AppendArgument(sb, "urlretrievaltimeout", options.urlretrievaltimeout.Value.ToString(CultureInfo.InvariantCulture));
             if (!string.IsNullOrEmpty(options.sslctlidentifier))
-                AppendArgument(sb, "sslctlidentifier", options.sslctlidentifier);
+                AppendArgument(sb, "sslctlidentifier", options.sslctlidentifier!);
             if (!string.IsNullOrEmpty(options.sslctlstorename))
-                AppendArgument(sb, "sslctlstorename", options.sslctlstorename);
+                AppendArgument(sb, "sslctlstorename", options.sslctlstorename!);
             if (options.dsmapperusage.HasValue)
                 AppendArgument(sb, "dsmapperusage", BoolToEnableDisable(options.dsmapperusage.Value));
             if (options.clientcertnegotiation.HasValue)
@@ -152,7 +152,7 @@ namespace SslCertBinding.Net.Tests
             }
         }
 
-        public static async Task<IPEndPoint[]> GetIpEndPoints(string thumbprint = null)
+        public static async Task<IPEndPoint[]> GetIpEndPoints(string? thumbprint = null)
         {
             return (await GetBindingKeys(thumbprint))
                 .OfType<IpPortKey>()
@@ -160,14 +160,14 @@ namespace SslCertBinding.Net.Tests
                 .ToArray();
         }
 
-        public static async Task<SslBindingKey[]> GetBindingKeys(string thumbprint = null)
+        public static async Task<SslBindingKey[]> GetBindingKeys(string? thumbprint = null)
         {
             if (string.IsNullOrEmpty(thumbprint))
             {
                 return (await GetBindingRecords()).Select(record => record.Key).ToArray();
             }
 
-            CommandResult result = await Show((SslBindingKey)null, throwExcepton: true);
+            CommandResult result = await Show((SslBindingKey?)null, throwExcepton: true);
             string pattern = string.Format(
                 CultureInfo.InvariantCulture,
                 @"\s+(IP|Hostname):port\s+:\s+(\S+?)\s+Certificate Hash\s+:\s+{0}\s+",
@@ -185,10 +185,10 @@ namespace SslCertBinding.Net.Tests
 
         public static async Task<BindingRecord[]> GetBindingRecords()
         {
-            CommandResult result = await Show((SslBindingKey)null, throwExcepton: true);
-            Match keyRegex = null;
+            CommandResult result = await Show((SslBindingKey?)null, throwExcepton: true);
+            Match? keyRegex = null;
             var records = new System.Collections.Generic.List<BindingRecord>();
-            SslBindingKey currentKey = null;
+            SslBindingKey? currentKey = null;
             Guid? currentAppId = null;
 
             foreach (string line in Regex.Split(result.Output, @"\r?\n"))
