@@ -16,7 +16,7 @@ namespace SslCertBinding.Net.Internal
 #endif
         }
 
-        public static PlatformNotSupportedException CreateWindowsOnlyException(Exception innerException = null)
+        public static PlatformNotSupportedException CreateWindowsOnlyException(Exception? innerException = null)
             => new PlatformNotSupportedException(WindowsOnlyMessage, innerException);
     }
 }

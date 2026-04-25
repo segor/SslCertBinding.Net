@@ -33,7 +33,7 @@ namespace SslCertBinding.Net
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null)
+        public IReadOnlyList<CertificateBinding> Query(IPEndPoint? ipPort = null)
         {
             IReadOnlyList<IpPortBinding> bindings;
             if (ipPort == null)
@@ -42,7 +42,7 @@ namespace SslCertBinding.Net
             }
             else
             {
-                IpPortBinding binding = _configuration.Find(new IpPortKey(ipPort));
+                IpPortBinding? binding = _configuration.Find(new IpPortKey(ipPort));
                 bindings = binding == null ? Array.Empty<IpPortBinding>() : new[] { binding };
             }
 

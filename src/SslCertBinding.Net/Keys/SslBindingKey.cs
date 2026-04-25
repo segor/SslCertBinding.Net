@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SslCertBinding.Net
 {
@@ -46,12 +47,12 @@ namespace SslCertBinding.Net
         /// <param name="key">When this method returns, contains the parsed key if parsing succeeded.</param>
         /// <returns><c>true</c> if parsing succeeded; otherwise <c>false</c>.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="kind"/> is not a supported binding family.</exception>
-        public static bool TryParse(string value, SslBindingKind kind, out SslBindingKey key)
+        public static bool TryParse(string? value, SslBindingKind kind, [NotNullWhen(true)] out SslBindingKey? key)
         {
             switch (kind)
             {
                 case SslBindingKind.IpPort:
-                    if (IpPortKey.TryParse(value, out IpPortKey ipKey))
+                    if (IpPortKey.TryParse(value, out IpPortKey? ipKey))
                     {
                         key = ipKey;
                         return true;
@@ -59,7 +60,7 @@ namespace SslCertBinding.Net
 
                     break;
                 case SslBindingKind.HostnamePort:
-                    if (HostnamePortKey.TryParse(value, out HostnamePortKey hostnameKey))
+                    if (HostnamePortKey.TryParse(value, out HostnamePortKey? hostnameKey))
                     {
                         key = hostnameKey;
                         return true;
@@ -67,7 +68,7 @@ namespace SslCertBinding.Net
 
                     break;
                 case SslBindingKind.CcsPort:
-                    if (CcsPortKey.TryParse(value, out CcsPortKey ccsKey))
+                    if (CcsPortKey.TryParse(value, out CcsPortKey? ccsKey))
                     {
                         key = ccsKey;
                         return true;
@@ -75,7 +76,7 @@ namespace SslCertBinding.Net
 
                     break;
                 case SslBindingKind.ScopedCcs:
-                    if (ScopedCcsKey.TryParse(value, out ScopedCcsKey scopedCcsKey))
+                    if (ScopedCcsKey.TryParse(value, out ScopedCcsKey? scopedCcsKey))
                     {
                         key = scopedCcsKey;
                         return true;

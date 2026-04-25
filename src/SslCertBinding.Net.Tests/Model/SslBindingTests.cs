@@ -61,22 +61,35 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void SslCertificateReferenceDefaultsStoreNameToMyWhenNull()
         {
-            var reference = new SslCertificateReference("thumbprint", (string)null);
+            var reference = new SslCertificateReference("thumbprint");
 
             Assert.That(reference.StoreName, Is.EqualTo("MY"));
         }
 
         [Test]
+        public void SslCertificateReferenceRejectsNullStoreName()
+        {
+            string? storeName = null;
+
+            ArgumentException ex = Assert.Throws<ArgumentException>(() => new SslCertificateReference("thumbprint", storeName!));
+            Assert.That(ex.ParamName, Is.EqualTo("storeName"));
+        }
+
+        [Test]
         public void SslCertificateReferenceFromCertificateAndStoreNameRejectsNullCertificate()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => SslCertificateReference.From((X509Certificate2)null, StoreName.My));
+            X509Certificate2? certificate = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => SslCertificateReference.From(certificate!, StoreName.My));
             Assert.That(ex.ParamName, Is.EqualTo("certificate"));
         }
 
         [Test]
         public void SslCertificateReferenceFromCertificateAndStringStoreRejectsNullCertificate()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => SslCertificateReference.From((X509Certificate2)null, "MY"));
+            X509Certificate2? certificate = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => SslCertificateReference.From(certificate!, "MY"));
             Assert.That(ex.ParamName, Is.EqualTo("certificate"));
         }
 
@@ -97,9 +110,10 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void SafeInteropResultDisposeWithNullDisposeActionsDoesNotThrow()
         {
+            Action? disposeAction = null;
             var result = new SafeInteropResult<HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY>(
                 new HttpApi.HTTP_SERVICE_CONFIG_SSL_KEY(IntPtr.Zero),
-                null);
+                disposeAction!);
 
             Assert.That(() => result.Dispose(), Throws.Nothing);
         }
@@ -107,9 +121,11 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void IpPortBindingRejectsNullKey()
         {
+            IpPortKey? key = null;
+
             void Constructor()
             {
-                _ = new IpPortBinding(null, new SslCertificateReference("thumbprint", "MY"), Guid.Empty);
+                _ = new IpPortBinding(key!, new SslCertificateReference("thumbprint", "MY"), Guid.Empty);
             }
 
             ArgumentNullException ex = Assert.Throws<ArgumentNullException>(Constructor);
@@ -186,7 +202,9 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void CcsPortBindingRejectsNullKey()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new CcsPortBinding(null, Guid.Empty));
+            CcsPortKey? key = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new CcsPortBinding(key!, Guid.Empty));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -206,7 +224,9 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ScopedCcsBindingRejectsNullKey()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new ScopedCcsBinding(null, Guid.Empty));
+            ScopedCcsKey? key = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new ScopedCcsBinding(key!, Guid.Empty));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
     }

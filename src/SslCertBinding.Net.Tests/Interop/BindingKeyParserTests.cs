@@ -30,16 +30,16 @@ namespace SslCertBinding.Net.Tests
         [TestCase("[2001:db8::1] :443 ", false, null, 0, TestName = "TryParseIpPort_WhitespaceBeforeSeparatorRejected")]
         [TestCase("[2001:db8::1]: 443 ", false, null, 0, TestName = "TryParseIpPort_WhitespaceAfterSeparatorRejected")]
         [TestCase("[2001:db8::1]:443", true, "2001:db8::1", 443, TestName = "TryParseIpPort_BracketedIpv6Accepted")]
-        public void TryParseIpPortHandlesExpectedCases(string value, bool expectedResult, string expectedAddress, int expectedPort)
+        public void TryParseIpPortHandlesExpectedCases(string? value, bool expectedResult, string? expectedAddress, int expectedPort)
         {
-            object[] parameters = { value, null, 0 };
+            object?[] parameters = { value, null, 0 };
             bool result = (bool)InvokeBindingKeyParser("TryParseIpPort", parameters);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.EqualTo(expectedResult));
                 Assert.That(parameters[1] as IPAddress, Is.EqualTo(expectedAddress == null ? null : IPAddress.Parse(expectedAddress)));
-                Assert.That((int)parameters[2], Is.EqualTo(expectedPort));
+                Assert.That(parameters[2], Is.EqualTo(expectedPort));
             });
         }
 
@@ -56,24 +56,24 @@ namespace SslCertBinding.Net.Tests
         [TestCase("  www.contoso.com :443  ", false, null, 0, TestName = "TryParseHostPort_WhitespaceBeforeSeparatorRejected")]
         [TestCase("  www.contoso.com: 443  ", false, null, 0, TestName = "TryParseHostPort_WhitespaceAfterSeparatorRejected")]
         [TestCase("*.example.com:443", true, "*.example.com", 443, TestName = "TryParseHostPort_WildcardAccepted")]
-        public void TryParseHostPortHandlesExpectedCases(string value, bool expectedResult, string expectedHost, int expectedPort)
+        public void TryParseHostPortHandlesExpectedCases(string? value, bool expectedResult, string? expectedHost, int expectedPort)
         {
-            object[] parameters = { value, null, 0 };
+            object?[] parameters = { value, null, 0 };
             bool result = (bool)InvokeBindingKeyParser("TryParseHostPort", parameters);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.EqualTo(expectedResult));
                 Assert.That(parameters[1] as string, Is.EqualTo(expectedHost));
-                Assert.That((int)parameters[2], Is.EqualTo(expectedPort));
+                Assert.That(parameters[2], Is.EqualTo(expectedPort));
             });
         }
 
-        private static object InvokeBindingKeyParser(string methodName, params object[] parameters)
+        private static object InvokeBindingKeyParser(string methodName, params object?[] parameters)
         {
-            Type parserType = typeof(SslBindingConfiguration).Assembly.GetType("SslCertBinding.Net.Internal.BindingKeyParser", throwOnError: true);
-            MethodInfo method = parserType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static);
-            return method.Invoke(null, parameters);
+            Type parserType = typeof(SslBindingConfiguration).Assembly.GetType("SslCertBinding.Net.Internal.BindingKeyParser", throwOnError: true)!;
+            MethodInfo method = parserType.GetMethod(methodName, BindingFlags.Public | BindingFlags.Static)!;
+            return method.Invoke(null, parameters)!;
         }
     }
 }

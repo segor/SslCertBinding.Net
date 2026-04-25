@@ -7,6 +7,7 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using NUnit.Framework;
 
+#nullable disable
 namespace SslCertBinding.Net.Tests
 {
     [TestFixture]

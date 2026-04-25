@@ -2,6 +2,7 @@ using System;
 using System.Net;
 using NUnit.Framework;
 
+#nullable disable
 namespace SslCertBinding.Net.Tests
 {
     [TestFixture]

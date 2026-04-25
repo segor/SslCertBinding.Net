@@ -203,7 +203,7 @@ namespace SslCertBinding.Net.Internal.Interop
 
             return new(
                 new(SockaddrInterop.ReadSockaddrStructPtr(bindingStruct.KeyDesc.pIpPort)),
-                new(GetThumbprint(hashBytes), bindingStruct.ParamDesc.pSslCertStoreName),
+                CreateCertificateReference(GetThumbprint(hashBytes), bindingStruct.ParamDesc.pSslCertStoreName),
                 bindingStruct.ParamDesc.AppId,
                 CreateBindingOptions(bindingStruct.ParamDesc));
         }
@@ -215,8 +215,8 @@ namespace SslCertBinding.Net.Internal.Interop
 
             IPEndPoint ipPort = SockaddrInterop.CreateIPEndPoint(bindingStruct.KeyDesc.IpPort);
             return new(
-                new(bindingStruct.KeyDesc.Host, ipPort.Port),
-                new(GetThumbprint(hashBytes), bindingStruct.ParamDesc.pSslCertStoreName),
+                new(bindingStruct.KeyDesc.Host!, ipPort.Port),
+                CreateCertificateReference(GetThumbprint(hashBytes), bindingStruct.ParamDesc.pSslCertStoreName),
                 bindingStruct.ParamDesc.AppId,
                 CreateBindingOptions(bindingStruct.ParamDesc));
         }
@@ -234,7 +234,7 @@ namespace SslCertBinding.Net.Internal.Interop
         {
             IPEndPoint ipPort = SockaddrInterop.CreateIPEndPoint(bindingStruct.KeyDesc.IpPort);
             return new(
-                new(bindingStruct.KeyDesc.Host, ipPort.Port),
+                new(bindingStruct.KeyDesc.Host!, ipPort.Port),
                 bindingStruct.ParamDesc.AppId,
                 CreateBindingOptions(bindingStruct.ParamDesc));
         }
@@ -329,6 +329,13 @@ namespace SslCertBinding.Net.Internal.Interop
 
             return bytes;
         }
+
+        private static SslCertificateReference CreateCertificateReference(string thumbprint, string? storeName) =>
+            // HTTP.sys may omit the store name on query results for bindings that still
+            // logically live in the default MY store, so we normalize that readback here.
+            string.IsNullOrEmpty(storeName)
+                ? new SslCertificateReference(thumbprint)
+                : new SslCertificateReference(thumbprint, storeName!);
 
         private static string GetThumbprint(byte[] hash)
         {

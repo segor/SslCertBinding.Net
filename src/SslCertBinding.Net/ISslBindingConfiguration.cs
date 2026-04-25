@@ -35,7 +35,7 @@ namespace SslCertBinding.Net
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform.</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        IpPortBinding Find(IpPortKey key);
+        IpPortBinding? Find(IpPortKey key);
 
         /// <summary>
         /// Finds an exact hostname-based SSL binding.
@@ -45,7 +45,7 @@ namespace SslCertBinding.Net
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the current Windows version does not support hostname bindings (SNI).</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        HostnamePortBinding Find(HostnamePortKey key);
+        HostnamePortBinding? Find(HostnamePortKey key);
 
         /// <summary>
         /// Finds an exact central certificate store SSL binding.
@@ -55,7 +55,7 @@ namespace SslCertBinding.Net
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the current Windows version does not support central certificate store bindings.</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        CcsPortBinding Find(CcsPortKey key);
+        CcsPortBinding? Find(CcsPortKey key);
 
         /// <summary>
         /// Finds an exact scoped central certificate store SSL binding.
@@ -65,7 +65,7 @@ namespace SslCertBinding.Net
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the current Windows version does not support scoped central certificate store bindings.</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        ScopedCcsBinding Find(ScopedCcsKey key);
+        ScopedCcsBinding? Find(ScopedCcsKey key);
 
         /// <summary>
         /// Finds an exact SSL binding using a runtime-selected binding key.
@@ -76,7 +76,7 @@ namespace SslCertBinding.Net
         /// <exception cref="NotSupportedException">Thrown when <paramref name="key"/> is not a supported binding key type.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the selected binding family is not supported on the current Windows version.</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        ISslBinding Find(SslBindingKey key);
+        ISslBinding? Find(SslBindingKey key);
 
         /// <summary>
         /// Adds or updates an SSL binding.

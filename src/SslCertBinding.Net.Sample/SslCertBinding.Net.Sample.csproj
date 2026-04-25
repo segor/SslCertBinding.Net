@@ -3,6 +3,7 @@
     <TargetFrameworks>net462;net8.0-windows;net8.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\SslCertBinding.Net\SslCertBinding.Net.csproj" />

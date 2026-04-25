@@ -13,7 +13,7 @@ namespace SslCertBinding.Net
         /// <param name="key">The CCS binding key.</param>
         /// <param name="appId">The application identifier.</param>
         /// <param name="options">The binding options.</param>
-        public CcsPortBinding(CcsPortKey key, Guid appId, BindingOptions options = null)
+        public CcsPortBinding(CcsPortKey key, Guid appId, BindingOptions? options = null)
             : base(appId, options)
         {
             Key = key ?? throw new ArgumentNullException(nameof(key));

@@ -33,10 +33,10 @@ The current implementation supports these binding families:
 | `scopedccs=www.contoso.com:443` | `ScopedCcsKey` | `ScopedCcsBinding` |
 
 ```c#
+#nullable enable
+
 var config = new SslBindingConfiguration();
-var certificate = new SslCertificateReference(
-    "372680E4AEC4A57CAE698307347C65D3CE38AF60",
-    StoreName.My);
+var certificate = new SslCertificateReference("372680E4AEC4A57CAE698307347C65D3CE38AF60");
 var appId = Guid.Parse("214124cd-d05b-4309-9af9-9caa44b2b74a");
 
 config.Upsert(new IpPortBinding(
@@ -58,13 +58,18 @@ config.Upsert(new ScopedCcsBinding(
     appId));
 
 IReadOnlyList<ISslBinding> allBindings = config.Query();
-HostnamePortBinding sniBinding = config.Find(new HostnamePortKey("www.contoso.com", 443));
-IpPortBinding ipBinding = config.Find(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443));
-CcsPortBinding ccsBinding = config.Find(new CcsPortKey(443));
-ScopedCcsBinding scopedCcsBinding = config.Find(new ScopedCcsKey("www.contoso.com", 443));
-HostnamePortBinding sniBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey());
-ScopedCcsBinding scopedCcsBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey());
-IpPortBinding ipBindingFromEndPoint = config.Find(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey());
+HostnamePortBinding? sniBinding = config.Find(new HostnamePortKey("www.contoso.com", 443));
+IpPortBinding? ipBinding = config.Find(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443));
+CcsPortBinding? ccsBinding = config.Find(new CcsPortKey(443));
+ScopedCcsBinding? scopedCcsBinding = config.Find(new ScopedCcsKey("www.contoso.com", 443));
+HostnamePortBinding? sniBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey()!);
+ScopedCcsBinding? scopedCcsBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey()!);
+IpPortBinding? ipBindingFromEndPoint = config.Find(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey()!);
+
+if (sniBinding is not null)
+{
+    Console.WriteLine(sniBinding.Certificate.Thumbprint);
+}
 
 config.Delete(new HostnamePortKey("www.contoso.com", 443));
 config.Delete(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443));
@@ -85,6 +90,8 @@ IReadOnlyList<ScopedCcsBinding> scopedCcsBindings = config.Query<ScopedCcsBindin
 ```
 
 Exact lookup uses `Find(...)`. It returns the matching binding or `null` when no binding exists for the specified key.
+
+`SslCertificateReference` does not accept a `null` store name. Use `new SslCertificateReference(thumbprint)` when you want the default `MY` store, or pass an explicit non-null store name when you want a different store.
 
 `IpPortKey`, `HostnamePortKey`, and `ScopedCcsKey` define implicit conversions to and from the matching `IPEndPoint` or `DnsEndPoint` shapes where that mapping is natural. `IPEndPoint.ToSslBindingKey()` remains available for the IP family, while `DnsEndPoint` now uses explicit `ToHostnamePortKey()` and `ToScopedCcsKey()` conversions so the hostname-based families stay unambiguous.
 

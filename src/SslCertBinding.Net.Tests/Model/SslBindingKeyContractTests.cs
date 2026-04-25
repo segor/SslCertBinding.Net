@@ -24,11 +24,12 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void GenericTryParseSupportsHostnameKind()
         {
-            bool result = SslBindingKey.TryParse("www.contoso.com:443", SslBindingKind.HostnamePort, out SslBindingKey key);
+            bool result = SslBindingKey.TryParse("www.contoso.com:443", SslBindingKind.HostnamePort, out SslBindingKey? key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.True);
+                Assert.That(key, Is.Not.Null);
                 Assert.That(key, Is.TypeOf<HostnamePortKey>());
             });
         }
@@ -36,11 +37,12 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void GenericTryParseSupportsIpKind()
         {
-            bool result = SslBindingKey.TryParse("127.0.0.1:443", SslBindingKind.IpPort, out SslBindingKey key);
+            bool result = SslBindingKey.TryParse("127.0.0.1:443", SslBindingKind.IpPort, out SslBindingKey? key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.True);
+                Assert.That(key, Is.Not.Null);
                 Assert.That(key, Is.TypeOf<IpPortKey>());
             });
         }
@@ -48,11 +50,12 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void GenericTryParseSupportsCcsKind()
         {
-            bool result = SslBindingKey.TryParse("443", SslBindingKind.CcsPort, out SslBindingKey key);
+            bool result = SslBindingKey.TryParse("443", SslBindingKind.CcsPort, out SslBindingKey? key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.True);
+                Assert.That(key, Is.Not.Null);
                 Assert.That(key, Is.TypeOf<CcsPortKey>());
             });
         }
@@ -60,11 +63,12 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void GenericTryParseSupportsScopedCcsKind()
         {
-            bool result = SslBindingKey.TryParse("www.contoso.com:443", SslBindingKind.ScopedCcs, out SslBindingKey key);
+            bool result = SslBindingKey.TryParse("www.contoso.com:443", SslBindingKind.ScopedCcs, out SslBindingKey? key);
 
             Assert.Multiple(() =>
             {
                 Assert.That(result, Is.True);
+                Assert.That(key, Is.Not.Null);
                 Assert.That(key, Is.TypeOf<ScopedCcsKey>());
             });
         }
@@ -72,7 +76,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void GenericTryParseReturnsFalseForInvalidHostnameValue()
         {
-            bool result = SslBindingKey.TryParse("localhost", SslBindingKind.HostnamePort, out SslBindingKey key);
+            bool result = SslBindingKey.TryParse("localhost", SslBindingKind.HostnamePort, out SslBindingKey? key);
 
             Assert.Multiple(() =>
             {
@@ -87,14 +91,15 @@ namespace SslCertBinding.Net.Tests
             var endPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 8443);
 
             IpPortKey key = IpPortKey.From(endPoint);
-            IpPortKey implicitKey = endPoint;
+            IpPortKey? implicitKey = endPoint;
 
             Assert.Multiple(() =>
             {
+                Assert.That(implicitKey, Is.Not.Null);
                 Assert.That(key.Equals(endPoint), Is.True);
                 Assert.That(key.Equals((object)endPoint), Is.True);
                 Assert.That(key.Equals(implicitKey), Is.True);
-                Assert.That(key.GetHashCode(), Is.EqualTo(implicitKey.GetHashCode()));
+                Assert.That(key.GetHashCode(), Is.EqualTo(implicitKey!.GetHashCode()));
             });
         }
 
@@ -103,7 +108,7 @@ namespace SslCertBinding.Net.Tests
         {
             Assert.Multiple(() =>
             {
-                Assert.That(IpPortKey.TryParse("localhost:443", out IpPortKey key), Is.False);
+                Assert.That(IpPortKey.TryParse("localhost:443", out IpPortKey? key), Is.False);
                 Assert.That(key, Is.Null);
                 Assert.That(() => IpPortKey.Parse("localhost:443"), Throws.TypeOf<FormatException>());
             });
@@ -112,7 +117,9 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void IpPortKeyParseRejectsNullValue()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => IpPortKey.Parse(null));
+            string? value = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => IpPortKey.Parse(value!));
             Assert.That(ex.ParamName, Is.EqualTo("value"));
         }
 
@@ -128,20 +135,23 @@ namespace SslCertBinding.Net.Tests
         public void IpPortKeyTypedEqualityRejectsNullValues()
         {
             var key = new IpPortKey(IPAddress.Any, 443);
+            IpPortKey? otherKey = null;
+            IPEndPoint? endPoint = null;
 
             Assert.Multiple(() =>
             {
-                Assert.That(key.Equals((IpPortKey)null), Is.False);
-                Assert.That(key.Equals((IPEndPoint)null), Is.False);
+                Assert.That(key.Equals(otherKey), Is.False);
+                Assert.That(key.Equals(endPoint), Is.False);
             });
         }
 
         [Test]
         public void IpPortKeyNullImplicitConversionReturnsNullEndPoint()
         {
-            IpPortKey key = null;
+            IpPortKey? key = null;
+            IPEndPoint? endPoint = key;
 
-            Assert.That((IPEndPoint)key, Is.Null);
+            Assert.That(endPoint, Is.Null);
         }
 
         [Test]
@@ -150,14 +160,15 @@ namespace SslCertBinding.Net.Tests
             var endPoint = new DnsEndPoint("www.contoso.com", 8443);
 
             HostnamePortKey key = HostnamePortKey.From(endPoint);
-            HostnamePortKey implicitKey = endPoint;
+            HostnamePortKey? implicitKey = endPoint;
 
             Assert.Multiple(() =>
             {
+                Assert.That(implicitKey, Is.Not.Null);
                 Assert.That(key.Equals(endPoint), Is.True);
                 Assert.That(key.Equals((object)endPoint), Is.True);
                 Assert.That(key.Equals(implicitKey), Is.True);
-                Assert.That(key.GetHashCode(), Is.EqualTo(implicitKey.GetHashCode()));
+                Assert.That(key.GetHashCode(), Is.EqualTo(implicitKey!.GetHashCode()));
             });
         }
 
@@ -213,7 +224,7 @@ namespace SslCertBinding.Net.Tests
         {
             Assert.Multiple(() =>
             {
-                Assert.That(HostnamePortKey.TryParse("127.0.0.1:443", out HostnamePortKey key), Is.False);
+                Assert.That(HostnamePortKey.TryParse("127.0.0.1:443", out HostnamePortKey? key), Is.False);
                 Assert.That(key, Is.Null);
                 Assert.That(() => HostnamePortKey.Parse("127.0.0.1:443"), Throws.TypeOf<FormatException>());
             });
@@ -222,14 +233,16 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void HostnamePortKeyParseRejectsNullValue()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => HostnamePortKey.Parse(null));
+            string? value = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => HostnamePortKey.Parse(value!));
             Assert.That(ex.ParamName, Is.EqualTo("value"));
         }
 
         [Test]
         public void HostnamePortKeyTryParseReturnsFalseForMalformedValue()
         {
-            bool result = HostnamePortKey.TryParse("localhost", out HostnamePortKey key);
+            bool result = HostnamePortKey.TryParse("localhost", out HostnamePortKey? key);
 
             Assert.Multiple(() =>
             {
@@ -241,14 +254,18 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void HostnamePortKeyConstructorRejectsNullDnsEndPoint()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new HostnamePortKey((DnsEndPoint)null));
+            DnsEndPoint? endPoint = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new HostnamePortKey(endPoint!));
             Assert.That(ex.ParamName, Is.EqualTo("endPoint"));
         }
 
         [Test]
         public void HostnamePortKeyConstructorRejectsNullHostname()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new HostnamePortKey((string)null, 443));
+            string? hostname = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new HostnamePortKey(hostname!, 443));
             Assert.That(ex.ParamName, Is.EqualTo("hostname"));
         }
 
@@ -264,20 +281,23 @@ namespace SslCertBinding.Net.Tests
         public void HostnamePortKeyTypedEqualityRejectsNullValues()
         {
             var key = new HostnamePortKey("www.contoso.com", 443);
+            HostnamePortKey? otherKey = null;
+            DnsEndPoint? endPoint = null;
 
             Assert.Multiple(() =>
             {
-                Assert.That(key.Equals((HostnamePortKey)null), Is.False);
-                Assert.That(key.Equals((DnsEndPoint)null), Is.False);
+                Assert.That(key.Equals(otherKey), Is.False);
+                Assert.That(key.Equals(endPoint), Is.False);
             });
         }
 
         [Test]
         public void HostnamePortKeyNullImplicitConversionReturnsNullEndPoint()
         {
-            HostnamePortKey key = null;
+            HostnamePortKey? key = null;
+            DnsEndPoint? endPoint = key;
 
-            Assert.That((DnsEndPoint)key, Is.Null);
+            Assert.That(endPoint, Is.Null);
         }
 
         [Test]
@@ -293,7 +313,7 @@ namespace SslCertBinding.Net.Tests
         {
             Assert.Multiple(() =>
             {
-                Assert.That(CcsPortKey.TryParse("localhost:443", out CcsPortKey key), Is.False);
+                Assert.That(CcsPortKey.TryParse("localhost:443", out CcsPortKey? key), Is.False);
                 Assert.That(key, Is.Null);
                 Assert.That(() => CcsPortKey.Parse("localhost:443"), Throws.TypeOf<FormatException>());
             });
@@ -302,7 +322,9 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void CcsPortKeyParseRejectsNullValue()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => CcsPortKey.Parse(null));
+            string? value = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => CcsPortKey.Parse(value!));
             Assert.That(ex.ParamName, Is.EqualTo("value"));
         }
 
@@ -346,14 +368,15 @@ namespace SslCertBinding.Net.Tests
             var endPoint = new DnsEndPoint("www.contoso.com", 8443);
 
             ScopedCcsKey key = ScopedCcsKey.From(endPoint);
-            ScopedCcsKey implicitKey = endPoint;
+            ScopedCcsKey? implicitKey = endPoint;
 
             Assert.Multiple(() =>
             {
+                Assert.That(implicitKey, Is.Not.Null);
                 Assert.That(key.Equals(endPoint), Is.True);
                 Assert.That(key.Equals((object)endPoint), Is.True);
                 Assert.That(key.Equals(implicitKey), Is.True);
-                Assert.That(key.GetHashCode(), Is.EqualTo(implicitKey.GetHashCode()));
+                Assert.That(key.GetHashCode(), Is.EqualTo(implicitKey!.GetHashCode()));
             });
         }
 
@@ -409,7 +432,7 @@ namespace SslCertBinding.Net.Tests
         {
             Assert.Multiple(() =>
             {
-                Assert.That(ScopedCcsKey.TryParse("127.0.0.1:443", out ScopedCcsKey key), Is.False);
+                Assert.That(ScopedCcsKey.TryParse("127.0.0.1:443", out ScopedCcsKey? key), Is.False);
                 Assert.That(key, Is.Null);
                 Assert.That(() => ScopedCcsKey.Parse("127.0.0.1:443"), Throws.TypeOf<FormatException>());
             });
@@ -418,7 +441,9 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ScopedCcsKeyParseRejectsNullValue()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => ScopedCcsKey.Parse(null));
+            string? value = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => ScopedCcsKey.Parse(value!));
             Assert.That(ex.ParamName, Is.EqualTo("value"));
         }
 
@@ -438,7 +463,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ScopedCcsKeyTryParseReturnsFalseForMalformedValue()
         {
-            bool result = ScopedCcsKey.TryParse("localhost", out ScopedCcsKey key);
+            bool result = ScopedCcsKey.TryParse("localhost", out ScopedCcsKey? key);
 
             Assert.Multiple(() =>
             {
@@ -450,14 +475,18 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ScopedCcsKeyConstructorRejectsNullDnsEndPoint()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new ScopedCcsKey((DnsEndPoint)null));
+            DnsEndPoint? endPoint = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new ScopedCcsKey(endPoint!));
             Assert.That(ex.ParamName, Is.EqualTo("endPoint"));
         }
 
         [Test]
         public void ScopedCcsKeyConstructorRejectsNullHostname()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new ScopedCcsKey((string)null, 443));
+            string? hostname = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new ScopedCcsKey(hostname!, 443));
             Assert.That(ex.ParamName, Is.EqualTo("hostname"));
         }
 
@@ -473,33 +502,40 @@ namespace SslCertBinding.Net.Tests
         public void ScopedCcsKeyTypedEqualityRejectsNullValues()
         {
             var key = new ScopedCcsKey("www.contoso.com", 443);
+            ScopedCcsKey? otherKey = null;
+            DnsEndPoint? endPoint = null;
 
             Assert.Multiple(() =>
             {
-                Assert.That(key.Equals((ScopedCcsKey)null), Is.False);
-                Assert.That(key.Equals((DnsEndPoint)null), Is.False);
+                Assert.That(key.Equals(otherKey), Is.False);
+                Assert.That(key.Equals(endPoint), Is.False);
             });
         }
 
         [Test]
         public void ScopedCcsKeyNullImplicitConversionReturnsNullEndPoint()
         {
-            ScopedCcsKey key = null;
+            ScopedCcsKey? key = null;
+            DnsEndPoint? endPoint = key;
 
-            Assert.That((DnsEndPoint)key, Is.Null);
+            Assert.That(endPoint, Is.Null);
         }
 
         [Test]
         public void IpPortKeyConstructorRejectsNullIpEndPoint()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new IpPortKey((IPEndPoint)null));
+            IPEndPoint? endPoint = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new IpPortKey(endPoint!));
             Assert.That(ex.ParamName, Is.EqualTo("endPoint"));
         }
 
         [Test]
         public void IpPortKeyConstructorRejectsNullAddress()
         {
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new IpPortKey((IPAddress)null, 443));
+            IPAddress? address = null;
+
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => new IpPortKey(address!, 443));
             Assert.That(ex.ParamName, Is.EqualTo("address"));
         }
 

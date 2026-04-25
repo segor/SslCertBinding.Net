@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 
@@ -12,7 +13,7 @@ namespace SslCertBinding.Net.Internal
             return port >= IPEndPoint.MinPort && port <= IPEndPoint.MaxPort;
         }
 
-        public static bool TryParseIpPort(string value, out IPAddress address, out int port)
+        public static bool TryParseIpPort(string? value, [NotNullWhen(true)] out IPAddress? address, out int port)
         {
             address = null;
             port = 0;
@@ -22,7 +23,7 @@ namespace SslCertBinding.Net.Internal
                 return false;
             }
 
-            value = value.Trim();
+            value = value!.Trim();
             string hostPart;
             string portPart;
             if (value[0] == '[')
@@ -56,7 +57,7 @@ namespace SslCertBinding.Net.Internal
             return IPAddress.TryParse(hostPart, out address);
         }
 
-        public static bool TryParseHostPort(string value, out string host, out int port)
+        public static bool TryParseHostPort(string? value, [NotNullWhen(true)] out string? host, out int port)
         {
             host = null;
             port = 0;
@@ -66,7 +67,7 @@ namespace SslCertBinding.Net.Internal
                 return false;
             }
 
-            value = value.Trim();
+            value = value!.Trim();
             int separatorIndex = value.LastIndexOf(':');
             if (separatorIndex <= 0 || separatorIndex == value.Length - 1)
             {
@@ -90,44 +91,45 @@ namespace SslCertBinding.Net.Internal
             return true;
         }
 
-        public static bool TryParsePort(string value, out int port)
+        public static bool TryParsePort(string? value, out int port)
         {
             return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out port)
                 && IsValidPort(port);
         }
 
-        public static bool IsValidHostname(string host)
+        public static bool IsValidHostname(string? host)
         {
             if (string.IsNullOrWhiteSpace(host))
             {
                 return false;
             }
 
-            if (!string.Equals(host, host.Trim(), StringComparison.Ordinal)
-                || host.IndexOf(':') >= 0
-                || IPAddress.TryParse(host, out _))
+            string nonNullHost = host!;
+            if (!string.Equals(nonNullHost, nonNullHost.Trim(), StringComparison.Ordinal)
+                || nonNullHost.IndexOf(':') >= 0
+                || IPAddress.TryParse(nonNullHost, out _))
             {
                 return false;
             }
 
-            int wildcardIndex = host.IndexOf('*');
+            int wildcardIndex = nonNullHost.IndexOf('*');
             if (wildcardIndex >= 0)
             {
-                if (!host.StartsWith("*.", StringComparison.Ordinal) || wildcardIndex != 0)
+                if (!nonNullHost.StartsWith("*.", StringComparison.Ordinal) || wildcardIndex != 0)
                 {
                     return false;
                 }
 
-                string wildcardSuffix = host.Substring(2);
+                string wildcardSuffix = nonNullHost.Substring(2);
                 return wildcardSuffix.Length > 0
                     && wildcardSuffix.IndexOf('*') < 0
                     && Uri.CheckHostName(wildcardSuffix) == UriHostNameType.Dns;
             }
 
-            return Uri.CheckHostName(host) == UriHostNameType.Dns;
+            return Uri.CheckHostName(nonNullHost) == UriHostNameType.Dns;
         }
 
-        public static string RequireValidHostname(string host, string paramName)
+        public static string RequireValidHostname(string? host, string paramName)
         {
             if (!IsValidHostname(host))
             {
@@ -136,7 +138,7 @@ namespace SslCertBinding.Net.Internal
                     paramName);
             }
 
-            return host;
+            return host!;
         }
     }
 #pragma warning restore CA2249 // IndexOf is used for .NET Framework compatibility.

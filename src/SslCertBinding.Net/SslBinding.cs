@@ -14,7 +14,7 @@ namespace SslCertBinding.Net
         /// </summary>
         /// <param name="appId">The application identifier that owns the binding.</param>
         /// <param name="options">The binding options.</param>
-        protected SslBinding(Guid appId, BindingOptions options = null)
+        protected SslBinding(Guid appId, BindingOptions? options = null)
         {
             AppId = appId;
             Options = options ?? new();

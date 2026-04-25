@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using SslCertBinding.Net.Tests.Properties;
 
+#nullable disable
 namespace SslCertBinding.Net.Tests
 {
     [NonParallelizable]

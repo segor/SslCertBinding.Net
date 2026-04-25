@@ -6,6 +6,7 @@
     <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   

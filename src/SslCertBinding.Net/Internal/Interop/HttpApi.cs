@@ -157,7 +157,7 @@ namespace SslCertBinding.Net.Internal.Interop
             public SOCKADDR_STORAGE IpPort;
 
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string Host;
+            public string? Host;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -176,17 +176,17 @@ namespace SslCertBinding.Net.Internal.Interop
             public Guid AppId;
 
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string pSslCertStoreName;
+            public string? pSslCertStoreName;
 
             public CertCheckModes DefaultCertCheckMode;
             public int DefaultRevocationFreshnessTime;
             public int DefaultRevocationUrlRetrievalTimeout;
 
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string pDefaultSslCtlIdentifier;
+            public string? pDefaultSslCtlIdentifier;
 
             [MarshalAs(UnmanagedType.LPWStr)]
-            public string pDefaultSslCtlStoreName;
+            public string? pDefaultSslCtlStoreName;
 
             public HTTP_SERVICE_CONFIG_SSL_FLAG DefaultFlags;
         }

@@ -16,8 +16,9 @@ namespace SslCertBinding.Net.Tests
         public void FindByIpKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            IpPortKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find((IpPortKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -25,8 +26,9 @@ namespace SslCertBinding.Net.Tests
         public void FindByHostnameKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            HostnamePortKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find((HostnamePortKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -34,8 +36,9 @@ namespace SslCertBinding.Net.Tests
         public void FindByUntypedKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            SslBindingKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find((SslBindingKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -44,7 +47,7 @@ namespace SslCertBinding.Net.Tests
         {
             var configuration = new SslBindingConfiguration();
 
-            ISslBinding result = configuration.Find((SslBindingKey)new IpPortKey(IPAddress.Any, 65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new IpPortKey(IPAddress.Any, 65535));
 
             Assert.That(result, Is.Null);
         }
@@ -54,7 +57,7 @@ namespace SslCertBinding.Net.Tests
         {
             var configuration = new SslBindingConfiguration();
 
-            ISslBinding result = configuration.Find((SslBindingKey)new HostnamePortKey("localhost", 65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new HostnamePortKey("localhost", 65535));
 
             Assert.That(result, Is.Null);
         }
@@ -63,8 +66,9 @@ namespace SslCertBinding.Net.Tests
         public void FindByCcsKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            CcsPortKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find((CcsPortKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -72,8 +76,9 @@ namespace SslCertBinding.Net.Tests
         public void FindByScopedCcsKeyRejectsNull()
         {
             var configuration = new SslBindingConfiguration();
+            ScopedCcsKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find((ScopedCcsKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Find(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -82,7 +87,7 @@ namespace SslCertBinding.Net.Tests
         {
             var configuration = new SslBindingConfiguration();
 
-            ISslBinding result = configuration.Find((SslBindingKey)new CcsPortKey(65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new CcsPortKey(65535));
 
             Assert.That(result, Is.Null);
         }
@@ -92,7 +97,7 @@ namespace SslCertBinding.Net.Tests
         {
             var configuration = new SslBindingConfiguration();
 
-            ISslBinding result = configuration.Find((SslBindingKey)new ScopedCcsKey("localhost", 65535));
+            ISslBinding? result = configuration.Find((SslBindingKey)new ScopedCcsKey("localhost", 65535));
 
             Assert.That(result, Is.Null);
         }
@@ -103,7 +108,7 @@ namespace SslCertBinding.Net.Tests
             var configuration = new SslBindingConfiguration();
             var endPoint = new IPEndPoint(IPAddress.Any, 65535);
 
-            IpPortBinding result = configuration.Find(endPoint.ToSslBindingKey());
+            IpPortBinding? result = configuration.Find(endPoint.ToSslBindingKey()!);
 
             Assert.That(result, Is.Null);
         }
@@ -114,7 +119,7 @@ namespace SslCertBinding.Net.Tests
             var configuration = new SslBindingConfiguration();
             var endPoint = new DnsEndPoint("localhost", 65535);
 
-            HostnamePortBinding result = configuration.Find(endPoint.ToHostnamePortKey());
+            HostnamePortBinding? result = configuration.Find(endPoint.ToHostnamePortKey()!);
 
             Assert.That(result, Is.Null);
         }
@@ -125,7 +130,7 @@ namespace SslCertBinding.Net.Tests
             var configuration = new SslBindingConfiguration();
             var endPoint = new DnsEndPoint("localhost", 65535);
 
-            ScopedCcsBinding result = configuration.Find(endPoint.ToScopedCcsKey());
+            ScopedCcsBinding? result = configuration.Find(endPoint.ToScopedCcsKey()!);
 
             Assert.That(result, Is.Null);
         }
@@ -134,8 +139,9 @@ namespace SslCertBinding.Net.Tests
         public void UpsertRejectsNullBinding()
         {
             var configuration = new SslBindingConfiguration();
+            ISslBinding? binding = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Upsert(null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Upsert(binding!));
             Assert.That(ex.ParamName, Is.EqualTo("binding"));
         }
 
@@ -143,8 +149,9 @@ namespace SslCertBinding.Net.Tests
         public void DeleteRejectsNullKey()
         {
             var configuration = new SslBindingConfiguration();
+            SslBindingKey? key = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete((SslBindingKey)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete(key!));
             Assert.That(ex.ParamName, Is.EqualTo("key"));
         }
 
@@ -152,8 +159,9 @@ namespace SslCertBinding.Net.Tests
         public void DeleteRejectsNullKeyCollection()
         {
             var configuration = new SslBindingConfiguration();
+            IReadOnlyCollection<SslBindingKey>? keys = null;
 
-            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete((IReadOnlyCollection<SslBindingKey>)null));
+            ArgumentNullException ex = Assert.Throws<ArgumentNullException>(() => configuration.Delete(keys!));
             Assert.That(ex.ParamName, Is.EqualTo("keys"));
         }
 
@@ -169,7 +177,7 @@ namespace SslCertBinding.Net.Tests
         public void DeleteRejectsCollectionContainingNullItem()
         {
             var configuration = new SslBindingConfiguration();
-            SslBindingKey[] keys = { new IpPortKey(IPAddress.Any, 65535), null };
+            SslBindingKey[] keys = { new IpPortKey(IPAddress.Any, 65535), null! };
 
             ArgumentException ex = Assert.Throws<ArgumentException>(() => configuration.Delete(keys));
             Assert.That(ex.ParamName, Is.EqualTo("keys"));
@@ -214,7 +222,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ToSslBindingKeyReturnsNullForNullIpEndPoint()
         {
-            IPEndPoint endPoint = null;
+            IPEndPoint? endPoint = null;
 
             Assert.That(endPoint.ToSslBindingKey(), Is.Null);
         }
@@ -222,7 +230,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ToHostnamePortKeyReturnsNullForNullDnsEndPoint()
         {
-            DnsEndPoint endPoint = null;
+            DnsEndPoint? endPoint = null;
 
             Assert.That(endPoint.ToHostnamePortKey(), Is.Null);
         }
@@ -230,7 +238,7 @@ namespace SslCertBinding.Net.Tests
         [Test]
         public void ToScopedCcsKeyReturnsNullForNullDnsEndPoint()
         {
-            DnsEndPoint endPoint = null;
+            DnsEndPoint? endPoint = null;
 
             Assert.That(endPoint.ToScopedCcsKey(), Is.Null);
         }

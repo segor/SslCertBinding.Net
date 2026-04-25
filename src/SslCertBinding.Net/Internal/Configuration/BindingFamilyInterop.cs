@@ -83,7 +83,7 @@ namespace SslCertBinding.Net.Internal
             }
         }
 
-        public static TBinding QuerySingle<TQuery, TSet, TBinding>(
+        public static TBinding? QuerySingle<TQuery, TSet, TBinding>(
             HttpApi.HTTP_SERVICE_CONFIG_ID configId,
             SafeInteropResult<TQuery> queryStruct,
             Func<TSet, TBinding> mapFunc)
@@ -91,7 +91,7 @@ namespace SslCertBinding.Net.Internal
             where TSet : struct
             where TBinding : class
         {
-            TBinding result = null;
+            TBinding? result = null;
 
             try
             {
