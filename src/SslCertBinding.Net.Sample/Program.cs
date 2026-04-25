@@ -47,7 +47,7 @@ namespace SslCertBinding.Net.Sample
             IEnumerable<ISslBinding> bindings = args.Length switch
             {
                 1 => configuration.Query(),
-                3 => QueryOne(configuration, ParseBindingKey(ParseBindingKind(args[1]), args[2])),
+                3 => FindOne(configuration, ParseBindingKey(ParseBindingKind(args[1]), args[2])),
                 _ => throw new ArgumentException("Use 'show' or 'show <family> <bindingKey>'.", nameof(args)),
             };
 
@@ -162,21 +162,28 @@ namespace SslCertBinding.Net.Sample
             Console.WriteLine("The binding record has been successfully removed.");
         }
 
-        private static IEnumerable<ISslBinding> QueryOne(SslBindingConfiguration configuration, SslBindingKey key)
+        private static IEnumerable<ISslBinding> FindOne(SslBindingConfiguration configuration, SslBindingKey key)
         {
+            ISslBinding binding;
             switch (key)
             {
                 case IpPortKey ipKey:
-                    return configuration.Query(ipKey);
+                    binding = configuration.Find(ipKey);
+                    break;
                 case HostnamePortKey hostnameKey:
-                    return configuration.Query(hostnameKey);
+                    binding = configuration.Find(hostnameKey);
+                    break;
                 case CcsPortKey ccsKey:
-                    return configuration.Query(ccsKey);
+                    binding = configuration.Find(ccsKey);
+                    break;
                 case ScopedCcsKey scopedCcsKey:
-                    return configuration.Query(scopedCcsKey);
+                    binding = configuration.Find(scopedCcsKey);
+                    break;
                 default:
                     return Enumerable.Empty<ISslBinding>();
             }
+
+            return binding == null ? Enumerable.Empty<ISslBinding>() : new[] { binding };
         }
 
         private static SslBindingKind ParseBindingKind(string value)

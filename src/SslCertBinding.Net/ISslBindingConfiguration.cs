@@ -28,35 +28,55 @@ namespace SslCertBinding.Net
         IReadOnlyList<TBinding> Query<TBinding>() where TBinding : ISslBinding;
 
         /// <summary>
-        /// Queries an exact IP-based SSL binding.
+        /// Finds an exact IP-based SSL binding.
         /// </summary>
-        /// <param name="key">The IP binding key to query.</param>
-        /// <returns>The matching IP bindings.</returns>
+        /// <param name="key">The IP binding key to find.</param>
+        /// <returns>The matching IP binding, or <c>null</c> when no binding exists for the specified key.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform.</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        IReadOnlyList<IpPortBinding> Query(IpPortKey key);
+        IpPortBinding Find(IpPortKey key);
 
         /// <summary>
-        /// Queries an exact hostname-based SSL binding.
+        /// Finds an exact hostname-based SSL binding.
         /// </summary>
-        /// <param name="key">The hostname binding key to query.</param>
-        /// <returns>The matching hostname bindings.</returns>
+        /// <param name="key">The hostname binding key to find.</param>
+        /// <returns>The matching hostname binding, or <c>null</c> when no binding exists for the specified key.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the current Windows version does not support hostname bindings (SNI).</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        IReadOnlyList<HostnamePortBinding> Query(HostnamePortKey key);
+        HostnamePortBinding Find(HostnamePortKey key);
 
         /// <summary>
-        /// Queries an exact SSL binding using a runtime-selected binding key.
+        /// Finds an exact central certificate store SSL binding.
         /// </summary>
-        /// <param name="key">The binding key to query.</param>
-        /// <returns>The matching bindings.</returns>
+        /// <param name="key">The central certificate store binding key to find.</param>
+        /// <returns>The matching central certificate store binding, or <c>null</c> when no binding exists for the specified key.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
+        /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the current Windows version does not support central certificate store bindings.</exception>
+        /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
+        CcsPortBinding Find(CcsPortKey key);
+
+        /// <summary>
+        /// Finds an exact scoped central certificate store SSL binding.
+        /// </summary>
+        /// <param name="key">The scoped central certificate store binding key to find.</param>
+        /// <returns>The matching scoped central certificate store binding, or <c>null</c> when no binding exists for the specified key.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
+        /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the current Windows version does not support scoped central certificate store bindings.</exception>
+        /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
+        ScopedCcsBinding Find(ScopedCcsKey key);
+
+        /// <summary>
+        /// Finds an exact SSL binding using a runtime-selected binding key.
+        /// </summary>
+        /// <param name="key">The binding key to find.</param>
+        /// <returns>The matching binding, or <c>null</c> when no binding exists for the specified key.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="key"/> is <c>null</c>.</exception>
         /// <exception cref="NotSupportedException">Thrown when <paramref name="key"/> is not a supported binding key type.</exception>
         /// <exception cref="PlatformNotSupportedException">Thrown when the Windows HTTP Server API is unavailable on the current platform or when the selected binding family is not supported on the current Windows version.</exception>
         /// <exception cref="Win32Exception">Thrown when the underlying HTTP Server API query fails.</exception>
-        IReadOnlyList<ISslBinding> Query(SslBindingKey key);
+        ISslBinding Find(SslBindingKey key);
 
         /// <summary>
         /// Adds or updates an SSL binding.

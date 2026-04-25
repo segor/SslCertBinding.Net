@@ -104,7 +104,7 @@ namespace SslCertBinding.Net.Tests
 
             configuration.Upsert(new CcsPortBinding(key, appId));
 
-            CcsPortBinding binding = configuration.Query(key).Single();
+            CcsPortBinding binding = configuration.Find(key);
             AssertBindingMatches(binding, key, appId, new BindingOptions(), null);
         }
 
@@ -122,7 +122,7 @@ namespace SslCertBinding.Net.Tests
                 DisableTls12 = true,
             }));
 
-            ScopedCcsBinding binding = configuration.Query(key).Single();
+            ScopedCcsBinding binding = configuration.Find(key);
             AssertBindingMatches(binding, key, appId, new BindingOptions
             {
                 UseDsMappers = true,
@@ -207,7 +207,7 @@ namespace SslCertBinding.Net.Tests
             var configuration = new SslBindingConfiguration();
             configuration.Upsert(CreateBinding(key, updatedAppId, expectedOptions));
 
-            ISslBinding binding = QuerySingleBinding(configuration, key);
+            ISslBinding binding = FindSingleBinding(configuration, key);
             AssertBindingMatches(
                 binding,
                 key,
@@ -225,7 +225,7 @@ namespace SslCertBinding.Net.Tests
 
             configuration.Upsert(CreateBinding(key, appId, expectedOptions));
 
-            ISslBinding binding = QuerySingleBinding(configuration, key);
+            ISslBinding binding = FindSingleBinding(configuration, key);
 
             Assert.Multiple(() =>
             {

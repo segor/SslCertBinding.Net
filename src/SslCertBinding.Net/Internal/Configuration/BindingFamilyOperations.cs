@@ -22,7 +22,7 @@ namespace SslCertBinding.Net.Internal
 
         IReadOnlyList<ISslBinding> QueryAll();
 
-        IReadOnlyList<ISslBinding> QueryExact(SslBindingKey key);
+        ISslBinding FindExact(SslBindingKey key);
 
         void Upsert(ISslBinding binding);
 
@@ -64,10 +64,10 @@ namespace SslCertBinding.Net.Internal
 
         public IReadOnlyList<ISslBinding> QueryAll() => QueryAllCore().Cast<ISslBinding>().ToArray();
 
-        public IReadOnlyList<ISslBinding> QueryExact(SslBindingKey key)
+        public ISslBinding FindExact(SslBindingKey key)
         {
             TBinding binding = QueryExactCore((TKey)key);
-            return binding == null ? Array.Empty<ISslBinding>() : new ISslBinding[] { binding };
+            return binding;
         }
 
         public void Upsert(ISslBinding binding) => UpsertCore((TBinding)binding);

@@ -135,7 +135,7 @@ I recommend a new generalized API over `master`, with the generalized model beco
 
 #### 1. `SslBindingKey`
 
-Represents how a binding is identified for exact query and delete.
+Represents how a binding is identified for exact lookup and delete.
 
 Proposed subtypes:
 
@@ -344,15 +344,18 @@ public interface ISslBindingConfiguration
 {
     IReadOnlyList<SslBinding> Query();
     IReadOnlyList<TBinding> Query<TBinding>() where TBinding : SslBinding;
-    IReadOnlyList<IpPortBinding> Query(IpPortKey key);
-    IReadOnlyList<HostnamePortBinding> Query(HostnamePortKey key);
+    IpPortBinding Find(IpPortKey key);
+    HostnamePortBinding Find(HostnamePortKey key);
+    CcsPortBinding Find(CcsPortKey key);
+    ScopedCcsBinding Find(ScopedCcsKey key);
+    SslBinding Find(SslBindingKey key);
     void Upsert(SslBinding binding);
     void Delete(SslBindingKey key);
     void Delete(IReadOnlyCollection<SslBindingKey> keys);
 }
 ```
 
-Typed query overloads let callers avoid casts for exact queries, while `Query<TBinding>()` provides family-specific enumeration without adding one method per binding family.
+Typed `Find(...)` overloads let callers avoid casts for exact lookup, while `Query<TBinding>()` provides family-specific enumeration without adding one method per binding family.
 
 ## Implementation Strategy Over `master`
 
@@ -464,7 +467,7 @@ Work:
 - implement `CcsPortBinding`
 - implement `CcsPortBindingHandler`
 - add `netsh` helper support for `ccs`
-- add exact query, enumeration, bind, and delete tests for `ccs=443`
+- add exact lookup, enumeration, bind, and delete tests for `ccs=443`
 
 Deliverable:
 
@@ -484,7 +487,7 @@ Work:
 - implement `ScopedCcsBinding`
 - implement `ScopedCcsBindingHandler`
 - add `netsh` helper support for `scopedccs`
-- add exact query, enumeration, bind, and delete tests for `scopedccs=www.contoso.com:443`
+- add exact lookup, enumeration, bind, and delete tests for `scopedccs=www.contoso.com:443`
 
 Deliverable:
 
@@ -821,7 +824,7 @@ The test harness should grow family-by-family rather than assuming only `ipport`
 
 Recommended additions:
 
-- exact query/add/delete tests for each binding family
+- exact lookup/add/delete tests for each binding family
 - `netsh` helper support for `ccs` and `scopedccs`
 - round-trip tests for each native family
 

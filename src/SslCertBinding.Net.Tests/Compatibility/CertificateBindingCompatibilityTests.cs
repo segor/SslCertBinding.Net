@@ -114,7 +114,7 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void QueryByIpEndPointUsesTypedQuery()
+        public void FindByIpEndPointUsesTypedFind()
         {
             var endPoint = new IPEndPoint(IPAddress.Loopback, 443);
             var binding = new IpPortBinding(
@@ -124,7 +124,7 @@ namespace SslCertBinding.Net.Tests
                 new BindingOptions { NegotiateCertificate = true });
             var stub = new StubConfiguration
             {
-                QueryByIpKeyResult = new[] { binding },
+                FindByIpKeyResult = binding,
             };
             var configuration = new CertificateBindingConfiguration(stub);
 
@@ -132,10 +132,26 @@ namespace SslCertBinding.Net.Tests
 
             Assert.Multiple(() =>
             {
-                Assert.That(stub.QueryByIpKeyArgument, Is.EqualTo(binding.Key));
+                Assert.That(stub.FindByIpKeyArgument, Is.EqualTo(binding.Key));
                 Assert.That(result, Has.Count.EqualTo(1));
                 Assert.That(result[0].IpPort, Is.EqualTo(endPoint));
                 Assert.That(result[0].Options.NegotiateCertificate, Is.True);
+            });
+        }
+
+        [Test]
+        public void FindByIpEndPointReturnsEmptyWhenFindMisses()
+        {
+            var endPoint = new IPEndPoint(IPAddress.Loopback, 443);
+            var stub = new StubConfiguration();
+            var configuration = new CertificateBindingConfiguration(stub);
+
+            IReadOnlyList<CertificateBinding> result = configuration.Query(endPoint);
+
+            Assert.Multiple(() =>
+            {
+                Assert.That(stub.FindByIpKeyArgument, Is.EqualTo(new IpPortKey(endPoint)));
+                Assert.That(result, Is.Empty);
             });
         }
 
@@ -301,10 +317,10 @@ namespace SslCertBinding.Net.Tests
         {
             public IReadOnlyList<ISslBinding> QueryAllBindingsResult { get; set; } = Array.Empty<ISslBinding>();
             public IReadOnlyList<IpPortBinding> QueryAllIpBindingsResult { get; set; } = Array.Empty<IpPortBinding>();
-            public IReadOnlyList<IpPortBinding> QueryByIpKeyResult { get; set; } = Array.Empty<IpPortBinding>();
+            public IpPortBinding FindByIpKeyResult { get; set; }
             public ISslBinding UpsertArgument { get; private set; }
             public IReadOnlyCollection<SslBindingKey> DeleteArguments { get; private set; }
-            public IpPortKey QueryByIpKeyArgument { get; private set; }
+            public IpPortKey FindByIpKeyArgument { get; private set; }
             public bool QueryAllCalled { get; private set; }
 
             public IReadOnlyList<ISslBinding> Query()
@@ -323,28 +339,28 @@ namespace SslCertBinding.Net.Tests
                 throw new NotSupportedException();
             }
 
-            public IReadOnlyList<IpPortBinding> Query(IpPortKey key)
+            public IpPortBinding Find(IpPortKey key)
             {
-                QueryByIpKeyArgument = key;
-                return QueryByIpKeyResult;
+                FindByIpKeyArgument = key;
+                return FindByIpKeyResult;
             }
 
-            public IReadOnlyList<HostnamePortBinding> Query(HostnamePortKey key)
-            {
-                throw new NotSupportedException();
-            }
-
-            public IReadOnlyList<CcsPortBinding> Query(CcsPortKey key)
+            public HostnamePortBinding Find(HostnamePortKey key)
             {
                 throw new NotSupportedException();
             }
 
-            public IReadOnlyList<ScopedCcsBinding> Query(ScopedCcsKey key)
+            public CcsPortBinding Find(CcsPortKey key)
             {
                 throw new NotSupportedException();
             }
 
-            public IReadOnlyList<ISslBinding> Query(SslBindingKey key)
+            public ScopedCcsBinding Find(ScopedCcsKey key)
+            {
+                throw new NotSupportedException();
+            }
+
+            public ISslBinding Find(SslBindingKey key)
             {
                 throw new NotSupportedException();
             }

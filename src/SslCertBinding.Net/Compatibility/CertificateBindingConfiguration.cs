@@ -35,9 +35,16 @@ namespace SslCertBinding.Net
         /// <inheritdoc />
         public IReadOnlyList<CertificateBinding> Query(IPEndPoint ipPort = null)
         {
-            IReadOnlyList<IpPortBinding> bindings = ipPort == null
-                ? _configuration.Query<IpPortBinding>()
-                : _configuration.Query(new IpPortKey(ipPort));
+            IReadOnlyList<IpPortBinding> bindings;
+            if (ipPort == null)
+            {
+                bindings = _configuration.Query<IpPortBinding>();
+            }
+            else
+            {
+                IpPortBinding binding = _configuration.Find(new IpPortKey(ipPort));
+                bindings = binding == null ? Array.Empty<IpPortBinding>() : new[] { binding };
+            }
 
             return [.. bindings.Select(CertificateBinding.From)];
         }

@@ -58,13 +58,13 @@ config.Upsert(new ScopedCcsBinding(
     appId));
 
 IReadOnlyList<ISslBinding> allBindings = config.Query();
-HostnamePortBinding sniBinding = config.Query(new HostnamePortKey("www.contoso.com", 443))[0];
-IpPortBinding ipBinding = config.Query(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443))[0];
-CcsPortBinding ccsBinding = config.Query(new CcsPortKey(443))[0];
-ScopedCcsBinding scopedCcsBinding = config.Query(new ScopedCcsKey("www.contoso.com", 443))[0];
-HostnamePortBinding sniBindingFromEndPoint = config.Query(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey())[0];
-ScopedCcsBinding scopedCcsBindingFromEndPoint = config.Query(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey())[0];
-IpPortBinding ipBindingFromEndPoint = config.Query(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey())[0];
+HostnamePortBinding sniBinding = config.Find(new HostnamePortKey("www.contoso.com", 443));
+IpPortBinding ipBinding = config.Find(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443));
+CcsPortBinding ccsBinding = config.Find(new CcsPortKey(443));
+ScopedCcsBinding scopedCcsBinding = config.Find(new ScopedCcsKey("www.contoso.com", 443));
+HostnamePortBinding sniBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey());
+ScopedCcsBinding scopedCcsBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey());
+IpPortBinding ipBindingFromEndPoint = config.Find(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey());
 
 config.Delete(new HostnamePortKey("www.contoso.com", 443));
 config.Delete(new IpPortKey(IPAddress.Parse("0.0.0.0"), 443));
@@ -83,6 +83,8 @@ IReadOnlyList<HostnamePortBinding> hostnameBindings = config.Query<HostnamePortB
 IReadOnlyList<CcsPortBinding> ccsBindings = config.Query<CcsPortBinding>();
 IReadOnlyList<ScopedCcsBinding> scopedCcsBindings = config.Query<ScopedCcsBinding>();
 ```
+
+Exact lookup uses `Find(...)`. It returns the matching binding or `null` when no binding exists for the specified key.
 
 `IpPortKey`, `HostnamePortKey`, and `ScopedCcsKey` define implicit conversions to and from the matching `IPEndPoint` or `DnsEndPoint` shapes where that mapping is natural. `IPEndPoint.ToSslBindingKey()` remains available for the IP family, while `DnsEndPoint` now uses explicit `ToHostnamePortKey()` and `ToScopedCcsKey()` conversions so the hostname-based families stay unambiguous.
 

@@ -14,14 +14,14 @@ namespace SslCertBinding.Net.Tests
 #endif
     public class SslBindingConfigurationQueryIntegrationTests : SslBindingConfigurationIntegrationTestBase
     {
-        [TestCase(SslBindingKind.IpPort, "0.0.0.0", TestName = "QueryExistingBinding_IpPort_Ipv4Any")]
-        [TestCase(SslBindingKind.IpPort, "::", TestName = "QueryExistingBinding_IpPort_Ipv6Any")]
-        [TestCase(SslBindingKind.HostnamePort, "localhost", TestName = "QueryExistingBinding_HostnamePort_Localhost")]
-        [TestCase(SslBindingKind.HostnamePort, "ssl-cert-binding.net.com", TestName = "QueryExistingBinding_HostnamePort_CustomHostname")]
-        [TestCase(SslBindingKind.CcsPort, null, TestName = "QueryExistingBinding_CcsPort")]
-        [TestCase(SslBindingKind.ScopedCcs, "localhost", TestName = "QueryExistingBinding_ScopedCcs_Localhost")]
-        [TestCase(SslBindingKind.ScopedCcs, "ssl-cert-binding.net.com", TestName = "QueryExistingBinding_ScopedCcs_CustomHostname")]
-        public async Task QueryExistingBinding(SslBindingKind kind, string value)
+        [TestCase(SslBindingKind.IpPort, "0.0.0.0", TestName = "FindExistingBinding_IpPort_Ipv4Any")]
+        [TestCase(SslBindingKind.IpPort, "::", TestName = "FindExistingBinding_IpPort_Ipv6Any")]
+        [TestCase(SslBindingKind.HostnamePort, "localhost", TestName = "FindExistingBinding_HostnamePort_Localhost")]
+        [TestCase(SslBindingKind.HostnamePort, "ssl-cert-binding.net.com", TestName = "FindExistingBinding_HostnamePort_CustomHostname")]
+        [TestCase(SslBindingKind.CcsPort, null, TestName = "FindExistingBinding_CcsPort")]
+        [TestCase(SslBindingKind.ScopedCcs, "localhost", TestName = "FindExistingBinding_ScopedCcs_Localhost")]
+        [TestCase(SslBindingKind.ScopedCcs, "ssl-cert-binding.net.com", TestName = "FindExistingBinding_ScopedCcs_CustomHostname")]
+        public async Task FindExistingBinding(SslBindingKind kind, string value)
         {
             SslBindingKey key = await GetFreeBindingKey(kind, value);
             var appId = CreateTestAppId();
@@ -35,7 +35,7 @@ namespace SslCertBinding.Net.Tests
             });
 
             var configuration = new SslBindingConfiguration();
-            ISslBinding binding = QuerySingleBinding(configuration, key);
+            ISslBinding binding = FindSingleBinding(configuration, key);
 
             AssertBindingMatches(
                 binding,
@@ -45,14 +45,14 @@ namespace SslCertBinding.Net.Tests
                 kind == SslBindingKind.IpPort || kind == SslBindingKind.HostnamePort ? StoreName.My.ToString() : null);
         }
 
-        [TestCase(SslBindingKind.IpPort, "0.0.0.0", TestName = "QueryMissingBinding_IpPort_Ipv4Any")]
-        [TestCase(SslBindingKind.IpPort, "::", TestName = "QueryMissingBinding_IpPort_Ipv6Any")]
-        [TestCase(SslBindingKind.HostnamePort, "localhost", TestName = "QueryMissingBinding_HostnamePort_Localhost")]
-        [TestCase(SslBindingKind.HostnamePort, "ssl-cert-binding.net.com", TestName = "QueryMissingBinding_HostnamePort_CustomHostname")]
-        [TestCase(SslBindingKind.CcsPort, null, TestName = "QueryMissingBinding_CcsPort")]
-        [TestCase(SslBindingKind.ScopedCcs, "localhost", TestName = "QueryMissingBinding_ScopedCcs_Localhost")]
-        [TestCase(SslBindingKind.ScopedCcs, "ssl-cert-binding.net.com", TestName = "QueryMissingBinding_ScopedCcs_CustomHostname")]
-        public async Task QueryMissingBindingReturnsEmpty(SslBindingKind kind, string value)
+        [TestCase(SslBindingKind.IpPort, "0.0.0.0", TestName = "FindMissingBinding_IpPort_Ipv4Any")]
+        [TestCase(SslBindingKind.IpPort, "::", TestName = "FindMissingBinding_IpPort_Ipv6Any")]
+        [TestCase(SslBindingKind.HostnamePort, "localhost", TestName = "FindMissingBinding_HostnamePort_Localhost")]
+        [TestCase(SslBindingKind.HostnamePort, "ssl-cert-binding.net.com", TestName = "FindMissingBinding_HostnamePort_CustomHostname")]
+        [TestCase(SslBindingKind.CcsPort, null, TestName = "FindMissingBinding_CcsPort")]
+        [TestCase(SslBindingKind.ScopedCcs, "localhost", TestName = "FindMissingBinding_ScopedCcs_Localhost")]
+        [TestCase(SslBindingKind.ScopedCcs, "ssl-cert-binding.net.com", TestName = "FindMissingBinding_ScopedCcs_CustomHostname")]
+        public async Task FindMissingBindingReturnsNull(SslBindingKind kind, string value)
         {
             SslBindingKey key = await GetFreeBindingKey(kind, value);
             var configuration = new SslBindingConfiguration();
@@ -60,16 +60,16 @@ namespace SslCertBinding.Net.Tests
             switch (key)
             {
                 case IpPortKey ipKey:
-                    Assert.That(configuration.Query(ipKey), Is.Empty);
+                    Assert.That(configuration.Find(ipKey), Is.Null);
                     break;
                 case HostnamePortKey hostnameKey:
-                    Assert.That(configuration.Query(hostnameKey), Is.Empty);
+                    Assert.That(configuration.Find(hostnameKey), Is.Null);
                     break;
                 case CcsPortKey ccsKey:
-                    Assert.That(configuration.Query(ccsKey), Is.Empty);
+                    Assert.That(configuration.Find(ccsKey), Is.Null);
                     break;
                 case ScopedCcsKey scopedCcsKey:
-                    Assert.That(configuration.Query(scopedCcsKey), Is.Empty);
+                    Assert.That(configuration.Find(scopedCcsKey), Is.Null);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(kind));

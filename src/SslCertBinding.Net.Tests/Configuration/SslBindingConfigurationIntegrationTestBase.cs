@@ -182,18 +182,18 @@ namespace SslCertBinding.Net.Tests
             }
         }
 
-        protected static ISslBinding QuerySingleBinding(SslBindingConfiguration configuration, SslBindingKey key)
+        protected static ISslBinding FindSingleBinding(SslBindingConfiguration configuration, SslBindingKey key)
         {
             switch (key)
             {
                 case IpPortKey ipKey:
-                    return configuration.Query(ipKey).Single();
+                    return configuration.Find(ipKey);
                 case HostnamePortKey hostnameKey:
-                    return configuration.Query(hostnameKey).Single();
+                    return configuration.Find(hostnameKey);
                 case CcsPortKey ccsKey:
-                    return configuration.Query(ccsKey).Single();
+                    return configuration.Find(ccsKey);
                 case ScopedCcsKey scopedCcsKey:
-                    return configuration.Query(scopedCcsKey).Single();
+                    return configuration.Find(scopedCcsKey);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(key));
             }

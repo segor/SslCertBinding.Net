@@ -11,7 +11,7 @@ namespace SslCertBinding.Net.Tests
     public class SslBindingConfigurationLinuxTests
     {
         [Test]
-        public void QueryOnLinuxIsNotSupported()
+        public void QueryAllOnLinuxIsNotSupported()
         {
             var config = new SslBindingConfiguration();
             PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Query());
@@ -19,34 +19,34 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void QueryExactOnLinuxIsNotSupported()
+        public void FindByIpKeyOnLinuxIsNotSupported()
         {
             var config = new SslBindingConfiguration();
-            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Query(new IpPortKey(IPAddress.Any, 443)));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Find(new IpPortKey(IPAddress.Any, 443)));
             Assert.That(ex.InnerException, Is.Null);
         }
 
         [Test]
-        public void QueryByIpEndPointOnLinuxIsNotSupported()
+        public void FindByIpEndPointOnLinuxIsNotSupported()
         {
             var config = new SslBindingConfiguration();
-            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Query(new IPEndPoint(IPAddress.Any, 443).ToSslBindingKey()));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Find(new IPEndPoint(IPAddress.Any, 443).ToSslBindingKey()));
             Assert.That(ex.InnerException, Is.Null);
         }
 
         [Test]
-        public void QueryByDnsEndPointOnLinuxIsNotSupported()
+        public void FindByDnsEndPointOnLinuxIsNotSupported()
         {
             var config = new SslBindingConfiguration();
-            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Query(new DnsEndPoint("localhost", 443).ToHostnamePortKey()));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Find(new DnsEndPoint("localhost", 443).ToHostnamePortKey()));
             Assert.That(ex.InnerException, Is.Null);
         }
 
         [Test]
-        public void QueryByScopedCcsDnsEndPointOnLinuxIsNotSupported()
+        public void FindByScopedCcsDnsEndPointOnLinuxIsNotSupported()
         {
             var config = new SslBindingConfiguration();
-            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Query(new DnsEndPoint("localhost", 443).ToScopedCcsKey()));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Find(new DnsEndPoint("localhost", 443).ToScopedCcsKey()));
             Assert.That(ex.InnerException, Is.Null);
         }
 

@@ -8,8 +8,6 @@ It focuses on the API surface that exists today:
 2. the CCS and scoped CCS families exposed by the same model
 3. the active non-obsolete configuration and binding types used by that model
 
-`SslBindingConfiguration` also exposes concrete exact-query overloads for `CcsPortKey` and `ScopedCcsKey`. They are intentionally not part of `ISslBindingConfiguration`, which stays source/binary-compatible for downstream custom implementations.
-
 `SslBindingKeyExtensions` is intentionally omitted from the diagram because it provides endpoint conversion helpers but does not change the core object model.
 
 ## Class Diagram
@@ -90,17 +88,14 @@ classDiagram
         <<interface>>
         +Query() IReadOnlyList~ISslBinding~
         +Query~TBinding~() IReadOnlyList~TBinding~
-        +Query(IpPortKey key) IReadOnlyList~IpPortBinding~
-        +Query(HostnamePortKey key) IReadOnlyList~HostnamePortBinding~
-        +Query(SslBindingKey key) IReadOnlyList~ISslBinding~
+        +Find(IpPortKey key) IpPortBinding
+        +Find(HostnamePortKey key) HostnamePortBinding
+        +Find(CcsPortKey key) CcsPortBinding
+        +Find(ScopedCcsKey key) ScopedCcsBinding
+        +Find(SslBindingKey key) ISslBinding
         +Upsert(ISslBinding binding)
         +Delete(SslBindingKey key)
         +Delete(IReadOnlyCollection~SslBindingKey~ keys)
-    }
-
-    class SslBindingConfiguration {
-        +Query(CcsPortKey key) IReadOnlyList~CcsPortBinding~
-        +Query(ScopedCcsKey key) IReadOnlyList~ScopedCcsBinding~
     }
 
     SslBindingKey --> SslBindingKind
@@ -125,12 +120,14 @@ classDiagram
     IpPortBinding --> SslCertificateReference
     HostnamePortBinding --> SslCertificateReference
 
-    ISslBindingConfiguration <|.. SslBindingConfiguration
     ISslBindingConfiguration ..> ISslBinding
     ISslBindingConfiguration ..> SslBindingKey
     ISslBindingConfiguration ..> IpPortBinding
     ISslBindingConfiguration ..> HostnamePortBinding
+    ISslBindingConfiguration <|.. SslBindingConfiguration
 ```
+
+Exact lookup now uses `Find(...)` and returns the matching binding or `null` when no binding exists for the specified key.
 
 ## Endpoint Conversions
 
