@@ -6,32 +6,33 @@
 
 ## Implementation Status
 
-The current implementation in this repository intentionally stops after the SNI milestone from the recommended sequence:
-
-1. introduce the new binding-family model
-2. re-implement IP on top of it
-3. add SNI
+The current implementation in this repository now ships the full binding-family surface described by this design.
 
 Implemented now:
 
-- new generalized `SslBindingConfiguration` supports `ipport` and `hostnameport`
+- new generalized `SslBindingConfiguration` supports `ipport`, `hostnameport`, `ccs`, and `scopedccs`
 - the new public domain model currently includes:
   - `SslBindingKind`
   - `SslBindingKey`
   - `IpPortKey`
   - `HostnamePortKey`
+  - `CcsPortKey`
+  - `ScopedCcsKey`
   - `SslCertificateReference`
   - `ISslBinding`
+  - `SslBinding<TKey>`
   - `IpPortBinding`
   - `HostnamePortBinding`
-
-Not implemented yet:
-
-- `CcsPortKey`
-- `ScopedCcsKey`
-- `CcsPortBinding`
-- `ScopedCcsBinding`
+  - `CcsPortBinding`
+  - `ScopedCcsBinding`
 - CCS and scoped CCS HTTP API handlers
+- nullable-reference annotations across the public surface
+
+Still true from the earlier design draft:
+
+- the binding-family model was the right abstraction
+- `BindingEndPoint` / `AnyHostPort` would not have scaled cleanly to CCS
+- the old IP-only surface remains only as obsolete compatibility wrappers
 
 One small implementation detail differs from the earlier draft below: the shipped model now uses a hybrid interface/class model:
 
@@ -59,7 +60,7 @@ But I would not continue extending the current public `BindingEndPoint` model to
 
 The cleaner design is to model **binding family** explicitly and make endpoint-like values just one kind of binding key.
 
-This document describes the target design if the feature is implemented fresh over `master`. `support-sni` is treated here as a useful implementation reference, not as the public API baseline.
+This document now serves mainly as design rationale for the shipped API. Some sections below still describe the rollout as stages because they explain how the current model was derived.
 
 ## Deep Reviewer Takeaway
 
@@ -111,7 +112,7 @@ That makes the public API look simpler, but the underlying native semantics beco
 
 ### 3. The current public API was generalized too early
 
-Compared to `master`, the target implementation replaces the narrow IP-only API with a generalized binding-family API. That is acceptable here because the next-major-version direction is to make the new model the primary public surface rather than preserving the old one indefinitely.
+Compared to the original `master` IP-only API, the implementation replaces the narrow surface with a generalized binding-family API. In the current codebase, the old IP-only surface remains available only as obsolete compatibility wrappers while the binding-family model is the primary public surface for new code.
 
 ## Recommended Design Direction
 
@@ -237,11 +238,11 @@ For the current shipped public API, including the standalone Mermaid diagram, se
 
 ### Target Domain Model
 
-The Mermaid diagram below is a target-state model, not a strict snapshot of the currently shipped types.
+The Mermaid diagram below is effectively the current shipped model.
 
-1. The current code ships the `IpPortKey` and `HostnamePortKey` families, the `SslBinding` / `SslBinding<TKey>` base types, `IpPortBinding`, `HostnamePortBinding`, and `SslCertificateReference`.
+1. The current code ships `IpPortKey`, `HostnamePortKey`, `CcsPortKey`, and `ScopedCcsKey`, along with `ISslBinding`, `SslBinding<TKey>`, all four concrete binding types, and `SslCertificateReference`.
 2. The current code also keeps `CertificateBinding`, `ICertificateBindingConfiguration`, and `CertificateBindingConfiguration` as obsolete IP-only compatibility wrappers.
-3. `ScopedCcsKey`, `CcsPortKey`, `ScopedCcsBinding`, and `CcsPortBinding` remain planned rather than implemented.
+3. `SslCertificateReference` now uses a strict non-null store-name contract for explicit store names; callers use the one-argument overload when they want the default `MY` store.
 
 ```mermaid
 classDiagram
@@ -342,20 +343,22 @@ classDiagram
 ```csharp
 public interface ISslBindingConfiguration
 {
-    IReadOnlyList<SslBinding> Query();
-    IReadOnlyList<TBinding> Query<TBinding>() where TBinding : SslBinding;
-    IpPortBinding Find(IpPortKey key);
-    HostnamePortBinding Find(HostnamePortKey key);
-    CcsPortBinding Find(CcsPortKey key);
-    ScopedCcsBinding Find(ScopedCcsKey key);
-    SslBinding Find(SslBindingKey key);
-    void Upsert(SslBinding binding);
+    IReadOnlyList<ISslBinding> Query();
+    IReadOnlyList<TBinding> Query<TBinding>() where TBinding : ISslBinding;
+    IpPortBinding? Find(IpPortKey key);
+    HostnamePortBinding? Find(HostnamePortKey key);
+    CcsPortBinding? Find(CcsPortKey key);
+    ScopedCcsBinding? Find(ScopedCcsKey key);
+    ISslBinding? Find(SslBindingKey key);
+    void Upsert(ISslBinding binding);
     void Delete(SslBindingKey key);
     void Delete(IReadOnlyCollection<SslBindingKey> keys);
 }
 ```
 
 Typed `Find(...)` overloads let callers avoid casts for exact lookup, while `Query<TBinding>()` provides family-specific enumeration without adding one method per binding family.
+
+In the shipped API, `Find(...)` follows a "get or null" contract rather than a `TryFind(...)` pattern.
 
 ## Implementation Strategy Over `master`
 

@@ -15,7 +15,7 @@ namespace SslCertBinding.Net
         /// <returns>
         /// The converted key, or <c>null</c> when <paramref name="endPoint"/> is <c>null</c>.
         /// </returns>
-        public static IpPortKey? ToSslBindingKey(this IPEndPoint? endPoint) =>
+        public static IpPortKey? ToIpPortKey(this IPEndPoint? endPoint) =>
             endPoint == null ? null : new IpPortKey(endPoint);
 
         /// <summary>

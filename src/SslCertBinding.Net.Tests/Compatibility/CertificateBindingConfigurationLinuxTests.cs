@@ -31,7 +31,7 @@ namespace SslCertBinding.Net.Tests
         public void FindByIpEndPointOnLinuxIsNotSupported()
         {
             var config = new SslBindingConfiguration();
-            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Find(new IPEndPoint(IPAddress.Any, 443).ToSslBindingKey()));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => _ = config.Find(new IPEndPoint(IPAddress.Any, 443).ToIpPortKey()));
             Assert.That(ex.InnerException, Is.Null);
         }
 
@@ -63,7 +63,7 @@ namespace SslCertBinding.Net.Tests
         public void DeleteByIpEndPointOnLinuxIsNotSupported()
         {
             var config = new SslBindingConfiguration();
-            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => config.Delete(new IPEndPoint(IPAddress.Any, 443).ToSslBindingKey()));
+            PlatformNotSupportedException ex = Assert.Throws<PlatformNotSupportedException>(() => config.Delete(new IPEndPoint(IPAddress.Any, 443).ToIpPortKey()));
             Assert.That(ex.InnerException, Is.Null);
         }
 

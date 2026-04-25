@@ -64,7 +64,7 @@ CcsPortBinding? ccsBinding = config.Find(new CcsPortKey(443));
 ScopedCcsBinding? scopedCcsBinding = config.Find(new ScopedCcsKey("www.contoso.com", 443));
 HostnamePortBinding? sniBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey()!);
 ScopedCcsBinding? scopedCcsBindingFromEndPoint = config.Find(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey()!);
-IpPortBinding? ipBindingFromEndPoint = config.Find(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey()!);
+IpPortBinding? ipBindingFromEndPoint = config.Find(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToIpPortKey()!);
 
 if (sniBinding is not null)
 {
@@ -77,7 +77,7 @@ config.Delete(new CcsPortKey(443));
 config.Delete(new ScopedCcsKey("www.contoso.com", 443));
 config.Delete(new DnsEndPoint("www.contoso.com", 443).ToHostnamePortKey());
 config.Delete(new DnsEndPoint("www.contoso.com", 443).ToScopedCcsKey());
-config.Delete(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToSslBindingKey());
+config.Delete(new IPEndPoint(IPAddress.Parse("0.0.0.0"), 443).ToIpPortKey()!);
 ```
 
 If you want family-specific enumeration, you can use:
@@ -93,7 +93,7 @@ Exact lookup uses `Find(...)`. It returns the matching binding or `null` when no
 
 `SslCertificateReference` does not accept a `null` store name. Use `new SslCertificateReference(thumbprint)` when you want the default `MY` store, or pass an explicit non-null store name when you want a different store.
 
-`IpPortKey`, `HostnamePortKey`, and `ScopedCcsKey` define implicit conversions to and from the matching `IPEndPoint` or `DnsEndPoint` shapes where that mapping is natural. `IPEndPoint.ToSslBindingKey()` remains available for the IP family, while `DnsEndPoint` now uses explicit `ToHostnamePortKey()` and `ToScopedCcsKey()` conversions so the hostname-based families stay unambiguous.
+`IpPortKey`, `HostnamePortKey`, and `ScopedCcsKey` define implicit conversions to and from the matching `IPEndPoint` or `DnsEndPoint` shapes where that mapping is natural. `IPEndPoint.ToIpPortKey()` is the IP-family helper, while `DnsEndPoint` uses explicit `ToHostnamePortKey()` and `ToScopedCcsKey()` conversions so the hostname-based families stay unambiguous.
 
 Only `IpPortBinding` and `HostnamePortBinding` expose `SslCertificateReference`. `CcsPortBinding` and `ScopedCcsBinding` rely on HTTP.sys central certificate store resolution and therefore do not carry certificate thumbprint/store state in the public model.
 

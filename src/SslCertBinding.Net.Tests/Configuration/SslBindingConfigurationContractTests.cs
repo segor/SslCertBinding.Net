@@ -108,7 +108,7 @@ namespace SslCertBinding.Net.Tests
             var configuration = new SslBindingConfiguration();
             var endPoint = new IPEndPoint(IPAddress.Any, 65535);
 
-            IpPortBinding? result = configuration.Find(endPoint.ToSslBindingKey()!);
+            IpPortBinding? result = configuration.Find(endPoint.ToIpPortKey()!);
 
             Assert.That(result, Is.Null);
         }
@@ -220,11 +220,11 @@ namespace SslCertBinding.Net.Tests
         }
 
         [Test]
-        public void ToSslBindingKeyReturnsNullForNullIpEndPoint()
+        public void ToIpPortKeyReturnsNullForNullIpEndPoint()
         {
             IPEndPoint? endPoint = null;
 
-            Assert.That(endPoint.ToSslBindingKey(), Is.Null);
+            Assert.That(endPoint.ToIpPortKey(), Is.Null);
         }
 
         [Test]
