@@ -1,4 +1,4 @@
-#pragma warning disable CS0618
+﻿#pragma warning disable CS0618
 using System;
 using System.ComponentModel;
 using System.Net;
@@ -109,6 +109,7 @@ namespace SslCertBinding.Net
                 VerifyRevocationWithCachedCertificateOnly = options.VerifyRevocationWithCachedCertificateOnly,
                 EnableRevocationFreshnessTime = options.EnableRevocationFreshnessTime,
                 NoUsageCheck = options.NoUsageCheck,
+                DisableLegacyTls = options.DisableLegacyTls,
                 DisableTls12 = options.DisableTls12,
             };
     }

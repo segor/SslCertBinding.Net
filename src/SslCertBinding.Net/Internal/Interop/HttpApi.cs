@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using SslCertBinding.Net.Internal;
@@ -242,6 +242,7 @@ namespace SslCertBinding.Net.Internal.Interop
             USE_DS_MAPPER = 0x00000001,
             NEGOTIATE_CLIENT_CERT = 0x00000002,
             NO_RAW_FILTER = 0x00000004,
+            DISABLE_LEGACY_TLS = 0x00000400,
             DISABLE_TLS_1_2 = 0x00001000,
         }
 

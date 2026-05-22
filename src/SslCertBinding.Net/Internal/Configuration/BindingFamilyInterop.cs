@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -269,6 +269,7 @@ namespace SslCertBinding.Net.Internal
                     || options.NegotiateCertificate
                     || options.UseDsMappers
                     || options.DoNotPassRequestsToRawFilters
+                    || options.DisableLegacyTls
                     || options.DisableTls12))
             {
                 throw new NotSupportedException("Only default BindingOptions are supported for plain CCS bindings.");

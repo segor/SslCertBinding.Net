@@ -72,6 +72,7 @@ namespace SslCertBinding.Net.Tests
                     RevocationUrlRetrievalTimeout = TimeSpan.FromSeconds(5),
                     UseDsMappers = true,
                     VerifyRevocationWithCachedCertificateOnly = true,
+                    DisableLegacyTls = true,
                     DisableTls12 = true,
                 }));
 
@@ -91,6 +92,7 @@ namespace SslCertBinding.Net.Tests
                 AssertOutput(result.Output, @"URL Retrieval Timeout : 5000");
                 AssertOutput(result.Output, @"DS Mapper Usage : Enabled");
                 AssertOutput(result.Output, @"Negotiate Client Certificate : Enabled");
+                AssertOutput(result.Output, @"Disable Legacy TLS Versions  : Set");
                 AssertOutput(result.Output, @"Disable TLS1.2 : Set");
             });
         }
@@ -121,6 +123,7 @@ namespace SslCertBinding.Net.Tests
             {
                 UseDsMappers = true,
                 DisableTls12 = true,
+                DisableLegacyTls = true,
             }));
 
             ScopedCcsBinding binding = configuration.Find(key);
@@ -128,6 +131,7 @@ namespace SslCertBinding.Net.Tests
             {
                 UseDsMappers = true,
                 DisableTls12 = true,
+                DisableLegacyTls = true,
             }, null);
         }
 
