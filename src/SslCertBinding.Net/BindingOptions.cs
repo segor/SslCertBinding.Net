@@ -66,8 +66,8 @@ namespace SslCertBinding.Net
         /// </summary>
         public bool NoUsageCheck { get; set; }
 
-        /// <summary>
-        /// Disables legacy TLS versions (1.0 and 1.1) for the SSL binding.
+        /// <summary
+        /// Disables legacy TLS versions (1.0 and 1.1) of the TLS protocol.
         /// </summary>
         public bool DisableLegacyTls { get; set; }
 
