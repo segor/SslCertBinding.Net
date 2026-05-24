@@ -1,4 +1,4 @@
-#pragma warning disable CA1416
+﻿#pragma warning disable CA1416
 #pragma warning disable CS0618
 using System;
 using System.Collections.Generic;
@@ -23,7 +23,7 @@ namespace SslCertBinding.Net.Tests
                 new IpPortKey(IPAddress.Parse("127.0.0.1"), 443),
                 new SslCertificateReference("ABCDEF", StoreName.My),
                 Guid.NewGuid(),
-                new BindingOptions { DisableTls12 = true });
+                new BindingOptions { DisableTls12 = true, DisableLegacyTls = true });
             var configuration = new CertificateBindingConfiguration(new StubConfiguration
             {
                 QueryAllIpBindingsResult = new[] { ipBinding },
@@ -38,6 +38,7 @@ namespace SslCertBinding.Net.Tests
                 Assert.That(result[0].Thumbprint, Is.EqualTo(ipBinding.Certificate.Thumbprint));
                 Assert.That(result[0].StoreName, Is.EqualTo(ipBinding.Certificate.StoreName));
                 Assert.That(result[0].Options.DisableTls12, Is.True);
+                Assert.That(result[0].Options.DisableLegacyTls, Is.True);
             });
         }
 
@@ -270,6 +271,7 @@ namespace SslCertBinding.Net.Tests
         {
             var options = new BindingOptions
             {
+                DisableLegacyTls = true,
                 DisableTls12 = true,
                 EnableRevocationFreshnessTime = true,
                 NegotiateCertificate = true,
@@ -289,6 +291,7 @@ namespace SslCertBinding.Net.Tests
                 Assert.That(result.Certificate.Thumbprint, Is.EqualTo(binding.Thumbprint));
                 Assert.That(result.Certificate.StoreName, Is.EqualTo(binding.StoreName));
                 Assert.That(result.Options, Is.Not.SameAs(binding.Options));
+                Assert.That(result.Options.DisableLegacyTls, Is.True);
                 Assert.That(result.Options.DisableTls12, Is.True);
                 Assert.That(result.Options.EnableRevocationFreshnessTime, Is.True);
                 Assert.That(result.Options.NegotiateCertificate, Is.True);
@@ -309,6 +312,7 @@ namespace SslCertBinding.Net.Tests
             {
                 Assert.That(clone, Is.Not.Null);
                 Assert.That(clone.DisableTls12, Is.False);
+                Assert.That(clone.DisableLegacyTls, Is.False);
                 Assert.That(clone.NegotiateCertificate, Is.False);
                 Assert.That(clone.SslCtlIdentifier, Is.Null);
             });

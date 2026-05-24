@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -234,6 +234,7 @@ namespace SslCertBinding.Net.Tests
                 VerifyRevocationWithCachedCertificateOnly = true,
                 EnableRevocationFreshnessTime = true,
                 NoUsageCheck = true,
+                DisableLegacyTls = true,
                 DisableTls12 = true,
             };
         }
@@ -251,6 +252,7 @@ namespace SslCertBinding.Net.Tests
                 VerifyRevocationWithCachedCertificateOnly = true,
                 EnableRevocationFreshnessTime = true,
                 NoUsageCheck = false,
+                DisableLegacyTls = false,
                 DisableTls12 = true,
             };
         }
@@ -280,6 +282,7 @@ namespace SslCertBinding.Net.Tests
                 Assert.That(actual.NegotiateCertificate, Is.EqualTo(expected.NegotiateCertificate));
                 Assert.That(actual.UseDsMappers, Is.EqualTo(expected.UseDsMappers));
                 Assert.That(actual.DoNotPassRequestsToRawFilters, Is.EqualTo(expected.DoNotPassRequestsToRawFilters));
+                Assert.That(actual.DisableLegacyTls, Is.EqualTo(expected.DisableLegacyTls));
                 Assert.That(actual.DisableTls12, Is.EqualTo(expected.DisableTls12));
             });
         }

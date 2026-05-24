@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
@@ -268,7 +268,8 @@ namespace SslCertBinding.Net.Internal.Interop
                     (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
                     | (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)
                     | (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0)
-                    | (options.DisableTls12 ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_TLS_1_2 : 0),
+                    | (options.DisableTls12 ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_TLS_1_2 : 0)
+                    | (options.DisableLegacyTls ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_LEGACY_TLS : 0),
                 DefaultRevocationFreshnessTime = (int)options.RevocationFreshnessTime.TotalSeconds,
                 DefaultRevocationUrlRetrievalTimeout = (int)options.RevocationUrlRetrievalTimeout.TotalMilliseconds,
                 pSslCertStoreName = certificate.StoreName,
@@ -295,7 +296,8 @@ namespace SslCertBinding.Net.Internal.Interop
                     (options.NegotiateCertificate ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NEGOTIATE_CLIENT_CERT : 0)
                     | (options.UseDsMappers ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER : 0)
                     | (options.DoNotPassRequestsToRawFilters ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER : 0)
-                    | (options.DisableTls12 ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_TLS_1_2 : 0),
+                    | (options.DisableTls12 ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_TLS_1_2 : 0)
+                    | (options.DisableLegacyTls ? HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_LEGACY_TLS : 0),
                 DefaultRevocationFreshnessTime = (int)options.RevocationFreshnessTime.TotalSeconds,
                 DefaultRevocationUrlRetrievalTimeout = (int)options.RevocationUrlRetrievalTimeout.TotalMilliseconds,
                 pDefaultSslCtlIdentifier = options.SslCtlIdentifier,
@@ -317,6 +319,7 @@ namespace SslCertBinding.Net.Internal.Interop
             UseDsMappers = HasFlag(paramDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.USE_DS_MAPPER),
             DoNotPassRequestsToRawFilters = HasFlag(paramDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.NO_RAW_FILTER),
             DisableTls12 = HasFlag(paramDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_TLS_1_2),
+            DisableLegacyTls = HasFlag(paramDesc.DefaultFlags, HttpApi.HTTP_SERVICE_CONFIG_SSL_FLAG.DISABLE_LEGACY_TLS),
         };
 
         private static byte[] GetHashBytes(string thumbprint)

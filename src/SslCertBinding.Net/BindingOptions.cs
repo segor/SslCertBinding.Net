@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 namespace SslCertBinding.Net
 {
@@ -65,6 +65,11 @@ namespace SslCertBinding.Net
         /// Indicates that no usage check is to be performed.
         /// </summary>
         public bool NoUsageCheck { get; set; }
+
+        /// <summary
+        /// Disables legacy TLS versions (1.0 and 1.1) of the TLS protocol.
+        /// </summary>
+        public bool DisableLegacyTls { get; set; }
 
         /// <summary>
         /// Disables version 1.2 of the TLS protocol.
