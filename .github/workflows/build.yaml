@@ -45,7 +45,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         global-json-file: src/global.json
 
@@ -99,7 +99,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
       with:
         dotnet-version: ${{ env.DotnetSdkVersionToTestOnLinux }}
         global-json-file: src/global.json
@@ -131,7 +131,7 @@ jobs:
         path: ${{ env.Artifact_Dir }}
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@v5
+      uses: actions/setup-dotnet@v6
 
     - name: Push NuGet packages to NuGet.org
       run: dotnet nuget push "${{ env.NugetPackage_Dir }}**/*.nupkg" --api-key ${{ secrets.NUGET_TOKEN }} --skip-duplicate --source https://api.nuget.org/v3/index.json
